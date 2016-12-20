@@ -1,0 +1,91 @@
+def nowDate = new Date()
+def nowFormattedDate = nowDate.format("yyyy-MM-dd/HH:mm:ss")
+def vendorName = "greetgo!"
+
+allprojects {
+  apply plugin: 'java'
+  apply plugin: 'eclipse'
+  apply plugin: 'maven'
+  apply plugin: 'idea'
+
+  version = '1.0.0'
+
+  sourceCompatibility = 1.8
+  targetCompatibility = 1.8
+
+  group = "kz.greetgo.dt"
+
+  eclipse.project.natures 'org.springsource.ide.eclipse.gradle.core.nature'
+  compileJava.options.debugOptions.debugLevel = "source,lines,vars"
+  compileJava.options.encoding = "UTF-8"
+  compileTestJava.options.debugOptions.debugLevel = "source,lines,vars"
+  compileTestJava.options.encoding = "UTF-8"
+
+}
+
+subprojects {
+
+  project.eclipse.classpath.file.whenMerged { cp ->
+    if (project.hasProperty("sourceCompatibility")) {
+      cp.entries.findAll { it.path.contains('JRE_CONTAINER') }.each {
+        it.path += "/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/" +
+            "JavaSE-$project.sourceCompatibility"
+      }
+    }
+  }
+
+  repositories {
+    mavenLocal()
+    maven { url System.getenv('GG_REPO') }
+    mavenCentral()
+  }
+
+  dependencies {
+    ext.guavaVersion = '12.0'
+    ext.greetgoConfVersion = '0.1.2'
+    ext.depinjectVersion = '0.1.9'
+    ext.greetgoDbVersion = '0.0.11'
+    ext.greetgoMvcVersion = "0.0.30"
+    ext.greetgoSchedulingVersion = "0.0.1"
+    ext.greetgoJavaCompilerVersion = "0.0.2"
+    ext.greetgoEmailVersion = "0.0.9"
+    ext.jettyVersion = '9.3.8.RC0'
+    ext.jacksonVersion = "2.7.3"
+    ext.antlr = "4.3"
+    ext.schedulingVersion = "0.0.9"
+    ext.scalaVersion = "2.11.8"
+
+    testCompile 'org.testng:testng:6.5.1'
+    testCompile 'org.easytesting:fest-assert-core:2.0M10'
+
+    compile 'com.google.code.findbugs:annotations:2.0.1'
+  }
+
+  jar {
+    manifest {
+      attributes 'Implementation-Title': project.name, 'Implementation-Version': version,
+          'Implementation-Vendor': vendorName, 'Built-By': System.getProperty("user.name"), 'Built-At': nowFormattedDate
+    }
+  }
+
+  sourceSets {
+    main {
+      java.srcDirs = ["src"]
+      resources.srcDirs = ["src", "src_resources"]
+      output.resourcesDir = "build/classes/main"
+    }
+    test {
+      java.srcDirs = ["test_src"]
+      resources.srcDirs = ["test_src", "test_resources"]
+      output.resourcesDir = "build/classes/test"
+    }
+  }
+
+  //noinspection GroovyMissingReturnStatement
+  test { useTestNG() }
+
+  tasks.withType(ScalaCompile) {
+    sourceCompatibility = 1.7
+    targetCompatibility = 1.7
+  }
+}
