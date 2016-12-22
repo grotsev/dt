@@ -1,0 +1,72 @@
+group (
+    condition (
+        case (isDefined(toNum(txnAmt)),
+            assign(txnAmt, toNum(txnAmt))
+        )
+    ),
+    condition (
+        case (isDefined(toNum(termNumber)),
+            assign(termNumber, toNum(termNumber))
+        )
+    ),
+    condition (
+        case (isDefined(toNum(in.accountIndex)),
+            assign(in.accountIndex,toNum(in.accountIndex))
+        )
+    ),
+
+
+    condition (
+	    case (txnAmt >= client.account[in.accountIndex].payPlan[termNumber].remainingInterest & client.account[in.accountIndex].payPlan[termNumber].remainingInterest > 0,
+		    group (
+
+				assign(client.account[in.accountIndex].payPlan[termNumber].remainingTotal, round(client.account[in.accountIndex].payPlan[termNumber].remainingTotal
+					- client.account[in.accountIndex].payPlan[termNumber].remainingInterest, 2)),
+
+				assign(client.account[in.accountIndex].payPlan[termNumber].paidTotal, round(client.account[in.accountIndex].payPlan[termNumber].paidTotal
+					+ client.account[in.accountIndex].payPlan[termNumber].remainingInterest, 2)),
+
+				assign(client.account[in.accountIndex].payPlan[termNumber].paidInterest,
+				round(client.account[in.accountIndex].payPlan[termNumber].paidInterest + client.account[in.accountIndex].payPlan[termNumber].remainingInterest, 2)),
+
+                group (
+                    assign(client.account[in.accountIndex].totalPaidInterest, round(client.account[in.accountIndex].totalPaidInterest + client.account[in.accountIndex].payPlan[termNumber].remainingInterest, 2)),
+                    assign(client.account[in.accountIndex].totalRemInterest, round(client.account[in.accountIndex].totalRemInterest - client.account[in.accountIndex].payPlan[termNumber].remainingInterest, 2)),
+
+                    assign(client.account[in.accountIndex].paidSumOfDebtTillBizDate, round (client.account[in.accountIndex].paidSumOfDebtTillBizDate + client.account[in.accountIndex].payPlan[termNumber].remainingInterest, 2)),
+                    assign(client.account[in.accountIndex].totalRemainingAmt, round(client.account[in.accountIndex].totalRemainingAmt - client.account[in.accountIndex].payPlan[termNumber].remainingInterest, 2))
+                ),
+
+                assign(txnAmt, round(txnAmt - client.account[in.accountIndex].payPlan[termNumber].remainingInterest, 2)),
+				assign(client.account[in.accountIndex].payPlan[termNumber].remainingInterest, 0)
+
+		   )
+	    ),
+	    case (txnAmt < client.account[in.accountIndex].payPlan[termNumber].remainingInterest & txnAmt > 0,
+		    group (
+				assign(client.account[in.accountIndex].payPlan[termNumber].remainingTotal, round(client.account[in.accountIndex].payPlan[termNumber].remainingTotal
+					- txnAmt, 2)),
+
+				assign(client.account[in.accountIndex].payPlan[termNumber].paidTotal, round(client.account[in.accountIndex].payPlan[termNumber].paidTotal
+					+ txnAmt, 2)),
+
+				assign(client.account[in.accountIndex].payPlan[termNumber].paidInterest,
+				round (client.account[in.accountIndex].payPlan[termNumber].paidInterest + txnAmt, 2)),
+
+
+	            assign(client.account[in.accountIndex].payPlan[termNumber].remainingInterest,
+                round(client.account[in.accountIndex].payPlan[termNumber].remainingInterest - txnAmt, 2)),
+
+                group (
+                    assign(client.account[in.accountIndex].totalPaidInterest, round(client.account[in.accountIndex].totalPaidInterest + txnAmt, 2)),
+                    assign(client.account[in.accountIndex].totalRemInterest, round(client.account[in.accountIndex].totalRemInterest - txnAmt, 2)),
+
+                    assign(client.account[in.accountIndex].paidSumOfDebtTillBizDate, round (client.account[in.accountIndex].paidSumOfDebtTillBizDate + txnAmt, 2)),
+                    assign(client.account[in.accountIndex].totalRemainingAmt, round (client.account[in.accountIndex].totalRemainingAmt - txnAmt, 2))
+                ),
+
+              	assign(txnAmt, 0)
+		    )
+	    )
+	)
+)

@@ -1,0 +1,119 @@
+group(
+
+    assign(transId, generateId()),
+
+    //Account info
+    assign(client.account[in.accountIndex].transaction[id:transId].org, "000000000001"),
+    assign(client.account[in.accountIndex].transaction[id:transId].acctNbr, client.account[in.accountIndex].acctNbr),
+    assign(client.account[in.accountIndex].transaction[id:transId].acctType, client.account[in.accountIndex].acctType), //"E|人民币独立小额贷款账户"
+    assign(client.account[in.accountIndex].transaction[id:transId].currency, "156"), //Currency code for MS Loan
+
+    assign(client.account[in.accountIndex].transaction[id:transId].openBankId, client.account[in.accountIndex].ddBankBranch),
+    assign(client.account[in.accountIndex].transaction[id:transId].openBankName, client.account[in.accountIndex].ddBankName),
+    assign(client.account[in.accountIndex].transaction[id:transId].subBank, client.account[in.accountIndex].owningBranch),
+    assign(client.account[in.accountIndex].transaction[id:transId].cardNo, client.account[in.accountIndex].ddBankAcctNbr),
+    assign(client.account[in.accountIndex].transaction[id:transId].usrName, client.account[in.accountIndex].ddBankAcctName),
+    assign(client.account[in.accountIndex].transaction[id:transId].state, client.account[in.accountIndex].ddBankProvince),
+    assign(client.account[in.accountIndex].transaction[id:transId].city, client.account[in.accountIndex].ddBankCity),
+
+    //Client Info
+    assign(client.account[in.accountIndex].transaction[id:transId].certId, client.idNo),
+
+    group(
+                condition(
+                    case(client.idType="P",
+                        assign(client.account[in.accountIndex].transaction[id:transId].certType, client.idType)
+                    ),
+
+                    case(client.tmp.idType="R",
+                        assign(client.account[in.accountIndex].transaction[id:transId].certType, "04")
+                    ),
+
+                    case(client.tmp.idType="H",
+                        assign(client.account[in.accountIndex].transaction[id:transId].certType, "05")
+                    ),
+
+                    case(1=1,
+                        assign(client.account[in.accountIndex].transaction[id:transId].certType, "06")
+                    )
+                ),
+
+                assign(client.account[in.accountIndex].transaction[id:transId].certId, client.idNo)
+    ),
+
+    //Transaction info
+    //Incoming variables
+    assign(client.account[in.accountIndex].transaction[id:transId].txnAmt, generateTransaction.txnAmt),
+    assign(client.account[in.accountIndex].transaction[id:transId].orderStatus, generateTransaction.orderStatus),
+    assign(client.account[in.accountIndex].transaction[id:transId].loanUsage, generateTransaction.loanUsage),
+
+    condition(
+        case(isDefined(generateTransaction.duebillNo), //When create transaction manualy!
+            assign(client.account[in.accountIndex].transaction[id:transId].dueBillNo, generateTransaction.duebillNo)
+        )
+    ),
+
+    condition(
+        case(isDefined(client.tmp.refNbr), //When create transaction manualy!
+            assign(client.account[in.accountIndex].transaction[id:transId].refNbr, client.tmp.refNbr)
+        )
+    ),
+
+    condition(
+        case(loanUsage="L", //Loan release
+            group(
+                assign(client.account[in.accountIndex].transaction[id:transId].txnType, "AgentDebit"),
+                assign(client.account[in.accountIndex].transaction[id:transId].commandType, "SPA"),
+                assign(client.account[in.accountIndex].transaction[id:transId].purpose, "放款申请"),
+                assign(client.account[in.accountIndex].transaction[id:transId].payBizCode, "1"), //Credit -0, Debit - 1
+                assign(client.account[in.accountIndex].transaction[id:transId].matchInd, "Y") //Need to check in batch?
+            )
+        ),
+        case(loanUsage="N", //Normal deduction
+            group(
+                assign(client.account[in.accountIndex].transaction[id:transId].txnType, "AgentCredit"),
+                assign(client.account[in.accountIndex].transaction[id:transId].commandType, "SDB"),
+                assign(client.account[in.accountIndex].transaction[id:transId].purpose, "正常扣款"),
+                assign(client.account[in.accountIndex].transaction[id:transId].payBizCode, "0"), //Credit -0, Debit - 1
+                assign(client.account[in.accountIndex].transaction[id:transId].matchInd, "Y") //Need to check in batch?
+            )
+        ),
+        case(loanUsage="O", //Overdue deduction
+            group(
+                assign(client.account[in.accountIndex].transaction[id:transId].txnType, "AgentCredit"),
+                assign(client.account[in.accountIndex].transaction[id:transId].commandType, "SDB"),
+                assign(client.account[in.accountIndex].transaction[id:transId].purpose, "逾期扣款"),
+                assign(client.account[in.accountIndex].transaction[id:transId].payBizCode, "0"), //Credit -0, Debit - 1
+                assign(client.account[in.accountIndex].transaction[id:transId].matchInd, "Y") //Need to check in batch?
+            )
+        ),
+        case(loanUsage="D", //Overpayment return
+            group(
+                assign(client.account[in.accountIndex].transaction[id:transId].purpose, "溢缴款转出"),
+                assign(client.account[in.accountIndex].transaction[id:transId].payBizCode, "1"), //Credit -0, Debit - 1
+                assign(client.account[in.accountIndex].transaction[id:transId].matchInd, "Y") //Need to check in batch?
+            )
+        )
+    ),
+    assign(client.account[in.accountIndex].transaction[id:transId].comparedInd, false()),
+
+    assign(client.account[in.accountIndex].transaction[id:transId].channelId, client.account[in.accountIndex].custSource),
+
+    assign(client.account[in.accountIndex].transaction[id:transId].contrNbr, client.account[in.accountIndex].contrNbr),
+    assign(client.account[in.accountIndex].transaction[id:transId].acqId, client.account[in.accountIndex].acqId),
+
+    assign(client.account[in.accountIndex].transaction[id:transId].successAmt, 0),
+    assign(client.account[in.accountIndex].transaction[id:transId].failureAmt, 0),
+
+    assign(client.account[in.accountIndex].transaction[id:transId].priv1, "T110E5"), //PrivateField
+
+    assign(client.account[in.accountIndex].transaction[id:transId].businessDate, businessDay()),
+    assign(client.account[in.accountIndex].transaction[id:transId].sendTime, businessDay()),
+    assign(client.account[in.accountIndex].transaction[id:transId].createTime, businessDay()),
+    assign(client.account[in.accountIndex].transaction[id:transId].setupDate, businessDay()),
+    assign(client.account[in.accountIndex].transaction[id:transId].orderTime, businessDay()),
+    assign(client.account[in.accountIndex].transaction[id:transId].optDatetime, businessDay()),
+    assign(client.account[in.accountIndex].transaction[id:transId].flag, "00"),
+    assign(client.account[in.accountIndex].transaction[id:transId].cardType, "0"),
+    assign(client.account[in.accountIndex].transaction[id:transId].payChannelId, "1")
+)

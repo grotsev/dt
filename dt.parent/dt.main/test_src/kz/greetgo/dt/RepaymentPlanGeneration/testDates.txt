@@ -1,0 +1,4 @@
+group (
+    assign (toAdd, Dat("20.01.2016")),
+    assign (futureDate, today() + 5 * day())
+)

@@ -1,0 +1,54 @@
+group(
+    condition(case(isEmpty(debtAmt), assign(debtAmt,0))),
+
+    foreach(j, 0, len(client.account[in.accountIndex].overdueFine),
+        condition(
+            case(
+                client.account[in.accountIndex].overdueFine[j].date >= removeDate,
+                group( //Prepay Pkg Fee
+                    condition(
+                        case(
+                            client.account[in.accountIndex].overdueFine[j].paidAmount>0,
+                            group(
+                               assign(a, client.account[in.accountIndex].overdueFine[j].paidAmount),
+                               assign(client.account[in.accountIndex].sumOverpaid, client.account[in.accountIndex].sumOverpaid+a),
+
+                               assign(client.account[in.accountIndex].overdueFine[j].payDate, removeDate),
+                               assign(client.account[in.accountIndex].overdueFine[j].status, "E"),
+                               assign(client.account[in.accountIndex].overdueFine[j].paidAmount, empty()),
+                               assign(client.account[in.accountIndex].overdueFine[j].actual, false()),
+
+                               assign(debtAmt, debtAmt-client.account[in.accountIndex].overdueFine[j].remainingAmount),
+
+                                assign(client.account[in.accountIndex].totalRemainingAmt,
+                                round(client.account[in.accountIndex].totalRemainingAmt -
+                                    client.account[in.accountIndex].overdueFine[j].remainingAmount, 2)),
+
+                                assign(client.account[in.accountIndex].overdueFine[j].remainingAmount, empty())
+                            )
+                        ),
+                        case(1=1,
+                            group(
+                                assign(client.account[in.accountIndex].overdueFine[j].payDate, removeDate),
+                                assign(client.account[in.accountIndex].overdueFine[j].status, "E"),
+                                assign(client.account[in.accountIndex].overdueFine[j].paidAmount, empty()),
+                                assign(client.account[in.accountIndex].overdueFine[j].actual, false()),
+
+                                assign(debtAmt, debtAmt-client.account[in.accountIndex].overdueFine[j].remainingAmount),
+
+                                assign(client.account[in.accountIndex].totalRemainingAmt,
+                                    round(client.account[in.accountIndex].totalRemainingAmt -
+                                        client.account[in.accountIndex].overdueFine[j].remainingAmount, 2)),
+
+                                assign(client.account[in.accountIndex].overdueFine[j].remainingAmount, empty())
+                            )
+                        )
+                    ),
+
+                    assign(client.account[in.accountIndex].lastMaxFine, empty())
+
+                )
+            )
+        )
+    )
+)

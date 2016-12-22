@@ -1,0 +1,67 @@
+group (
+    assign(enableApply, false()),
+    assign(status, "canNotApply"),
+    assign(nextStmtDate, client.account[in.accountIndex].nextStmtDate),
+    
+    
+    assign(_applyBefore, 1),
+    assign(_applyBefore, client.account[in.accountIndex].product.advanceRepaymentApply.applyBefore),
+    
+    condition (
+        case (daysBetween (businessDay(), nextStmtDate) >= _applyBefore,
+                group (
+                    assign(enableApply, true())
+                )
+            )
+    ),
+    condition (
+        case ( client.account[in.accountIndex].product.advanceRepaymentApply.canToApply = false(),
+            group(
+                assign(enableApply, false())
+            )
+        ),
+        case (client.account[in.accountIndex].hasAdvancedClearing = true(),
+            group (
+                assign(status, "alreadyApplied"),
+                assign(date, client.account[in.accountIndex].batchDate),
+                assign(appliedDate, client.account[in.accountIndex].appliedAdvanceRepaymentDate),
+                assign(txnAmt, client.account[in.accountIndex].advanceRepaymentAmount)
+            )
+        ),
+        case (1 = 1,
+            group (
+                assign (status, "canApply"),
+                assign(_deductBefore, client.account[in.accountIndex].product.advanceRepaymentApply.deductBefore),
+                assign(date, setDay(nextStmtDate, _deductBefore)),
+
+                group (
+                    //txnAmt is increased in each procedure
+                    procedure (calcAdvancePrincipalAmt),
+                    procedure (calcAdvanceInterestAmt),
+                    procedure (calcAdvanceServiceFeeAmt),
+                    procedure (calcValue_addedServiceFee),
+                    procedure (calcAdvanceRepaymentTxnFee)
+                ),
+
+                condition (
+                    case (client.account[in.accountIndex].sumOverpaid>0 & txnAmt>0,
+                        group (
+                            condition (
+                                case (txnAmt>client.account[in.accountIndex].sumOverpaid,
+                                    assign(txnAmt, txnAmt-client.account[in.accountIndex].sumOverpaid) //It will be calculated in BigBatch
+                                ),
+                                case (txnAmt<=client.account[in.accountIndex].sumOverpaid,
+                                      group(
+                                          assign(txnAmt, 0)
+                                      )
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+        )
+    ),
+
+    assign(amount, round(txnAmt, 2))
+)

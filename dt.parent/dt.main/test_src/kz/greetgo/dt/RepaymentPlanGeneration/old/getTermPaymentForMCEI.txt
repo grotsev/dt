@@ -1,0 +1,28 @@
+group
+(
+    assign(j, power((client.account[id:in.accountId].product.tmp.interest + 1), (client.account[id:in.accountId].product.tmp.repaymentTerms))),
+	condition
+		(
+			case (client.account[id:in.accountId].product.tmp.interest = 0,
+				assign(client.account[id:in.accountId].product.tmp.loanTermPayment, round((client.account[id:in.accountId].product.tmp.loanAmount)  / (client.account[id:in.accountId].product.tmp.repaymentTerms)), 6)
+			),
+			case (client.account[id:in.accountId].product.tmp.interest != 0,
+				assign(client.account[id:in.accountId].product.tmp.loanTermPayment, round(client.account[id:in.accountId].product.tmp.interest * j / (j - 1), 6))
+			)
+		)
+)
+
+
+group
+(
+    assign(j, power((client.account[id:in.accountId].product.tmp.interest + 1), (client.account[id:in.accountId].product.tmp.repaymentTerms))),
+	condition
+		(
+			case (client.account[id:in.accountId].product.tmp.interest = 0,
+				assign(client.account[id:in.accountId].product.tmp.loanTermPayment, round((client.account[id:in.accountId].product.tmp.loanAmount)  / (client.account[id:in.accountId].product.tmp.repaymentTerms)), 6)
+			),
+			case (client.account[id:in.accountId].product.tmp.interest != 0,
+				assign(client.account[id:in.accountId].product.tmp.loanTermPayment, round(client.account[id:in.accountId].product.tmp.interest * j / (j - 1), 6))
+			)
+		)
+)

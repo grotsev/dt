@@ -1,0 +1,24 @@
+group(
+     assign (repaymentPlanId, generateId()),
+     assign(out.SCHEDULES.subScheduleList[id:repaymentPlanId].LOAN_TERM_TOT_AMT,
+        product.tmp.loanTermPrincipalAmt +
+        product.tmp.loanTermInsuranceFee +
+        product.tmp.currentTermInterest +
+        product.tmp.loanTermServiceFee +
+        product.tmp.loanTermTotalPrepayPkgFee +
+        product.tmp.loanTermReplaceServiceFee +
+        product.tmp.loanTermLifeInsuranceFee),
+
+     assign(out.LOAN_INT_SUM, product.tmp.currentTermInterest),
+     assign(out.SCHEDULES.subScheduleList[id:repaymentPlanId].LOAN_TERM_PRIN, product.tmp.loanTermPrincipalAmt),
+     assign(out.SCHEDULES.subScheduleList[id:repaymentPlanId].LOAN_TERM_INSTALL_FEE, product.tmp.loanTermServiceFee),
+     assign(out.SCHEDULES.subScheduleList[id:repaymentPlanId].LOAN_TERM_SVC_FEE, product.tmp.loanTermServiceFee),
+     assign(out.SCHEDULES.subScheduleList[id:repaymentPlanId].LOAN_CURR_TERM, product.tmp.currentTerm),
+     assign(out.SCHEDULES.subScheduleList[id:repaymentPlanId].LOAN_INSURANCE_FEE, product.tmp.loanTermInsuranceFee),
+     assign(out.SCHEDULES.subScheduleList[id:repaymentPlanId].LOAN_LIFE_INSU_FEE, product.tmp.loanTermLifeInsuranceFee),
+     assign(out.SCHEDULES.subScheduleList[id:repaymentPlanId].LOAN_PREPAY_PKG_FEE, product.tmp.loanTermTotalPrepayPkgFee),
+     assign(out.SCHEDULES.subScheduleList[id:repaymentPlanId].LOAN_AGENT_FEE, product.tmp.loanTermInstallmentFee),
+     assign(out.SCHEDULES.subScheduleList[id:repaymentPlanId].LOAN_STAMP_DUTY_AMT, product.tmp.loanTermStampDutyFee),
+     assign(out.SCHEDULES.subScheduleList[id:repaymentPlanId].LOAN_PMT_DUE_DATE, product.tmp.loanTermPaymentDueDate),
+     assign(out.SCHEDULES.subScheduleList[id:repaymentPlanId].LOAN_TERM_INT, product.tmp.currentTermInterest)
+)

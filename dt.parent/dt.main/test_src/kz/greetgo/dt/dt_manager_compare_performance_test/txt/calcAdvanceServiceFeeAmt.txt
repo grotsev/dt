@@ -1,0 +1,21 @@
+// ServiceFee
+group (
+    condition (
+        case(daysBetween(client.account[in.accountIndex].createTime, businessDay())<=15,
+            group()
+            //Nothing, because if apply for advance repayment is less or equal to 15 days after opening pay only principal
+        ),
+        case (client.account[in.accountIndex].product.ChargeAdvanceRepayment.ServiceFee = "Remaining",
+            assign(txnAmt, txnAmt + client.account[in.accountIndex].totalRemServiceFee)
+        ),
+        case (client.account[in.accountIndex].product.ChargeAdvanceRepayment.ServiceFee = "CurrentTerm",
+             assign(txnAmt, txnAmt + client.account[in.accountIndex].payPlan[client.account[in.accountIndex].currentTerm - 1].remainingServiceFee)
+        ),
+        case (client.account[in.accountIndex].product.ChargeAdvanceRepayment.ServiceFee = "SettlementDate",
+            group (
+                assign (feeAmt, client.account[in.accountIndex].payPlan[client.account[in.accountIndex].currentTerm - 1].remainingServiceFee),
+                procedure (calculateDebtTillSettlement)
+            )
+        )
+    )
+)

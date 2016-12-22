@@ -1,0 +1,4 @@
+// Transaction fee for advanced repayment
+group (
+    assign(txnAmt, txnAmt + client.account[in.accountIndex].product.AdvanceRepaymentServiceFee[0].parameter)
+)

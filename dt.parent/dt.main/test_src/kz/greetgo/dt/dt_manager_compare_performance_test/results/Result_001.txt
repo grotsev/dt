@@ -1,0 +1,39 @@
+builder.options.genBreakpoint = true;
+builder.options.genSourceMap = true;
+builder.options.genMetrics = true;
+
+        COUNT = 100000
+* * * USING dtManager3
+  exec           : 54.4890653 mks
+    execute : 9.6356061 mks
+    prepareScope : 21.1631621 mks
+    saveScope : 11.8808425 mks
+  dtManagerCopy  : 0.7942571 mks
+  newScope       : 27.8987740 mks
+  getScope       : 0.1664173 mks
+* * * USING dtManager1
+  exec           : 607.9648049 mks
+  dtManagerCopy  : 0.6009738 mks
+  newScope       : 27.9474763 mks
+  getScope       : 0.0654033 mks
+
+########################################################################################################################
+
+builder.options.genBreakpoint = false;
+builder.options.genSourceMap = false;
+builder.options.genMetrics = true;
+
+        COUNT = 100000
+* * * USING dtManager3
+  exec           : 54.9781972 mks
+    execute : 9.4700018 mks
+    prepareScope : 21.3687499 mks
+    saveScope : 12.3699137 mks
+  dtManagerCopy  : 0.8043199 mks
+  newScope       : 27.9570021 mks
+  getScope       : 0.1646970 mks
+* * * USING dtManager1
+  exec           : 609.3374347 mks
+  dtManagerCopy  : 0.5975472 mks
+  newScope       : 28.1222763 mks
+  getScope       : 0.0457377 mks

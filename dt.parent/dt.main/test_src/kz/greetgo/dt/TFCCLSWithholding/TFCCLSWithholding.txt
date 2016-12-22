@@ -1,0 +1,33 @@
+group (
+    condition (
+        case (
+            in.money <= 0,
+            group (
+                error("Field name {money}, can not be less than or equal to 0"),
+                exit()
+            )
+        )
+    ),
+
+    assign(bizDate, businessDay()),
+    procedure(checkWaitingTransactions),
+
+    //Generate Payment Transaction
+    group(
+        assign(generateTransaction_transactionAmount, in.money),
+        assign(orderStatus, "N"),
+        assign(loanUsage, "O"),
+        procedure(generateTransaction)
+    ),
+
+    procedure(sendDeduction),
+
+    condition(
+        case(client.account[in.accountIndex].transaction[id:transId].orderStatus = "S",
+            group(
+                procedure(paymentSuccessfulOverdue)
+            )
+        )
+    )
+
+)

@@ -1,0 +1,18 @@
+group(
+    condition(
+        case(businessDay() >= client.account[in.accountIndex].payPlan[client.account[in.accountIndex].termToPay].payPlanDueDate
+            &
+            client.account[in.accountIndex].hasCompulsoryCleaning = false(), //If claim exists do not change currentTerm.
+                group(
+                    assign(client.account[in.accountIndex].currentTerm, client.account[in.accountIndex].currentTerm+1),
+                    assign(client.account[in.accountIndex].termToPay, client.account[in.accountIndex].termToPay+1),
+
+                    condition(
+                        case(client.account[in.accountIndex].currentTerm>client.account[in.accountIndex].loanTerm,
+                            assign(client.account[in.accountIndex].currentTerm, client.account[in.accountIndex].loanTerm)
+                        )
+                    )
+                )
+        )
+    )
+)

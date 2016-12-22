@@ -1,0 +1,41 @@
+{
+  "SERVICE": {
+    "SERVICE_HEADER": {
+      "SERVICE_ID": "TNTLLoanScheduleCalc",
+      "ORG": "000000000001",
+      "CHANNEL_ID": "BANK",
+      "ACQ_ID": "10000000",
+      "SUB_TERMINAL_TYPE": "WeChatPos",
+      "SERVICESN": "b2f6e74d92ee4347937629359fa7c04d",
+      "OP_ID": null,
+      "REQUEST_TIME": "20180708172534",
+      "VERSION_ID": "01",
+      "MAC": null,
+      "SERV_RESPONSE": null
+    },
+    "SERVICE_BODY": {
+      "REQUEST": {
+        "LOAN_CODE": "3124",
+        "LOAN_AMT": 3000.0000,
+        "LOAN_TERM": "12",
+        "INTEREST_RATE": 0.24000000,
+        "LIFE_INSURANCE_IND": "Y",
+        "AGREEMENT_RATE_IND": "Y",
+        "FEE_RATE": 0E-8,
+        "FEE_AMOUNT": null,
+        "LIFE_INSU_FEE_RATE": 0.00416700,
+        "LIFE_INSU_FEE_AMT": null,
+        "INS_RATE": 0E-8,
+        "INS_AMT": null,
+        "INSTALLMENT_FEE_RATE": 0E-8,
+        "INSTALLMENT_FEE_AMT": null,
+        "PREPAYMENT_FEE_AMOUNT_RATE": null,
+        "PREPAYMENT_FEE_AMOUNT": null,
+        "AGENT_FEE_RATE": 0E-8,
+        "AGENT_FEE_AMOUNT": null,
+        "PREPAY_PKG_IND": "Y"
+      },
+      "RESPONSE": null
+    }
+  }
+}

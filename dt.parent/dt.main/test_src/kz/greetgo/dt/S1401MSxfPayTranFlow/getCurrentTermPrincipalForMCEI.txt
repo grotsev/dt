@@ -1,0 +1,15 @@
+group
+(
+    assign(j, power(monthlyInterestRate + 1, currentTerm - 1)),
+	assign(k, power(monthlyInterestRate + 1, repaymentTerms)),
+
+	condition
+	(
+		case (monthlyInterestRate = 0,
+			assign(currentTermPrincipalAmt, round(loanAmount / (repaymentTerms), 6))
+		),
+		case (1 = 1,
+			assign(currentTermPrincipalAmt, round(loanAmount * monthlyInterestRate * j / (k - 1), 6))
+		)
+	)
+)

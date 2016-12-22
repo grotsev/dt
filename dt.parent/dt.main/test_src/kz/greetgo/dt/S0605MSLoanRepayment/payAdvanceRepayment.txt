@@ -1,0 +1,24 @@
+group (
+	condition (
+    	case (txnAmt >= client.account[in.accountIndex].payPlan[termNumber].remAdvanceRepaymentFee & client.account[in.accountIndex].payPlan[termNumber].remAdvanceRepaymentFee > 0,
+        	group (
+              //Account in payPlan
+              assign(client.account[in.accountIndex].payPlan[termNumber].paidTotal, round(client.account[in.accountIndex].payPlan[termNumber].paidTotal
+                          + client.account[in.accountIndex].payPlan[termNumber].remAdvanceRepaymentFee, 2)),
+
+              assign(client.account[in.accountIndex].payPlan[termNumber].remainingTotal, round(client.account[in.accountIndex].payPlan[termNumber].remainingTotal
+                          - client.account[in.accountIndex].payPlan[termNumber].remAdvanceRepaymentFee, 2)),
+
+              //Account in account values
+              assign(client.account[in.accountIndex].paidSumOfDebtTillBizDate, round(client.account[in.accountIndex].paidSumOfDebtTillBizDate
+                          + client.account[in.accountIndex].payPlan[termNumber].remAdvanceRepaymentFee, 2)),
+
+
+              assign(txnAmt, round(txnAmt - client.account[in.accountIndex].payPlan[termNumber].remAdvanceRepaymentFee, 2)),
+              assign(client.account[in.accountIndex].payPlan[termNumber].paidAdvanceRepaymentFee, client.account[in.accountIndex].payPlan[termNumber].remAdvanceRepaymentFee),
+              assign(client.account[in.accountIndex].payPlan[termNumber].remAdvanceRepaymentFee, 0)
+
+          )
+      )
+  )
+)

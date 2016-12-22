@@ -1,0 +1,19 @@
+group(
+    condition(
+        case(debtAmt<=client.account[in.accountIndex].product.ToleranceValue.CPDOverdueToleranceValue,
+            assign(client.account[in.accountIndex].cpdBeginDate, empty())
+        )
+    ),
+
+    condition(
+        case(debtAmt<=client.account[in.accountIndex].product.ToleranceValue.DPDOverdueToleranceValue,
+            assign(client.account[in.accountIndex].overdueDate, empty())
+        )
+    ),
+
+    assign(client.account[in.accountIndex].cpdDays, 0),
+    assign(client.account[in.accountIndex].dpdDays, 0),
+
+    assign(client.account[in.accountIndex].lastMaxFine, empty())
+
+)

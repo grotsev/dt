@@ -1,0 +1,84 @@
+group(
+    procedure(calculateCurrentDebt),
+
+    assign(paidTerms,client.account[in.accountIndex].paidTerms),
+
+    condition(
+        case(debtAmt > 0 , //If there is overdue
+            group(
+                condition(
+                    case (isEmpty(client.account[in.accountIndex].cpdBeginDate),
+                        assign(client.account[in.accountIndex].cpdBeginDate, client.account[in.accountIndex].nextStmtDate)
+                    )
+                ),
+
+                assign(client.account[in.accountIndex].cpdDays, daysBetween(client.account[in.accountIndex].cpdBeginDate, businessDay())),
+
+                condition(
+                            case(debtAmt<=client.account[in.accountIndex].product.ToleranceValue.CPDOverdueToleranceValue
+                            &
+                            client.account[in.accountIndex].termToPay!=client.account[in.accountIndex].loanTerm,
+                                group(
+                                    assign(client.account[in.accountIndex].cpdBeginDate, empty()),
+                                    assign(client.account[in.accountIndex].cpdDays, 0),
+                                    assign(client.account[in.accountIndex].lastMaxFine, empty())
+                                )
+                            )
+                ),
+
+                condition(
+                    case(debtAmt-finesAmt>0, //We can't add penalty for penalty
+                        group(
+                            condition(
+                                case (isEmpty(client.account[in.accountIndex].overdueDate), //To switch dpd according to payments
+                                    group(
+                                         assign(client.account[in.accountIndex].overdueDate, client.account[in.accountIndex].nextStmtDate)
+                                    )
+                                )
+                            ),
+
+
+
+                            condition(//Does it works for last term???
+                                case(debtAmt<=client.account[in.accountIndex].product.ToleranceValue.DPDOverdueToleranceValue,
+                                    group(
+                                        assign(client.account[in.accountIndex].overdueDate, empty()),
+                                        assign(client.account[in.accountIndex].dpdDays, 0),
+
+                                        procedure(moveNextStmtDate)
+                                    )
+                                )
+                            ),
+
+                            condition(
+                                case(isDefined(client.account[in.accountIndex].overdueDate),
+                                    assign(client.account[in.accountIndex].dpdDays, daysBetween(client.account[in.accountIndex].overdueDate, businessDay()))
+                                )
+                            ),
+
+                            procedure(addFine)
+                        )
+                    )
+                )
+            )
+        ),
+        case(1 = 1 ,
+            //If there is no overdue
+            group(
+                procedure(clearOverdueDate),
+                condition(
+                    case((client.account[in.accountIndex].hasAdvancedClearing & isDefined(client.account[in.accountIndex].advanceClearingTerm))
+                    | client.account[in.accountIndex].hasCompulsoryCleaning = true(),
+                        group(
+                            procedure(closeAccount)
+                        )
+                    ),
+
+                    case(1=1,
+                        procedure(moveNextStmtDate)
+                    )
+                )
+            )
+        )
+    )
+)

@@ -1,0 +1,80 @@
+group
+(
+	condition
+	(
+
+		case (client.account[id:in.accountId].product.tmp.feeTypeFlag = 0,
+		condition
+		(
+			case (client.account[id:in.accountId].product.tmp.chargeMethod = "Terms",
+				condition
+				(
+					case (client.account[id:in.accountId].product.tmp.howToCalculate = "FixedAmount",
+						assign(client.account[id:in.accountId].product.tmp.termFee, round(client.account[id:in.accountId].product.tmp.calculationParameter, 2))
+					),
+					case (client.account[id:in.accountId].product.tmp.howToCalculate = "BaseRatio",
+						assign(client.account[id:in.accountId].product.tmp.termFee, round(client.account[id:in.accountId].product.tmp.calculationParameter * client.account[id:in.accountId].product.loanAmount, 2))
+					)
+				)
+			),
+			case (client.account[id:in.accountId].product.tmp.chargeMethod = "FirstTerm",
+				condition
+				(
+					case (client.account[id:in.accountId].product.tmp.howToCalculate = "FixedAmount",
+						assign(client.account[id:in.accountId].product.tmp.termFee, round(client.account[id:in.accountId].product.tmp.calculationParameter, 2))
+					),
+					case (client.account[id:in.accountId].product.tmp.howToCalculate = "BaseRatio",
+						assign(client.account[id:in.accountId].product.tmp.termFee, round(client.account[id:in.accountId].product.tmp.calculationParameter * client.account[id:in.accountId].product.loanAmount, 2))
+					)
+				)
+			)
+		)
+		),
+
+		case (client.account[id:in.accountId].product.tmp.feeTypeFlag = 1,
+		condition
+		(
+			case (client.account[id:in.accountId].product.tmp.chargeMethod = "Terms",
+				condition
+				(
+					case (client.account[id:in.accountId].product.tmp.howToCalculate = "FixedAmount",
+						assign(client.account[id:in.accountId].product.tmp.termFee, round(round(client.account[id:in.accountId].product.tmp.calculationParameter, 2)/client.account[id:in.accountId].product.tmp.repaymentTerms, 2))
+					),
+					case (client.account[id:in.accountId].product.tmp.howToCalculate = "BaseRatio",
+						assign(client.account[id:in.accountId].product.tmp.termFee, round(round(client.account[id:in.accountId].product.tmp.calculationParameter * client.account[id:in.accountId].product.loanAmount, 2)/client.account[id:in.accountId].product.tmp.repaymentTerms, 2))
+					)
+				)
+			),
+			case (client.account[id:in.accountId].product.tmp.chargeMethod = "FirstTerm",
+				condition (
+					case (client.account[id:in.accountId].product.tmp.howToCalculate = "FixedAmount",
+						assign(client.account[id:in.accountId].product.tmp.termFee, round(client.account[id:in.accountId].product.tmp.calculationParameter, 2))
+					),
+					case (client.account[id:in.accountId].product.tmp.howToCalculate = "BaseRatio",
+						assign(client.account[id:in.accountId].product.tmp.termFee, round(client.account[id:in.accountId].product.tmp.calculationParameter * client.account[id:in.accountId].product.loanAmount, 2))
+					)
+				)
+			)
+		  )
+		),
+		case (client.account[id:in.accountId].product.tmp.feeTypeFlag = 2,
+		condition
+		(
+			case (client.account[id:in.accountId].product.tmp.chargeMethod = "Terms",
+				condition
+				(
+					case (client.account[id:in.accountId].product.tmp.howToCalculate = "FixedAmount",
+						assign(client.account[id:in.accountId].product.tmp.termFee, round(round(client.account[id:in.accountId].product.tmp.calculationParameter, 2)/client.account[id:in.accountId].product.tmp.repaymentTerms, 2))
+					),
+					case (client.account[id:in.accountId].product.tmp.howToCalculate = "BaseRatio",
+						assign(client.account[id:in.accountId].product.tmp.termFee, client.account[id:in.accountId].product.tmp.calculationParameter * client.account[id:in.accountId].product.loanAmount/ client.account[id:in.accountId].product.tmp.repaymentTerms)
+					)
+				)
+			),
+			case (client.account[id:in.accountId].product.tmp.chargeMethod = "FirstTerm",
+					assign(client.account[id:in.accountId].product.tmp.termFee, 0)
+			)
+		)
+		)
+	)
+)

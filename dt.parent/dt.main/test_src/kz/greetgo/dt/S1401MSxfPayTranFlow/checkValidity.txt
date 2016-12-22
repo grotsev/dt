@@ -1,0 +1,55 @@
+group(
+    group( //Check for valid data
+        condition(
+          case (
+            isEmpty(in.channelSerial),
+            group (
+              error("渠道流水号-订单号不允许为空"),
+              exit()
+             )
+          ),
+          case (
+            isEmpty(in.msDdReturnCode),
+            group (
+              error("订单号="~loanRepay.channelSerial~"渠道流水号-还款结果不允许为空"),
+              exit()
+             )
+          ),
+          case (
+            isEmpty(in.txnAmt),
+            group (
+              error("订单号="~loanRepay.channelSerial~"渠道流水号-还款金额不允许为空"),
+              exit()
+             )
+          )
+        )
+  ),
+  group( //Check for BDB
+    condition(
+      case(
+        isDefined(client.account[in.accountIndex].transaction[in.transactionIndex].code)
+          &
+        client.account[in.accountIndex].transaction[in.transactionIndex].commandType=checkCode,
+        group(
+            error("订单号="~in.channelSerial~",回盘文件重复订单编号,回盘返回码=["~in.msDdReturnCode~"],订单原有code=["~client.account[in.accountIndex].transaction[in.transactionIndex].code~"]"),
+            exit()
+        )
+      )
+    )
+  ),
+  group(//Check if transaction was already processed
+      condition(
+          case(client.account[in.accountIndex].transaction[in.transactionIndex].orderStatus!="W",
+            group(
+                error("Transaction came second time, id = "~client.account[in.accountIndex].transaction[in.transactionIndex].id~" process: " ~ process),
+                exit()
+            )
+          )
+       )
+   ),
+
+  group( //set code and optDatetime
+      assign(client.account[in.accountIndex].transaction[in.transactionIndex].code, in.msDdReturnCode),
+      assign(client.account[in.accountIndex].transaction[in.transactionIndex].respDatetime, in.channelDate)
+  )
+)

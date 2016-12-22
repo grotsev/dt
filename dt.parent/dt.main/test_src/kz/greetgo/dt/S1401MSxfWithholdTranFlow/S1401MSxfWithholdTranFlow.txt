@@ -1,0 +1,25 @@
+group(
+    assign(process, "S1401MSxfWithholdTranFlow"),
+
+    procedure(checkValidity),
+    group(//Analize
+        condition(
+        //If no errors
+            case(in.msDdReturnCode = "0" & isDefined(client.account[in.accountIndex].transaction[in.transactionIndex].loanUsage),
+                group(
+                    assign(client.account[in.accountIndex].transaction[in.transactionIndex].orderStatus, "S"),
+                    assign(client.account[in.accountIndex].transaction[in.transactionIndex].successAmt, in.txnAmt),
+                    procedure(withHoldingSuccessful)
+                )
+            ),
+        //If error
+            case(1=1,
+                group(
+                    assign(client.account[in.accountIndex].transaction[in.transactionIndex].orderStatus, "E"),
+                    assign(client.account[in.accountIndex].transaction[in.transactionIndex].responseMessage, in.returnMessage),
+                    assign(client.account[in.accountIndex].transaction[in.transactionIndex].failureAmt, in.txnAmt)
+                )
+            )
+        )
+    )
+)

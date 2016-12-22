@@ -1,0 +1,194 @@
+group(
+
+  assign(serviceFeeChargeMethod, product.ServiceFee.ChargeMethod),
+  assign(howToCalculateServiceFee, product.ServiceFee.HowToCalculate),
+
+  assign(agentFeeChargeMethod, product.AgentFee.ChargeMethod),
+  assign(howToCalculateAgentFee, product.AgentFee.HowToCalculate),
+
+  assign(installmentFeeChargeMethod, product.InstallmentFee.ChargeMethod),
+  assign(howToCalculateInstallmentFee, product.InstallmentFee.HowToCalculate),
+
+  assign(replaceServiceFeeChargeMethod, product.ReplaceServiceFee.ChargeMethod),
+  assign(howToCalculateReplaceServiceFee, product.ReplaceServiceFee.HowToCalculate),
+  assign(replaceServiceFeeCalculationParameter, product.ReplaceServiceFee.CalculationParameter),
+
+  assign(insuranceFeeChargeMethod,product.InsuranceFee.ChargeMethod),
+  assign(howToCalculateInsuranceFee, product.InsuranceFee.HowToCalculate),
+
+  assign(prepayPkgFeeChargeMethod, product.FlexibleRepaymentServicePacket.ChargeMethod),
+  assign(howToCalculatePrepayPkgFee, product.FlexibleRepaymentServicePacket.HowToCalculate),
+
+  assign(stampDutyFeeChargeMethod, product.StampDutyFee.ChargeMethod),
+  assign(howToCalculateStampDutyFee, product.StampDutyFee.HowToCalculate),
+
+  assign(lifeInsuranceFeeChargeMethod, product.LifeInsuranceFee.ChargeMethod),
+  assign(howToCalculateLifeInsuranceFee, product.LifeInsuranceFee.HowToCalculate),
+
+  //next statement date calculation
+  group(
+    //skipEom = Y Next need to add this value to the product
+    assign(client.tmp.skipEom, "Y"),
+
+
+    assign(client.tmp.nextStmtDate, bizDate),
+
+    case(client.tmp.skipEom = "Y",
+      group(
+        case(day(client.tmp.nextStmtDate)=29,
+          group(
+            assign(client.tmp.nextStmtDate, setDay(client.tmp.nextStmtDate, 2)),
+            assign(client.tmp.nextStmtDate, client.tmp.nextStmtDate + month())
+          )
+        ),
+        case(day(client.tmp.nextStmtDate)=30,
+           group(
+            assign(client.tmp.nextStmtDate, setDay(client.tmp.nextStmtDate, 3)),
+            assign(client.tmp.nextStmtDate, client.tmp.nextStmtDate+month())
+           )
+        ),
+        case(day(client.tmp.nextStmtDate)=31,
+           group(
+            assign(client.tmp.nextStmtDate, setDay(client.tmp.nextStmtDate, 4)),
+            assign(client.tmp.nextStmtDate, client.tmp.nextStmtDate+month())
+           )
+        )
+      )
+     ),
+
+    assign(nextStmtDate, client.tmp.nextStmtDate + month()),
+
+    assign(pmtDueDate, nextStmtDate),
+
+    assign(graceDate, pmtDueDate + day() * product.GracePeriod)
+  ),
+
+  condition (
+    case (isEmpty(in.LOAN_AMT),
+      group (
+        error("in.LOAN_AMT is undefined")
+      )
+    )
+  ),
+
+  condition (
+    case (isEmpty(in.LOAN_TERM),
+      group (
+        error("in.LOAN_TERM is undefined")
+      )
+    )
+  ),
+
+  //If request values are null, try to get values from product
+  condition (
+    case (isEmpty(in.FEE_RATE),
+      assign (in.FEE_RATE, product.ServiceFee.CalculationParameter)
+    )
+  ),
+
+  condition (
+    case (isEmpty(in.INTEREST_RATE),
+      assign (in.INTEREST_RATE, product.InterestRate)
+    )
+  ),
+
+  condition (
+    case (isEmpty(in.FEE_AMT),
+      assign (in.FEE_AMT, product.ServiceFee.CalculationParameter)
+    )
+  ),
+
+  condition (
+    case (isEmpty(in.INS_RATE),
+      assign (in.INS_RATE, product.InsuranceFee.CalculationParameter)
+    )
+  ),
+
+  condition (
+    case (isEmpty(in.INS_AMT),
+      assign (in.INS_AMT, product.InsuranceFee.CalculationParameter)
+    )
+  ),
+
+  condition (
+    case (isEmpty(in.INSTALLMENT_FEE_RATE),
+      assign (in.INSTALLMENT_FEE_RATE, product.InstallmentFee.CalculationParameter)
+    )
+  ),
+
+  condition (
+    case (isEmpty(in.INSTALLMENT_FEE_AMT),
+      assign (in.INSTALLMENT_FEE_AMT, product.InstallmentFee.CalculationParameter)
+    )
+  ),
+
+  condition (
+    case (isEmpty(in.LIFE_INSU_FEE_RATE),
+      assign (in.LIFE_INSU_FEE_RATE, product.LifeInsuranceFee.CalculationParameter)
+    )
+  ),
+
+  condition (
+    case (isEmpty(in.LIFE_INSU_FEE_AMT),
+      assign (in.LIFE_INSU_FEE_AMT, product.LifeInsuranceFee.CalculationParameter)
+    )
+  ),
+
+  condition(
+    case (in.PREPAYMENT_FEE_AMOUNT>0 | in.PREPAYMENT_FEE_AMOUNT_RATE>0,
+      assign (in.PREPAY_PKG_IND, true())
+    )
+  ),
+
+  condition (
+    case (isEmpty(in.PREPAYMENT_FEE_AMOUNT_RATE),
+      assign (in.PREPAYMENT_FEE_AMOUNT_RATE, product.FlexibleRepaymentServicePacket.CalculationParameter)
+    )
+  ),
+
+  condition (
+    case (isEmpty(in.PREPAYMENT_FEE_AMOUNT),
+      assign (in.PREPAYMENT_FEE_AMOUNT, product.FlexibleRepaymentServicePacket.CalculationParameter)
+    )
+  ),
+
+  condition (
+    case (isEmpty(in.STAMPDUTY_RATE),
+      assign (in.STAMPDUTY_AMT, product.StampDutyFee.CalculationParameter)
+    )
+  ),
+
+  condition (
+    case (isEmpty(in.STAMPDUTY_AMT),
+      assign (in.STAMPDUTY_AMT, product.StampDutyFee.CalculationParameter)
+    )
+  ),
+
+  condition (
+    case (isEmpty(in.AGENT_FEE_RATE),
+      assign (in.AGENT_FEE_RATE, product.AgentFee.CalculationParameter)
+    )
+  ),
+
+  condition (
+    case (isEmpty(in.AGENT_FEE_AMOUNT),
+      assign (in.AGENT_FEE_AMOUNT, product.AgentFee.CalculationParameter)
+    )
+  ),
+
+  condition (
+    case (in.AGREEMENT_RATE_IND = true(),
+      group (
+
+        assign(in.FEE_RATE, in.FEE_RATE * in.LOAN_TERM),
+        assign(in.AGENT_FEE_RATE, in.AGENT_FEE_RATE * in.LOAN_TERM),
+        assign(in.LIFE_INSU_FEE_RATE, in.LIFE_INSU_FEE_RATE * in.LOAN_TERM),
+        assign(in.INS_RATE, in.INS_RATE * in.LOAN_TERM),
+        assign(in.PREPAYMENT_FEE_AMOUNT_RATE, in.PREPAYMENT_FEE_AMOUNT_RATE * in.LOAN_TERM),
+        assign(in.INSTALLMENT_FEE_RATE, in.INSTALLMENT_FEE_RATE * in.LOAN_TERM),
+        assign(in.STAMPDUTY_RATE, in.STAMPDUTY_RATE * in.LOAN_TERM),
+        assign(replaceServiceFeeCalculationParameter, replaceServiceFeeCalculationParameter * in.LOAN_TERM)
+      )
+    )
+  )
+)

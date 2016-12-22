@@ -1,0 +1,53 @@
+group
+(
+    group(
+        condition(
+            case (isEmpty(calculationParameter) | isEmpty(howToCalculate) | isEmpty(chargeMethod),
+                group (
+                    assign (calculationParameter, 0),
+                    assign (termFee, 0)
+                )
+            ),
+            case (isEmpty(in.LOAN_AMT),
+                group(
+                    error("in.LOAN_AMT is null"),
+                    exit()
+                )
+            ),
+            case (isEmpty(repaymentTerms),
+                group(
+                    error("repaymentTerms is null"),
+                    exit()
+                )
+            )
+        )
+
+    ),
+
+    condition (
+        // Current term != 1 and chargeMethod = "FirstTerm"
+        case (chargeMethod = "FirstTerm" & feeTypeFlag = 2,
+            assign(termFee, 0)
+        ),
+
+        // Otherwise
+        case (1 = 1,
+            group (
+                condition (
+                    case (howToCalculate = "FixedAmount",
+                        assign(termFee, round(calculationParameter, 2))
+                    ),
+                    case (howToCalculate = "BaseRatio",
+                        assign(termFee, round(calculationParameter * in.LOAN_AMT, 2))
+                    )
+                ),
+                condition(
+               	    case (chargeMethod = "Terms" & (feeTypeFlag = 1 |  feeTypeFlag = 2),
+               	    	assign(termFee, round(round(termFee/repaymentTerms, 2)))
+               	    )
+                )
+            )
+        )
+    )
+
+)

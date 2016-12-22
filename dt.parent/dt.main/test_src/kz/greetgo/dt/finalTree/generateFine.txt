@@ -1,0 +1,18 @@
+group(
+	//create new overdueFine
+
+	assign(overdueFineId, generateId()),
+    assign(client.account[in.accountIndex].overdueFine[id:overdueFineId].date, businessDay()),
+    assign(client.account[in.accountIndex].overdueFine[id:overdueFineId].remainingAmount, fineAmount),
+
+    assign(client.account[in.accountIndex].overdueFine[id:overdueFineId].paidAmount, 0),
+    assign(client.account[in.accountIndex].overdueFine[id:overdueFineId].status, "U"), //status = unPaid
+    assign(client.account[in.accountIndex].overdueFine[id:overdueFineId].term, client.account[in.accountIndex].termToPay),
+
+    assign(client.account[in.accountIndex].totalRemainingAmt,
+	    client.account[in.accountIndex].totalRemainingAmt +
+	    client.account[in.accountIndex].overdueFine[id:overdueFineId].remainingAmount),
+
+    assign(client.account[in.accountIndex].overdueFine[id:overdueFineId].message, message),
+    assign(client.account[in.accountIndex].overdueFine[id:overdueFineId].actual, true())
+)

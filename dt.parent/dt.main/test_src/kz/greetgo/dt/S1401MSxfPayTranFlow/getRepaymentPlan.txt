@@ -1,0 +1,778 @@
+group (
+    // Input data validation, correction of data types (JSON Strings to Num type), preparing data for generation of repayment plan
+    group (
+
+        assign(bizDate, businessDay()),
+
+        condition (
+
+            // if account is defined, then input values are taken from client document
+            case (isDefined(in.accountIndex),
+                group (
+
+                    condition(
+                        case (isEmpty(client.account[in.accountIndex].loanAmt),
+                            group(
+                                error ("account index is defined, but loanAmt is undefined"),
+                                exit()
+                            )
+                        )
+                    ),
+
+                    condition(
+                        case (isEmpty(client.account[in.accountIndex].loanTerm),
+                            group(
+                                error ("account index is defined, but loanTerm is undefined"),
+                                exit()
+                            )
+                        )
+                    ),
+
+                    assign(in.LOAN_AMT, client.account[in.accountIndex].loanAmt),
+                    assign(in.LOAN_TERM, client.account[in.accountIndex].loanTerm),
+                    assign(in.LIFE_INSURANCE_IND, client.account[in.accountIndex].joinLifeInsuInd),
+                    assign(in.AGREEMENT_RATE_IND, client.account[in.accountIndex].agreementRateInd),
+
+                    assign(in.INSTALLMENT_FEE_RATE, client.account[in.accountIndex].installmentFeeRate),
+                    assign(in.INSTALLMENT_FEE_AMT, client.account[in.accountIndex].installmentFeeAmt),
+                    assign(in.FEE_RATE, client.account[in.accountIndex].feeRate),
+                    assign(in.FEE_AMOUNT, client.account[in.accountIndex].feeAmt),
+                    assign(in.LIFE_INSU_FEE_RATE, client.account[in.accountIndex].lifeInsuFeeAmt),
+                    assign(in.LIFE_INSU_FEE_AMT, client.account[in.accountIndex].lifeInsuFeeRate),
+                    assign(in.INS_RATE, client.account[in.accountIndex].insRate),
+                    assign(in.INS_AMT, client.account[in.accountIndex].insAmt),
+                    assign(in.PREPAYMENT_FEE_AMOUNT_RATE, client.account[in.accountIndex].prepaymentFeeRate),
+                    assign(in.PREPAYMENT_FEE_AMOUNT, client.account[in.accountIndex].prepaymentFeeAmt),
+                    assign(in.INTEREST_RATE, client.account[in.accountIndex].interestRate),
+                    assign(in.STAMPDUTY_RATE, client.account[in.accountIndex].stampdutyRate),
+                    assign(in.STAMP_AMT, client.account[in.accountIndex].stampAmt),
+
+                    assign(serviceFeeChargeMethod, client.account[in.accountIndex].product.ServiceFee.ChargeMethod),
+                    assign(howToCalculateServiceFee, client.account[in.accountIndex].product.ServiceFee.HowToCalculate),
+
+                    assign(installmentFeeChargeMethod, client.account[in.accountIndex].product.InstallmentFee.ChargeMethod),
+                    assign(howToCalculateInstallmentFee, client.account[in.accountIndex].product.InstallmentFee.HowToCalculate),
+
+                    assign(replaceServiceFeeChargeMethod, client.account[in.accountIndex].product.ReplaceServiceFee.ChargeMethod),
+                    assign(howToCalculateReplaceServiceFee, client.account[in.accountIndex].product.ReplaceServiceFee.HowToCalculate),
+                    assign(replaceServiceFeeCalculationParameter, client.account[in.accountIndex].product.ReplaceServiceFee.CalculationParameter),
+
+                    assign(insuranceFeeChargeMethod, client.account[in.accountIndex].product.InsuranceFee.ChargeMethod),
+                    assign(howToCalculateInsuranceFee, client.account[in.accountIndex].product.InsuranceFee.HowToCalculate),
+
+                    assign(prepayPkgFeeChargeMethod, client.account[in.accountIndex].product.PrepayPkgFee.ChargeMethod),
+                    assign(howToCalculatePrepayPkgFee, client.account[in.accountIndex].product.PrepayPkgFee.HowToCalculate),
+
+                    assign(stampDutyFeeChargeMethod, client.account[in.accountIndex].product.StampDutyFee.ChargeMethod),
+                    assign(howToCalculateStampDutyFee, client.account[in.accountIndex].product.StampDutyFee.HowToCalculate),
+
+                    assign(lifeInsuranceFeeChargeMethod, client.account[in.accountIndex].product.LifeInsuranceFee.ChargeMethod),
+                    assign(howToCalculateLifeInsuranceFee, client.account[in.accountIndex].product.LifeInsuranceFee.HowToCalculate),
+
+                    assign(nextStmtDate, client.account[in.accountIndex].nextStmtDate),
+                    assign(isMergeBillDay, client.account[in.accountIndex].isMergeBillDay)
+                )
+            ),
+            // accountIndex is null means that call was made, but client is not created (trial generation)
+            case (isEmpty(in.accountIndex),
+
+                group(
+
+                    assign(serviceFeeChargeMethod, product.ServiceFee.ChargeMethod),
+                    assign(howToCalculateServiceFee, product.ServiceFee.HowToCalculate),
+
+                    assign(installmentFeeChargeMethod, product.InstallmentFee.ChargeMethod),
+                    assign(howToCalculateInstallmentFee, product.InstallmentFee.HowToCalculate),
+
+                    assign(replaceServiceFeeChargeMethod, product.ReplaceServiceFee.ChargeMethod),
+                    assign(howToCalculateReplaceServiceFee, product.ReplaceServiceFee.HowToCalculate),
+                    assign(replaceServiceFeeCalculationParameter, product.ReplaceServiceFee.CalculationParameter),
+
+                    assign(insuranceFeeChargeMethod,product.InsuranceFee.ChargeMethod),
+                    assign(howToCalculateInsuranceFee, product.InsuranceFee.HowToCalculate),
+
+                    assign(prepayPkgFeeChargeMethod, product.PrepayPkgFee.ChargeMethod),
+                    assign(howToCalculatePrepayPkgFee, product.PrepayPkgFee.HowToCalculate),
+
+                    assign(stampDutyFeeChargeMethod, product.StampDutyFee.ChargeMethod),
+                    assign(howToCalculateStampDutyFee, product.StampDutyFee.HowToCalculate),
+
+                    assign(lifeInsuranceFeeChargeMethod, product.LifeInsuranceFee.ChargeMethod),
+                    assign(howToCalculateLifeInsuranceFee, product.LifeInsuranceFee.HowToCalculate),
+
+                    //next statement date calculation
+                    group(
+                        //skipEom = Y Next need to add this value to the product
+                        assign(client.tmp.skipEom, "Y"),
+
+                        assign(client.tmp.nextStmtDate, bizDate),
+
+                        case(client.tmp.skipEom = "Y",
+                            group(
+                                case(day(client.tmp.nextStmtDate)=29,
+                                    group(
+                                        assign(client.tmp.nextStmtDate, setDay(client.tmp.nextStmtDate, 2)),
+                                        assign(client.tmp.nextStmtDate, client.tmp.nextStmtDate + month())
+                                    )
+                                ),
+                                case(day(client.tmp.nextStmtDate)=30,
+                                     group(
+                                        assign(client.tmp.nextStmtDate, setDay(client.tmp.nextStmtDate, 3)),
+                                        assign(client.tmp.nextStmtDate, client.tmp.nextStmtDate+month())
+                                     )
+                                ),
+                                case(day(client.tmp.nextStmtDate)=31,
+                                     group(
+                                        assign(client.tmp.nextStmtDate, setDay(client.tmp.nextStmtDate, 4)),
+                                        assign(client.tmp.nextStmtDate, client.tmp.nextStmtDate+month())
+                                     )
+                                )
+                            )
+                         ),
+
+                        assign(nextStmtDate, client.tmp.nextStmtDate + month()),
+
+                        assign(pmtDueDate, nextStmtDate),
+
+                        assign(graceDate, pmtDueDate + day() * product.GracePeriod)
+                    ),
+                    condition (
+                        case (isEmpty(in.LOAN_AMT),
+                            group (
+                                error("in.LOAN_AMT is undefined")
+                            )
+                        )
+                    ),
+                    condition (
+                        case (isEmpty(in.LOAN_TERM),
+                            group (
+                                error("in.LOAN_TERM is undefined")
+                            )
+                        )
+                    ),
+                    //If request values are null, try to get values from product
+                    condition (
+                        case (isEmpty(in.FEE_RATE),
+                            assign (in.FEE_RATE, product.ServiceFee.CalculationParameter)
+                        )
+                    ),
+                    condition (
+                        case (isEmpty(in.INTEREST_RATE),
+                            assign (in.INTEREST_RATE, product.InterestRate)
+                        )
+                    ),
+
+                    condition (
+                        case (isEmpty(in.FEE_AMT),
+                            assign (in.FEE_AMT, product.ServiceFee.CalculationParameter)
+                        )
+                    ),
+                    condition (
+                        case (isEmpty(in.INS_RATE),
+                            assign (in.INS_RATE, product.InsuranceFee.CalculationParameter)
+                        )
+                    ),
+                    condition (
+                        case (isEmpty(in.INS_AMT),
+                            assign (in.INS_AMT, product.InsuranceFee.CalculationParameter)
+                        )
+                    ),
+                    condition (
+                        case (isEmpty(in.INSTALLMENT_FEE_RATE),
+                            assign (in.INSTALLMENT_FEE_RATE, product.InstallmentFee.CalculationParameter)
+                        )
+                    ),
+                    condition (
+                        case (isEmpty(in.INSTALLMENT_FEE_AMT),
+                            assign (in.INSTALLMENT_FEE_AMT, product.InstallmentFee.CalculationParameter)
+                        )
+                    ),
+                    condition (
+                        case (isEmpty(in.LIFE_INSU_FEE_RATE),
+                            assign (in.LIFE_INSU_FEE_RATE, product.LifeInsuranceFee.CalculationParameter)
+                        )
+                    ),
+                    condition (
+                        case (isEmpty(in.LIFE_INSU_FEE_AMT),
+                            assign (in.LIFE_INSU_FEE_AMT, product.LifeInsuranceFee.CalculationParameter)
+                        )
+                    ),
+                    condition (
+                        case (isEmpty(in.PREPAYMENT_FEE_AMOUNT_RATE),
+                            assign (in.PREPAYMENT_FEE_AMOUNT_RATE, product.PrepayPkgFee.CalculationParameter)
+                        )
+                    ),
+                    condition (
+                        case (isEmpty(in.PREPAYMENT_FEE_AMOUNT_AMT),
+                            assign (in.PREPAYMENT_FEE_AMOUNT_AMT, product.PrepayPkgFee.CalculationParameter)
+                        )
+                    ),
+                    condition (
+                        case (isEmpty(in.STAMPDUTY_RATE),
+                            assign (in.STAMPDUTY_AMT, product.StampDutyFee.CalculationParameter)
+                        )
+                    ),
+                    condition (
+                        case (isEmpty(in.STAMPDUTY_AMT),
+                            assign (in.STAMPDUTY_AMT, product.StampDutyFee.CalculationParameter)
+                        )
+                    ),
+                    condition
+                    (
+                        case (in.AGREEMENT_RATE_IND = "Y",
+                            group (
+                                condition(
+                                    case (!isEmpty(toNum(in.FEE_RATE)),
+                                     assign(in.FEE_RATE, toNum(in.FEE_RATE) * in.LOAN_TERM)
+                                    ),
+                                    case (1 = 1,
+                                        assign(in.FEE_RATE, in.FEE_RATE * in.LOAN_TERM)
+                                    )
+                                ),
+                                condition(
+                                    case (!isEmpty(toNum(in.LIFE_INSU_FEE_RATE)),
+                                        assign(in.LIFE_INSU_FEE_RATE, toNum(in.LIFE_INSU_FEE_RATE) * in.LOAN_TERM)
+                                    ),
+                                    case (1 = 1,
+                                        assign(in.LIFE_INSU_FEE_RATE, in.LIFE_INSU_FEE_RATE * in.LOAN_TERM)
+                                    )
+                                ),
+                                condition(
+                                    case (!isEmpty(toNum(in.INS_RATE)),
+                                        assign(in.INS_RATE, toNum(in.INS_RATE) * in.LOAN_TERM)
+                                    ),
+                                    case (1 = 1,
+                                        assign(in.INS_RATE, in.INS_RATE * in.LOAN_TERM)
+                                    )
+                                ),
+                                condition(
+                                    case (!isEmpty(toNum(in.PREPAYMENT_FEE_AMOUNT_RATE)),
+                                        assign(in.PREPAYMENT_FEE_AMOUNT_RATE, toNum(in.PREPAYMENT_FEE_AMOUNT_RATE) * in.LOAN_TERM)
+                                    ),
+                                    case (1 = 1,
+                                        assign(in.PREPAYMENT_FEE_AMOUNT_RATE, in.PREPAYMENT_FEE_AMOUNT_RATE * in.LOAN_TERM)
+                                    )
+                                ),
+                                condition(
+                                    case (!isEmpty(toNum(in.INSTALLMENT_FEE_RATE)),
+                                        assign(in.INSTALLMENT_FEE_RATE, toNum(in.INSTALLMENT_FEE_RATE) * in.LOAN_TERM)
+                                    ),
+                                    case (1 = 1,
+                                        assign(in.INSTALLMENT_FEE_RATE, in.INSTALLMENT_FEE_RATE * in.LOAN_TERM)
+                                    )
+                                ),
+                                condition(
+                                    case (!isEmpty(toNum(in.STAMPDUTY_RATE)),
+                                        assign(in.STAMPDUTY_RATE, toNum(in.STAMPDUTY_RATE) * in.LOAN_TERM)
+                                    ),
+                                    case (1 = 1,
+                                        assign(in.STAMPDUTY_RATE, in.STAMPDUTY_RATE * in.LOAN_TERM)
+                                    )
+                                ),
+                                condition(
+                                    case (!isEmpty(toNum(replaceServiceFeeCalculationParameter)),
+                                        assign(replaceServiceFeeCalculationParameter, toNum(replaceServiceFeeCalculationParameter) * in.LOAN_TERM)
+                                    ),
+                                    case (1 = 1,
+                                        assign(replaceServiceFeeCalculationParameter, replaceServiceFeeCalculationParameter * in.LOAN_TERM)
+                                    )
+                                )
+                            )
+                        ),
+                        case (1 = 1,
+                            group (
+                                condition(
+                                     case (!isEmpty(toNum(in.FEE_RATE)),
+                                        assign(in.FEE_RATE, toNum(in.FEE_RATE))
+                                     )
+                                ),
+                                condition(
+                                     case (!isEmpty(toNum(in.LIFE_INSU_FEE_RATE)),
+                                        assign(in.LIFE_INSU_FEE_RATE, toNum(in.LIFE_INSU_FEE_RATE))
+                                     )
+                                ),
+                                condition(
+                                     case (!isEmpty(toNum(in.INS_RATE)),
+                                         assign(in.INS_RATE, toNum(in.INS_RATE))
+                                     )
+                                ),
+                                condition(
+                                     case (!isEmpty(toNum(in.PREPAYMENT_FEE_AMOUNT_RATE)),
+                                         assign(in.PREPAYMENT_FEE_AMOUNT_RATE, toNum(in.PREPAYMENT_FEE_AMOUNT_RATE))
+                                     )
+                                ),
+                                condition(
+                                     case (!isEmpty(toNum(in.INSTALLMENT_FEE_RATE)),
+                                         assign(in.INSTALLMENT_FEE_RATE, toNum(in.INSTALLMENT_FEE_RATE))
+                                     )
+                                ),
+                                condition(
+                                     case (!isEmpty(toNum(in.STAMPDUTY_RATE)),
+                                         assign(in.STAMPDUTY_RATE, toNum(in.STAMPDUTY_RATE))
+                                     )
+                                ),
+                                condition(
+                                     case (!isEmpty(toNum(replaceServiceFeeCalculationParameter)),
+                                         assign(replaceServiceFeeCalculationParameter, toNum(replaceServiceFeeCalculationParameter))
+                                     )
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+        ),
+
+        // If values are still null, then fill them with default values
+        condition (
+                case (isEmpty(in.PREPAY_PKG_IND),
+                    assign (in.PREPAY_PKG_IND, "N")
+                )
+        ),
+
+        condition (
+                case (isEmpty(in.PREPAY_PKG_IND),
+                    assign (in.PREPAY_PKG_IND, "N")
+                )
+        ),
+
+        condition (case (isEmpty(in.INSTALLMENT_FEE_AMT),
+                assign (in.INSTALLMENT_FEE_AMT,0)
+            )
+        ),
+        condition (case (isEmpty(in.INSTALLMENT_FEE_RATE),
+                assign (in.INSTALLMENT_FEE_RATE,0)
+            )
+        ),
+
+        condition (
+            case (isEmpty(in.FEE_RATE),
+                assign (in.FEE_RATE,0)
+            )
+        ),
+        condition (
+            case (isEmpty(in.FEE_AMT),
+                assign (in.FEE_AMT,0)
+            )
+        ),
+
+        condition (
+            case (isEmpty(in.LIFE_INSU_FEE_RATE),
+                assign (in.LIFE_INSU_FEE_RATE,0)
+            )
+        ),
+
+        condition (
+            case (isEmpty(in.LIFE_INSU_FEE_AMT),
+                assign (in.LIFE_INSU_FEE_AMT,0)
+            )
+        ),
+
+        condition (
+            case (isEmpty(in.INS_RATE),
+                assign (in.INS_RATE,0)
+            )
+        ),
+
+        condition (
+            case (isEmpty(in.INS_AMT),
+                assign (in.INS_AMT,0)
+            )
+        ),
+
+        condition (
+            case (isEmpty(in.PREPAYMENT_FEE_AMOUNT_RATE),
+                assign (in.PREPAYMENT_FEE_AMOUNT_RATE, 0)
+            )
+        ),
+
+        condition (
+            case (isEmpty(in.PREPAYMENT_FEE_AMOUNT),
+                assign (in.PREPAYMENT_FEE_AMOUNT,0)
+            )
+        ),
+
+        condition (
+            case (isEmpty(in.INTEREST_RATE),
+                assign (in.INTEREST_RATE,0)
+            )
+        ),
+
+        condition (
+            case (isEmpty(in.STAMPDUTY_RATE),
+                assign (in.STAMPDUTY_RATE,0)
+            )
+        ),
+
+        condition (case (isEmpty(in.STAMP_AMT),
+                assign (in.STAMP_AMT,0)
+            )
+        ),
+
+        condition (
+            case (isEmpty(isMergeBillDay),
+                assign (in.isMergeBillDay,"Y")
+            )
+        ),
+
+        condition (
+            case (isEmpty(replaceServiceFeeCalculationParameter),
+                assign (replaceServiceFeeCalculationParameter,0)
+            )
+        ),
+
+        condition (
+                case (isEmpty(in.AGREEMENT_RATE_IND),
+                    assign (in.AGREEMENT_RATE_IND, "N")
+                )
+        ),
+
+        condition(
+            case (!isEmpty(toNum(in.LOAN_AMT)),
+                assign(in.LOAN_AMT, toNum(in.LOAN_AMT))
+            )
+        ),
+
+        condition(
+            case (!isEmpty(toNum(in.LOAN_TERM)),
+                assign(in.LOAN_TERM, toNum(in.LOAN_TERM))
+            )
+        ),
+
+        condition(
+            case (!isEmpty(toNum(in.FEE_AMOUNT)),
+                assign(in.FEE_AMOUNT, toNum(in.FEE_AMOUNT))
+            )
+        ),
+
+        condition(
+            case (!isEmpty(toNum(in.LIFE_INSU_FEE_AMT)),
+                assign(in.LIFE_INSU_FEE_AMT, toNum(in.LIFE_INSU_FEE_AMT))
+            )
+        ),
+
+
+        condition(
+            case (!isEmpty(toNum(in.INS_AMT)),
+                assign(in.INS_AMT, toNum(in.INS_AMT))
+            )
+        ),
+
+        condition(
+            case (!isEmpty(toNum(in.PREPAYMENT_FEE_AMOUNT)),
+                assign(in.PREPAYMENT_FEE_AMOUNT, toNum(in.PREPAYMENT_FEE_AMOUNT))
+            )
+        ),
+
+        condition(
+            case (!isEmpty(toNum(in.INSTALLMENT_FEE_AMT)),
+                assign(in.INSTALLMENT_FEE_AMT, toNum(in.INSTALLMENT_FEE_AMT))
+            )
+        ),
+
+        condition(
+              case (!isEmpty(toNum(in.STAMP_AMT)),
+                  assign(in.STAMP_AMT, toNum(in.STAMP_AMT))
+              )
+        ),
+        condition(
+              case (!isEmpty(toNum(in.INTEREST_RATE)),
+                  assign(in.INTEREST_RATE, toNum(in.INTEREST_RATE))
+              )
+        )
+    ),
+    // REPAYMENT PLAN GENERATION BLOCK START.
+
+	assign(cycleDay, day(nextStmtDate)),
+	//Initial total amounts are used to get LOAN_FEE_SUM
+	assign(totalPrincipalAmt, 0),
+	assign(totalInstallmentFee, 0),
+	assign(totalReplaceServiceFee, 0),
+	assign(totalInsuranceFee, 0),
+	assign(totalStampDutyFee, 0),
+	assign(totalLifeInsuranceFee, 0),
+	assign(totalServiceFee, 0),
+	assign(totalPrepayPkgFee, 0),
+
+	assign(feeTypeFlag, 0),
+
+
+	assign(out.LOAN_INT_SUM, 0),
+
+    assign(repaymentTerms, in.LOAN_TERM),
+
+	assign(chargeMethod, installmentFeeChargeMethod),
+	assign(howToCalculate, howToCalculateInstallmentFee),
+
+	condition (
+		case (howToCalculate = "FixedAmount",
+			assign(calculationParameter, in.INSTALLMENT_FEE_AMT)
+		),
+		case (howToCalculate = "BaseRatio",
+			assign(calculationParameter, in.INSTALLMENT_FEE_RATE)
+		)
+	),
+
+	procedure(getFeeByFeeType),
+
+	assign(totalInitialInstallmentFee, termFee),
+
+	assign(chargeMethod, serviceFeeChargeMethod),
+	assign(howToCalculate, howToCalculateServiceFee),
+
+	condition (
+		case (howToCalculate = "FixedAmount",
+			assign(calculationParameter, in.FEE_AMOUNT)
+		),
+		case (howToCalculate = "BaseRatio",
+			assign(calculationParameter, in.FEE_RATE)
+		)
+	),
+	procedure(getFeeByFeeType),
+
+	assign(totalInitialServiceFee, termFee),
+
+	assign(chargeMethod, replaceServiceFeeChargeMethod),
+	assign(howToCalculate, howToCalculateReplaceServiceFee),
+	assign(calculationParameter, replaceServiceFeeCalculationParameter),
+
+	procedure(getFeeByFeeType),
+
+	assign(totalInitialReplaceServiceFee, termFee),
+
+	assign(chargeMethod, insuranceFeeChargeMethod),
+	assign(howToCalculate, howToCalculateInsuranceFee),
+
+	condition (
+		case (howToCalculate = "FixedAmount",
+			assign(calculationParameter, in.INS_AMT)
+		),
+		case (howToCalculate = "BaseRatio",
+			assign(calculationParameter, in.INS_RATE)
+		)
+	),
+	procedure(getFeeByFeeType),
+	assign(totalInitialInsuranceFee, termFee),
+
+    assign(totalInitialPrepayPkgFee, 0),
+
+	condition
+	(
+		case (in.PREPAY_PKG_IND = "Y",
+			group (
+				assign(chargeMethod, prepayPkgFeeChargeMethod),
+				assign(howToCalculate, howToCalculatePrepayPkgFee),
+
+				condition (
+						case (howToCalculate = "FixedAmount",
+							assign(calculationParameter, in.PREPAYMENT_FEE_AMOUNT)
+						),
+						case (howToCalculate = "BaseRatio",
+							assign(calculationParameter, in.PREPAYMENT_FEE_AMOUNT_RATE)
+						)
+				),
+				procedure(getFeeByFeeType),
+				assign(totalInitialPrepayPkgFee, termFee)
+			)
+		)
+	),
+
+    assign(chargeMethod, stampDutyFeeChargeMethod),
+	assign(howToCalculate, howToCalculateStampDutyFee),
+	condition (
+        case (howToCalculate = "FixedAmount",
+	        assign(calculationParameter, in.STAMP_AMT)
+		),
+		case (howToCalculate = "BaseRatio",
+		    assign(calculationParameter, in.STAMPDUTY_RATE)
+			)
+	),
+
+	procedure(getFeeByFeeType),
+	assign(totalInitialStampDutyFee, termFee),
+
+	assign(totalInitialLifeInsuranceFee, 0),
+
+	condition
+	(
+	 case (in.LIFE_INSURANCE_IND= "Y",
+		group
+			 (
+				assign(chargeMethod, lifeInsuranceFeeChargeMethod),
+				assign(howToCalculate, howToCalculateLifeInsuranceFee),
+
+					condition (
+							 case (howToCalculate = "FixedAmount",
+									assign(calculationParameter, in.LIFE_INSU_FEE_AMT)
+							 ),
+							 case (howToCalculate = "BaseRatio",
+									assign(calculationParameter, in.LIFE_INSU_FEE_RATE)
+							 )
+					),
+				procedure(getFeeByFeeType),
+				assign(totalInitialLifeInsuranceFee, termFee)
+			 )
+		)
+	),
+
+    //Repayment plan generation for each term.
+    assign(monthlyInterestRate, round(in.INTEREST_RATE / 12, 20)),
+    assign(repaymentTerms, in.LOAN_TERM),
+    assign(currentTerm, 1),
+    assign(loanAmount, in.LOAN_AMT),
+
+    assign (termPrincipalAmt, 0),
+    condition
+    (
+        case (isMergeBillDay = "Y",
+            group(
+
+                procedure(getCurrentTermPrincipalForMCEI),
+                assign(loanAmount, in.LOAN_AMT - currentTermPrincipalAmt),
+                assign(repaymentTerms, in.LOAN_TERM - 1),
+
+                procedure(getTermPaymentForMCEI),
+
+                assign(loanAmount, in.LOAN_AMT),
+                assign(loanTerm, in.LOAN_TERM),
+
+                assign(dailyInterest, round(in.INTEREST_RATE / 365, 20)),
+                assign(numberOfDaysInFirstTerm, daysBetween(bizDate, nextStmtDate) + 1),
+                assign(currentTermInterest, round(in.LOAN_AMT * dailyInterest * numberOfDaysInFirstTerm), 2),
+
+                assign(firstTermPrincipalAmt, currentTermPrincipalAmt)
+                )
+            ),
+        case (1 = 1 ,
+            group (
+
+                procedure(getCurrentTermPrincipalForMCEI),
+
+                condition (
+                    case (monthlyInterestRate = 0,
+                        group (
+                            assign (loanTermPayment, currentTermPrincipalAmt),
+                            assign (currentTermInterest, 0)
+                        )
+                    ),
+                    case (1 = 1,
+                        group (
+                            procedure(getTermPaymentForMCEI),
+                            assign(currentTermInterest, round(loanTermPayment - currentTermPrincipalAmt), 2)
+                        )
+                    )
+                )
+
+            )
+        )
+    ),
+
+    assign(firstTermPrincipalAmt, currentTermPrincipalAmt),
+
+    assign(feeTypeFlag, 1),
+    assign(repaymentTerms, in.LOAN_TERM),
+    procedure(getTermFeesValues),
+    procedure(getPaymentDueDate),
+    procedure(addCurrentTermRepaymentPlanToList),
+
+	assign(feeTypeFlag, 2),
+
+	foreach (termNumber, 2, in.LOAN_TERM - 1,
+		group (
+
+			condition
+			(
+					case (isMergeBillDay = "Y",
+						group (
+							assign(loanAmount, in.LOAN_AMT - firstTermPrincipalAmt),
+							assign(repaymentTerms, in.LOAN_TERM - 1),
+							assign(currentTerm, termNumber - 1)
+						)
+					),
+					case (1 = 1,
+						group (
+							assign(loanAmount, in.LOAN_AMT),
+							assign(repaymentTerms, in.LOAN_TERM),
+							assign(currentTerm, termNumber)
+						)
+					)
+			),
+
+			procedure(getCurrentTermPrincipalForMCEI),
+
+			assign(currentTerm, termNumber),
+			assign(currentTermInterest, round(loanTermPayment - currentTermPrincipalAmt), 2),
+
+			assign(repaymentTerms, in.LOAN_TERM),
+
+			procedure(getTermFeesValues),
+			procedure(getPaymentDueDate),
+			assign(loanTermPrincipalAmt, currentTermPrincipalAmt),
+			procedure(addCurrentTermRepaymentPlanToList)
+		)
+	),
+	assign(termNumber, in.LOAN_TERM),
+
+    group (
+        condition
+    	(
+    		case (isMergeBillDay = "Y",
+    			group (
+    				assign(currentTerm, termNumber - 1),
+    				assign(loanAmount, in.LOAN_AMT -  firstTermPrincipalAmt),
+    				assign(repaymentTerms, in.LOAN_TERM - 1)
+    				)
+    			),
+    		case (1 = 1,
+    			group (
+    				assign(currentTerm, termNumber),
+    				assign(loanAmount, in.LOAN_AMT),
+    				assign(repaymentTerms, in.LOAN_TERM)
+    				)
+    		)
+    	),
+
+    	procedure(getCurrentTermPrincipalForMCEI),
+    	assign(repaymentTerms, in.LOAN_TERM),
+    	procedure(getTermFeesValues)
+    ),
+
+    assign(currentTerm, termNumber),
+	assign(currentTermInterest, round(loanTermPayment -  currentTermPrincipalAmt, 2)),
+
+	assign(fixPrin, in.LOAN_AMT - totalPrincipalAmt),
+	assign(loanTermPrincipalAmt,  currentTermPrincipalAmt + fixPrin),
+
+	assign(fixInt, round(fixPrin *  monthlyInterestRate *  currentTerm, 2)),
+	assign(currentTermInterest,  currentTermInterest + fixInt),
+
+	assign(fixFee, totalInitialInstallmentFee - totalInstallmentFee),
+	assign(loanTermInstallmentFee,  loanTermInstallmentFee + fixFee),
+
+	assign(fixServiceFee, totalInitialServiceFee - totalServiceFee),
+	assign(loanTermServiceFee,  loanTermServiceFee + fixServiceFee),
+
+	assign(fixInsuranceFee, totalInitialInsuranceFee - totalInsuranceFee),
+	assign(loanTermInsuranceFee,  loanTermInsuranceFee + fixInsuranceFee),
+
+	assign(fixStampFee, totalInitialStampDutyFee - totalStampDutyFee),
+	assign(loanTermStampDutyFee,  loanTermStampDutyFee + fixStampFee),
+
+	assign(fixLifeInsuranceFee, totalInitialLifeInsuranceFee - totalLifeInsuranceFee),
+	assign(loanTermLifeInsuranceFee,  loanTermLifeInsuranceFee + fixLifeInsuranceFee),
+
+	assign(fixTotalServiceFee, totalInitialReplaceServiceFee - totalReplaceServiceFee),
+	assign(loanTermReplaceServiceFee,  loanTermReplaceServiceFee + fixTotalServiceFee),
+
+	assign(fixPrepayFee, totalInitialPrepayPkgFee - totalPrepayPkgFee),
+	assign(loanTermTotalPrepayPkgFee,  loanTermTotalPrepayPkgFee + fixPrepayFee),
+
+	procedure(getPaymentDueDate),
+	procedure(addCurrentTermRepaymentPlanToList),
+
+	assign (out.LOAN_TERM, in.LOAN_TERM),
+	assign (out.LOAN_INIT_PRIN, in.LOAN_AMT),
+
+	assign (out.LOAN_FEE_SUM, totalInitialInstallmentFee +
+	totalInitialLifeInsuranceFee + totalInitialStampDutyFee + totalInitialPrepayPkgFee + totalInitialReplaceServiceFee+ totalInitialInsuranceFee + totalInitialServiceFee)
+)

@@ -1,0 +1,56 @@
+/*
+Calculates txnAmt for advance clearing
+*/
+group (
+	//txnAmt is increased in each procedure
+	procedure (calcAdvancePrincipalAmt),
+	procedure (calcAdvanceInterestAmt),
+	procedure (calcAdvanceServiceFeeAmt),
+	procedure (calcValue_addedServiceFee),
+	procedure (calcAdvanceRepaymentTxnFee),
+
+	condition(
+        case(client.account[in.accountIndex].sumOverpaid>0 & txnAmt>0,
+            group(
+                condition(
+                    case(txnAmt>client.account[in.accountIndex].sumOverpaid,
+                        assign(txnAmt, txnAmt-client.account[in.accountIndex].sumOverpaid) //It will be calculated in Big Batch
+                    ),
+                    case(txnAmt<=client.account[in.accountIndex].sumOverpaid,
+                        assign(client.account[in.accountIndex].sumOverpaid, client.account[in.accountIndex].sumOverpaid - txnAmt),
+                        assign(generateTransaction_transactionAmount, round(txnAmt, 2)),
+
+                        assign(loanUsage, "M"),
+		                assign(orderStatus, "S"),
+		                procedure(generateTransaction),
+
+		                procedure(prepareForAdvanceClearing),
+
+		                assign(txnAmt, generateTransaction_transactionAmount),
+		                procedure(commonPayment),
+
+		                assign(generateTransaction_transactionAmount, 0),
+		                assign(txnAmt, 0)
+                    )
+                )
+            )
+        )
+    ),
+
+    condition(
+    	case(txnAmt>0,
+			assign(generateTransaction_transactionAmount, txnAmt),
+			assign(loanUsage, "M"),
+			assign(orderStatus, "N"),
+
+		    condition (
+		        case (isDefined(generateTransaction_transactionAmount),
+		            group(
+		              assign(generateTransaction_transactionAmount, round(generateTransaction_transactionAmount, 2)),
+		              procedure(generateTransaction)
+			        )
+			    )
+			)
+		)
+	)
+)

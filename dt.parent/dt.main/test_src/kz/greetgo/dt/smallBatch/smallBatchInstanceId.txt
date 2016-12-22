@@ -1,0 +1,46 @@
+group
+(
+    assign(bizDate, businessDay()),
+    foreach(i, 0, len(in.accountIndexes) - 1,
+		group (
+
+			assign(in.accountIndex, in.accountIndexes[i].value),
+
+      procedure(moveCurrentTerm), //Actually no need in SB, But for testing.
+
+      //If waiting transactions exist, then do not create transaction
+      assign(in.accountIndex, in.accountIndexes[i].value),
+			foreach(transIndex, 0, len(client.account[in.accountIndex].transaction) - 1,
+				condition(
+					case (client.account[in.accountIndex].transaction[transIndex].orderStatus = "W",
+						//assign(watingTansactionExists, true())
+						continue(i)
+					)
+				)
+			),
+
+			condition (
+				case(client.account[in.accountIndex].returnOverpayment = true(),
+					//Create transaction to return overpayment
+					procedure(createReturnOverpaymentTrans)
+				),
+			    case (isDefined(client.account[in.accountIndex].cpdBeginDate),
+			        //Process account in overdue
+                    procedure (createOverdueTrans)
+			    ),
+			    case (isEmpty(client.account[in.accountIndex].cpdBeginDate),
+			        condition (
+                        // If account has advance repayment
+                        case (client.account[in.accountIndex].hasAdvancedClearing = true(),
+                            procedure(createAdvanceClearingTrans)
+                        ),
+                        // Simple batch processing
+                        case (client.account[in.accountIndex].hasAdvancedClearing = false(),
+                            procedure(createNormalDeductionTrans)
+                        )
+			        )
+			    )
+			)
+		)
+	)
+)

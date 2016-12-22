@@ -1,0 +1,72 @@
+group (
+//Overdue fines
+    assign(overdueFineForThisTerm, 0),
+    condition (
+        case (len(client.account[in.accountIndex].overdueFine) > 0,
+            condition (
+                case (txnAmt>0 ,
+                    foreach(overdueIndex, 0, len(client.account[in.accountIndex].overdueFine) - 1,
+                        condition (
+                            case (termNumber+1= client.account[in.accountIndex].overdueFine[overdueIndex].term
+                            &
+                            client.account[in.accountIndex].overdueFine[overdueIndex].status = "U",
+                                group (
+                                    condition(
+                                        case(txnAmt>=client.account[in.accountIndex].overdueFine[overdueIndex].remainingAmount,
+                                            group(
+                                                assign(txnAmt, txnAmt - client.account[in.accountIndex].overdueFine[overdueIndex].remainingAmount),
+
+                                                assign(client.account[in.accountIndex].overdueFine[overdueIndex].paidAmount,
+                                                    client.account[in.accountIndex].overdueFine[overdueIndex].paidAmount
+                                                        + client.account[in.accountIndex].overdueFine[overdueIndex].remainingAmount),
+
+                                                assign(client.account[in.accountIndex].totalRemainingAmt,
+                                                    round(client.account[in.accountIndex].totalRemainingAmt -
+                                                        client.account[in.accountIndex].overdueFine[overdueIndex].remainingAmount, 2)),
+
+                                                assign(client.account[in.accountIndex].paidSumOfDebtTillBizDate,
+                                                    round(client.account[in.accountIndex].paidSumOfDebtTillBizDate +
+                                                        client.account[in.accountIndex].overdueFine[overdueIndex].remainingAmount, 2)),
+
+                                                assign(client.account[in.accountIndex].overdueFine[overdueIndex].remainingAmount, 0)
+                                            )
+                                        ),
+                                        case(txnAmt<client.account[in.accountIndex].overdueFine[overdueIndex].remainingAmount,
+                                            group(
+                                                assign(client.account[in.accountIndex].overdueFine[overdueIndex].remainingAmount,
+                                                    round(client.account[in.accountIndex].overdueFine[overdueIndex].remainingAmount - txnAmt,2)),
+
+                                                assign(client.account[in.accountIndex].totalRemainingAmt,
+                                                    round(client.account[in.accountIndex].totalRemainingAmt - txnAmt, 2)),
+
+                                                assign(client.account[in.accountIndex].overdueFine[overdueIndex].paidAmount, round(client.account[in.accountIndex].overdueFine[overdueIndex].paidAmount + txnAmt,2)),
+
+                                                assign(client.account[in.accountIndex].paidSumOfDebtTillBizDate,
+                                                    round(client.account[in.accountIndex].paidSumOfDebtTillBizDate + txnAmt, 2)),
+
+                                                assign(txnAmt,0)
+                                            )
+                                        )
+                                    ),
+
+                                    assign (client.account[in.accountIndex].overdueFine[overdueIndex].payDate, businessDay()),
+
+                                    condition(
+                                        case(
+                                            round(client.account[in.accountIndex].overdueFine[overdueIndex].remainingAmount, 2) = 0.00,
+                                            group(
+                                                assign (client.account[in.accountIndex].overdueFine[overdueIndex].status, "P")
+                                            )
+                                        )
+                                    ),
+
+                                    assign(overdueFineForThisTerm, overdueFineForThisTerm+client.account[in.accountIndex].overdueFine[overdueIndex].remainingAmount)
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+        )
+    )
+)

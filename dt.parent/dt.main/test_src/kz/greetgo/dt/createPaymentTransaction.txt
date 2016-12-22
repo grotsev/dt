@@ -1,0 +1,109 @@
+group(
+    group(
+
+            assign(client.tmp.transactionId, generateId())//,
+            //assign(client.account[id:in.accountId].transaction[id:client.tmp.transactionId].id, client.tmp.transactionId)
+    ),
+
+    group(
+            assign(client.account[id:in.accountId].transaction[id:client.tmp.transactionId].productCd, client.tmp.loanCode),
+
+            assign(client.account[id:in.accountId].transaction[id:client.tmp.transactionId].org, client.account[id:in.accountId].org),
+            assign(client.account[id:in.accountId].transaction[id:client.tmp.transactionId].acctNbr, client.account[id:in.accountId].acctNbr),
+            assign(client.account[id:in.accountId].transaction[id:client.tmp.transactionId].acctType , "E"),
+            assign(client.account[id:in.accountId].transaction[id:client.tmp.transactionId].currency, "156"),
+            assign(client.account[id:in.accountId].transaction[id:client.tmp.transactionId].openBankId, client.account[id:in.accountId].ddBankBranch),
+            assign(client.account[id:in.accountId].transaction[id:client.tmp.transactionId].openBank, client.account[id:in.accountId].ddBankName),
+            assign(client.account[id:in.accountId].transaction[id:client.tmp.transactionId].cardNo, client.account[id:in.accountId].ddBankAcctNbr),
+            assign(client.account[id:in.accountId].transaction[id:client.tmp.transactionId].usrName, client.account[id:in.accountId].ddBankAcctName),
+            assign(client.account[id:in.accountId].transaction[id:client.tmp.transactionId].subBank, "000000001"),
+            assign(client.account[id:in.accountId].transaction[id:client.tmp.transactionId].state, client.account[id:in.accountId].ddBankProvince),
+            assign(client.account[id:in.accountId].transaction[id:client.tmp.transactionId].city, client.account[id:in.accountId].ddBankCity)
+
+    ),
+
+    group(
+            condition(
+                case(client.idType="P",
+                    assign(client.account[id:in.accountId].transaction[id:client.tmp.transactionId].certType, client.idType)
+                ),
+
+                case(client.tmp.idType="R",
+                    assign(client.account[id:in.accountId].transaction[id:client.tmp.transactionId].certType, "04")
+                ),
+
+                case(client.tmp.idType="H",
+                    assign(client.account[id:in.accountId].transaction[id:client.tmp.transactionId].certType, "05")
+                ),
+
+                case(1=1,
+                    assign(client.account[id:in.accountId].transaction[id:client.tmp.transactionId].certType, "06")
+                )
+            ),
+
+            assign(client.account[id:in.accountId].transaction[id:client.tmp.transactionId].certId, client.idNo)
+    ),
+
+    group(
+
+
+            assign(client.account[id:in.accountId].transaction[id:client.tmp.transactionId].commandType, "SPA"),
+            assign(client.account[id:in.accountId].transaction[id:client.tmp.transactionId].txnType, "AgentDebit"),
+            assign(client.account[id:in.accountId].transaction[id:client.tmp.transactionId].purpose, "放款申请"),
+            assign(client.account[id:in.accountId].transaction[id:client.tmp.transactionId].payBizCode, "1"),
+            assign(client.account[id:in.accountId].transaction[id:client.tmp.transactionId].matchInd, "Y")
+    ),
+
+    group(
+
+
+            assign(client.account[id:in.accountId].transaction[id:client.tmp.transactionId].comparedInd , "N"),
+            assign(client.account[id:in.accountId].transaction[id:client.tmp.transactionId].subTerminalType, client.tmp.subTerminal),
+            assign(client.account[id:in.accountId].transaction[id:client.tmp.transactionId].requestTime, client.tmp.requestTime),
+            assign(client.account[id:in.accountId].transaction[id:client.tmp.transactionId].servicesn, client.tmp.serviceSn),
+
+            procedure(genRefnbr),
+            assign(client.account[id:in.accountId].transaction[id:client.tmp.transactionId].refNbr, client.tmp.refNbr),
+
+
+            assign(client.account[id:in.accountId].transaction[id:client.tmp.transactionId].channelId, client.tmp.inputSource),
+            assign(client.account[id:in.accountId].transaction[id:client.tmp.transactionId].acqId, client.tmp.acqId),
+            assign(client.account[id:in.accountId].transaction[id:client.tmp.transactionId].orderStatus, "C"),
+
+            condition(
+                case(
+                    isDefined(client.tmp.loanAmt),
+                    assign(client.account[id:in.accountId].transaction[id:client.tmp.transactionId].txnAmt, client.tmp.loanAmt)
+                ),
+                case(
+                    1=1,
+                    assign(client.account[id:in.accountId].transaction[id:client.tmp.transactionId].txnAmt, 0)
+                )
+            )
+    ),
+    group(
+            assign(client.account[id:in.accountId].transaction[id:client.tmp.transactionId].cardType, "0"),
+            assign(client.account[id:in.accountId].transaction[id:client.tmp.transactionId].loanUsage, "L"),
+            assign(client.account[id:in.accountId].transaction[id:client.tmp.transactionId].businessDate, client.tmp.bizDate),
+            assign(client.account[id:in.accountId].transaction[id:client.tmp.transactionId].sendTime, businessDay()),
+            assign(client.account[id:in.accountId].transaction[id:client.tmp.transactionId].setupDate, client.tmp.bizDate),
+            assign(client.account[id:in.accountId].transaction[id:client.tmp.transactionId].optDatetime, client.tmp.bizDate),
+            assign(client.account[id:in.accountId].transaction[id:client.tmp.transactionId].orderTime, businessDay()),
+            assign(client.account[id:in.accountId].transaction[id:client.tmp.transactionId].jpaVersion, 0),
+            assign(client.account[id:in.accountId].transaction[id:client.tmp.transactionId].payChannelId, "1"),
+            assign(client.account[id:in.accountId].transaction[id:client.tmp.transactionId].flag, "00"),
+            assign(client.account[id:in.accountId].transaction[id:client.tmp.transactionId].successAmt, 0),
+            assign(client.account[id:in.accountId].transaction[id:client.tmp.transactionId].failureAmt, 0),
+            assign(client.account[id:in.accountId].transaction[id:client.tmp.transactionId].contrNbr, client.tmp.contrNbr),
+            assign(client.account[id:in.accountId].transaction[id:client.tmp.transactionId].mobileNumber, client.tmp.cellPhone),
+            assign(client.account[id:in.accountId].transaction[id:client.tmp.transactionId].serviceId, client.tmp.serviceId)
+
+    )
+)
+
+
+
+
+
+
+

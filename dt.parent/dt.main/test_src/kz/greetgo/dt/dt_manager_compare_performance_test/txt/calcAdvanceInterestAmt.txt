@@ -1,0 +1,21 @@
+// Interest
+group (
+    condition (
+        case(daysBetween(client.account[in.accountIndex].createTime, businessDay())<=15,
+            group()
+            //Nothing, because if apply for advance repayment is less or equal to 15 days after opening pay only principal
+        ),
+        case (client.account[in.accountIndex].product.ChargeAdvanceRepayment.Interest = "Remaining",
+            assign(txnAmt, txnAmt + client.account[in.accountIndex].totalRemInterest)
+        ),
+        case (client.account[in.accountIndex].product.ChargeAdvanceRepayment.Interest = "CurrentTerm",
+            assign(txnAmt, txnAmt + client.account[in.accountIndex].payPlan[client.account[in.accountIndex].currentTerm - 1].remainingInterest)
+        ),
+        case (client.account[in.accountIndex].product.ChargeAdvanceRepayment.Interest = "SettlementDate",
+            group(
+                assign (feeAmt, client.account[in.accountIndex].payPlan[client.account[in.accountIndex].currentTerm - 1].remainingInterest),
+                procedure (calculateDebtTillSettlement)
+            )
+        )
+    )
+)

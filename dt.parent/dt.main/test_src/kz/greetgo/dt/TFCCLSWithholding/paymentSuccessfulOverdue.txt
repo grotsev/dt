@@ -1,0 +1,37 @@
+group(
+
+    assign(tmpPaidTerms, client.account[in.accountIndex].paidTerms),
+
+    assign(txnAmt, client.account[in.accountIndex].transaction[in.transactionIndex].txnAmt),
+    procedure(commonPayment),
+
+    procedure(calculateCurrentDebt),
+
+    condition(
+        case(debtAmt-fineAmt=0 & fineAmt-afterTransactionFine=0, //Because we can't add penalty for penalty
+            group(
+                assign(removeDate, client.account[in.accountIndex].transaction[in.transactionIndex].orderTime),
+                procedure(removeUnnecessaryFines) //If wait time less than penalty time
+            )
+        )
+    ),
+
+    condition(
+        case(tmpPaidTerms!=client.account[in.accountIndex].paidTerms,
+            assign(client.account[in.accountIndex].overdueDate,
+                client.account[in.accountIndex].payPlan[client.account[in.accountIndex].paidTerms-1].payPlanDueDate)
+        )
+    ),
+
+    condition(
+        case(debtAmt<=client.account[in.accountIndex].product.ToleranceValue.CPDOverdueToleranceValue,
+            assign(client.account[in.accountIndex].cpdBeginDate, empty())
+        )
+    ),
+
+    condition(
+        case(debtAmt<=client.account[in.accountIndex].product.ToleranceValue.DPDOverdueToleranceValue,
+            assign(client.account[in.accountIndex].overdueDate, empty())
+        )
+    )
+)

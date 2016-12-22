@@ -1,0 +1,17 @@
+// Principal
+group (
+	condition (
+        case (client.account[in.accountIndex].product.ChargeAdvanceRepayment.Principal = "Remaining",
+            assign(txnAmt, txnAmt + client.account[in.accountIndex].totalRemPrincipalAmt)
+        ),
+        case (client.account[in.accountIndex].product.ChargeAdvanceRepayment.Principal = "CurrentTerm",
+             assign(txnAmt, txnAmt + client.account[in.accountIndex].payPlan[client.account[in.accountIndex].currentTerm - 1].remainingPrincipal)
+        ),
+        case (client.account[in.accountIndex].product.ChargeAdvanceRepayment.Principal = "SettlementDate",
+            group (
+                assign (feeAmt, client.account[in.accountIndex].payPlan[client.account[in.accountIndex].currentTerm - 1].remainingPrincipal),
+                procedure (calculateDebtTillSettlement)
+            )
+        )
+    )
+)

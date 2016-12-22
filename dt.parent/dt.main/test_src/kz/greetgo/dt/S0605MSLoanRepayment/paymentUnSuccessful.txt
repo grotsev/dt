@@ -1,0 +1,18 @@
+group(
+    assign(client.account[in.accountIndex].transaction[in.transactionIndex].orderStatus, "E"),
+    assign(client.account[in.accountIndex].transaction[in.transactionIndex].responseMessage, in.returnMessage),
+    assign(client.account[in.accountIndex].transaction[in.transactionIndex].failureAmt, in.txnAmt),
+
+    condition(
+        case(
+        client.account[in.accountIndex].hasAdvancedClearing = true() &
+            client.account[in.accountIndex].transaction[in.transactionIndex].loanUsage = "D",
+            group(
+                assign(client.account[in.accountIndex].hasAdvancedClearing, false()),
+                assign(client.account[in.accountIndex].sumOverpaid,
+                    client.account[in.accountIndex].transaction[in.transactionIndex].txnAmt),
+                assign(client.account[in.accountIndex].batchDate, client.account[in.accountIndex].nextStmtDate)
+            )
+        )
+    )
+)

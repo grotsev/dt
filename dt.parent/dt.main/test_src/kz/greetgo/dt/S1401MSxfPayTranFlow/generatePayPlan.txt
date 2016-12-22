@@ -1,0 +1,70 @@
+group (
+
+	assign(client.account[in.accountIndex].currentTerm, 1),
+	assign(client.account[in.accountIndex].termToPay, 0),
+	assign(client.account[in.accountIndex].batchDate, client.account[in.accountIndex].nextStmtDate),
+
+	procedure(getRepaymentPlan), //TODO May be slowing down the proccess
+
+
+  assign(client.account[in.accountIndex].totalRemPrincipalAmt, 0.00),
+  assign(client.account[in.accountIndex].totalRemInterest, 0.00),
+  assign(client.account[in.accountIndex].totalRemInstallmentFee, 0.00),
+  assign(client.account[in.accountIndex].totalRemStampDutyFee, 0.00),
+  assign(client.account[in.accountIndex].totalRemServiceFee, 0.00),
+  assign(client.account[in.accountIndex].totalRemLifeInsuranceFee, 0.00),
+  assign(client.account[in.accountIndex].totalRemPrepayPkgFee, 0.00),
+  assign(client.account[in.accountIndex].totalRemReplaceServiceFee, 0.00),
+  assign(client.account[in.accountIndex].totalRemainingAmt, 0.00),
+
+
+	foreach (j, 0, len(out.SCHEDULES) - 1,
+
+     group (
+
+          assign(client.account[in.accountIndex].payPlan[j].paidPrincipal, 0.00),
+          assign(client.account[in.accountIndex].payPlan[j].paidInterest, 0.00),
+          assign(client.account[in.accountIndex].payPlan[j].paidLifeInsurance, 0.00),
+          assign(client.account[in.accountIndex].payPlan[j].paidServiceFee, 0.00),
+          assign(client.account[in.accountIndex].payPlan[j].paidReplaceSvcFee, 0.00),
+          assign(client.account[in.accountIndex].payPlan[j].paidPrepayPkgFee, 0.00),
+          assign(client.account[in.accountIndex].payPlan[j].paidInstallmentFee, 0.00),
+          assign(client.account[in.accountIndex].payPlan[j].paidStampDutyFee, 0.00),
+          assign(client.account[in.accountIndex].payPlan[j].paidTotal, 0.00),
+          assign(client.account[in.accountIndex].payPlan[j].termNumber, j + 1),
+
+          assign(client.account[in.accountIndex].payPlan[j].payPlanDueDate, out.SCHEDULES[j].LOAN_PMT_DUE_DATE),
+
+          assign(client.account[in.accountIndex].payPlan[j].remainingPrincipal, out.SCHEDULES[j].LOAN_TERM_PRIN),
+          assign(client.account[in.accountIndex].payPlan[j].remainingInterest, out.SCHEDULES[j].LOAN_TERM_INT),
+          assign(client.account[in.accountIndex].payPlan[j].remainingLifeInsurance, out.SCHEDULES[j].LOAN_LIFE_INSU_FEE),
+          assign(client.account[in.accountIndex].payPlan[j].remainingServiceFee, out.SCHEDULES[j].LOAN_TERM_SVC_FEE),
+          assign(client.account[in.accountIndex].payPlan[j].remainingReplaceSvcFee, out.SCHEDULES[j].LOAN_AGENT_FEE),
+          assign(client.account[in.accountIndex].payPlan[j].remainingPrepayPkgFee, out.SCHEDULES[j].LOAN_PREPAY_PKG_FEE),
+          assign(client.account[in.accountIndex].payPlan[j].remainingInstallmentFee, out.SCHEDULES[j].LOAN_TERM_INSTALL_FEE),
+         assign(client.account[in.accountIndex].payPlan[j].remainingStampDutyFee, out.SCHEDULES[j].LOAN_STAMP_DUTY_AMT),
+
+          assign(client.account[in.accountIndex].payPlan[j].remainingTotal, out.SCHEDULES[j].LOAN_TERM_TOT_AMT),
+          assign(client.account[in.accountIndex].payPlan[j].termLastPaymentDate, empty()),
+
+          assign(client.account[in.accountIndex].totalRemPrincipalAmt, client.account[in.accountIndex].totalRemPrincipalAmt + out.SCHEDULES[j].LOAN_TERM_PRIN),
+          assign(client.account[in.accountIndex].totalRemInterest, client.account[in.accountIndex].totalRemInterest + out.SCHEDULES[j].LOAN_TERM_INT),
+          assign(client.account[in.accountIndex].totalRemInstallmentFee, client.account[in.accountIndex].totalRemInstallmentFee + out.SCHEDULES[j].LOAN_TERM_INSTALL_FEE),
+          assign(client.account[in.accountIndex].totalRemLifeInsuranceFee, client.account[in.accountIndex].totalRemLifeInsuranceFee + out.SCHEDULES[j].LOAN_LIFE_INSU_FEE),
+          assign(client.account[in.accountIndex].totalRemServiceFee, client.account[in.accountIndex].totalRemServiceFee + out.SCHEDULES[j].LOAN_TERM_SVC_FEE),
+          assign(client.account[in.accountIndex].totalRemPrepayPkgFee, client.account[in.accountIndex].totalRemPrepayPkgFee + out.SCHEDULES[j].LOAN_PREPAY_PKG_FEE),
+          assign(client.account[in.accountIndex].totalRemReplaceServiceFee, client.account[in.accountIndex].totalRemReplaceServiceFee + out.SCHEDULES[j].LOAN_AGENT_FEE),
+          assign(client.account[in.accountIndex].totalRemStampDutyFee, client.account[in.accountIndex].totalRemStampDutyFee + out.SCHEDULES[j].LOAN_STAMP_DUTY_AMT),
+          assign(client.account[in.accountIndex].totalRemainingAmt, client.account[in.accountIndex].totalRemainingAmt + out.SCHEDULES[j].LOAN_TERM_TOT_AMT),
+
+          assign(client.account[in.accountIndex].payPlan[j].hasPaid, false()),
+          assign(client.account[in.accountIndex].payPlan[j].actual, true())
+     )
+  ),
+        //To show on main page
+        assign(client.account[in.accountIndex].lifeInsuFeeAmt, round(client.account[in.accountIndex].totalRemLifeInsuranceFee)),
+        assign(client.account[in.accountIndex].feeAmt, round(client.account[in.accountIndex].totalRemServiceFee)),
+        assign(client.account[in.accountIndex].prepaymentFeeAmt,client.account[in.accountIndex].totalRemPrepayPkgFee),
+        assign(client.account[in.accountIndex].installmentFeeAmt,client.account[in.accountIndex].totalRemInstallmentFee),
+        assign(client.account[in.accountIndex].stampAmt,client.account[in.accountIndex].totalRemStampDutyFee)
+)

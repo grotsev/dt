@@ -1,0 +1,21 @@
+group
+(
+	condition (
+		case (isEmpty(monthlyInterestRate),
+			group (
+				error ("monthlyInterestRate is undefined. Procedure : getTermPaymentForMCEI"),
+				exit()
+			)
+		),
+		case (isEmpty(repaymentTerms),
+			group (
+				error ("repaymentTerms is undefined. Procedure : getTermPaymentForMCEI"),
+				exit()
+			)
+		)
+	),
+
+    assign(j, power((monthlyInterestRate + 1), repaymentTerms)),
+    assign(loanTermPayment, round(loanAmount * monthlyInterestRate * j / (j - 1), 6))
+
+)

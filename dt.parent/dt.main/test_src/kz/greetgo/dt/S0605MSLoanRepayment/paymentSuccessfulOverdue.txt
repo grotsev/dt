@@ -1,0 +1,39 @@
+group(
+
+    assign(tmpPaidTerms, client.account[in.accountIndex].paidTerms),
+
+    assign(txnAmt, client.account[in.accountIndex].transaction[in.transactionIndex].txnAmt),
+    procedure(commonPayment),
+
+    assign(dateFrom, client.account[in.accountIndex].transaction[in.transactionIndex].createTime),
+    procedure(calculateCurrentDebt),
+
+    condition(
+        case(debtAmt-fineAmt=0 & fineAmt-afterTransactionFine=0, //Only after this transaction fine
+            group(
+                assign(removeDate, dateFrom),
+                procedure(removeUnnecessaryFines) //If wait time less than penalty time
+            )
+        )
+    ),
+
+    condition(//IF paid terms was changed
+        case(tmpPaidTerms!=client.account[in.accountIndex].paidTerms,
+                condition(
+                        case(client.account[in.accountIndex].paidTerms >= client.account[in.accountIndex].termToPay,
+                            group(
+                                assign(client.account[in.accountIndex].overdueDate,empty()),
+                                assign(client.account[in.accountIndex].dpdDays, 0)
+                            )
+                        ),
+                        case(1=1,
+                            group(
+                                assign(client.account[in.accountIndex].overdueDate,
+                                client.account[in.accountIndex].payPlan[client.account[in.accountIndex].paidTerms].payPlanDueDate),
+                                assign(client.account[in.accountIndex].dpdDays, daysBetween(client.account[in.accountIndex].overdueDate, businessDay()))
+                            )
+                        )
+                )
+        )
+    )
+)

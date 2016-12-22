@@ -1,0 +1,124 @@
+group(
+    condition(
+        case( //grace period is finished
+            businessDay() > client.account[in.accountIndex].graceDate & client.account[in.accountIndex].hasCompulsoryCleaning = false(),
+            group(
+                assign(cpd, client.account[in.accountIndex].cpdDays),
+                assign(dpd, client.account[in.accountIndex].dpdDays),
+
+                condition(
+                    case(client.account[in.accountIndex].product.FineCalculationType = "CPD",
+                        assign(overdueDays, cpd)
+                    ),
+                     case(client.account[in.accountIndex].product.FineCalculationType = "DPD",
+                        assign(overdueDays, dpd)
+                    )
+                ),
+
+                group(//Fines
+                    assign(length, len(client.account[in.accountIndex].product.Fine)),
+
+                    foreach (i, 0, length - 1, //TODO Run throw all fines (if one day batch is down fine will not be added)
+                        group(
+                            condition(
+                                case(
+                                    (dpd>0
+                                    &
+                                    overdueDays >= client.account[in.accountIndex].product.Fine[i].Min
+                                    &
+                                    overdueDays <= client.account[in.accountIndex].product.Fine[i].Max) // if cpd between min and max
+                                    &
+                                    (client.account[in.accountIndex].lastMaxFine != client.account[in.accountIndex].product.Fine[i].Max
+                                    |
+                                    isEmpty(client.account[in.accountIndex].lastMaxFine)), //if not already created
+
+                                        group(
+                                            assign(client.account[in.accountIndex].lastMaxFine, client.account[in.accountIndex].product.Fine[i].Max),
+
+                                            assign(fineAmount, client.account[in.accountIndex].product.Fine[i].parameter),
+
+                                            assign(message, "Overdue for overdueDays = " ~ overdueDays),
+
+                                            procedure(generateFine)
+                                        )
+                                )
+                            )
+                        )
+                    )
+                ),
+                group( //Penalties
+                    assign(length, len(client.account[in.accountIndex].product.Penalty)),
+
+                    foreach (i, 0, length - 1, //TODO Run throw all fines (if one day batch is down fine will not be added)
+                        group(
+                            condition(
+                                case(
+                                    dpd>0
+                                    &
+                                    client.account[in.accountIndex].product.Penalty[i].CalculationPlace = "OverdueBatchDeduction", //if not already created
+                                        group(
+
+
+
+                                            condition(
+                                                case(client.account[in.accountIndex].product.Penalty[i].CalculationRule = "BalanceOfPrincipal",
+                                                    assign(amt, client.account[in.accountIndex].loanAmt - client.account[in.accountIndex].totalPaidPrincipalAmt)
+                                                ),
+                                                case(client.account[in.accountIndex].product.Penalty[i].CalculationRule = "LoanPrincipal",
+                                                    assign(amt, client.account[in.accountIndex].loanAmt)
+                                                ),
+                                                case(client.account[in.accountIndex].product.Penalty[i].CalculationRule = "OverdueLoanPrincipal",
+                                                    //Total overdue principal
+                                                    assign(amt, 0),
+                                                    foreach (j, client.account[in.accountIndex].paidTerms, client.account[in.accountIndex].termToPay,
+                                                        assign(amt, amt+client.account[in.accountIndex].payPlan[j-1].remainingPrincipal)
+                                                    )
+                                                ),
+                                                case(client.account[in.accountIndex].product.Penalty[i].CalculationRule = "TotalOverdueAmount",
+                                                    //Total overdue amount
+                                                    assign(amt, 0),
+                                                    foreach (j, client.account[in.accountIndex].paidTerms, client.account[in.accountIndex].termToPay,
+                                                        assign(amt, amt+client.account[in.accountIndex].payPlan[j-1].remainingAgentFee),
+                                                        assign(amt, amt+client.account[in.accountIndex].payPlan[j-1].remainingInterest),
+                                                        assign(amt, amt+client.account[in.accountIndex].payPlan[j-1].remainingPrincipal),
+                                                        assign(amt, amt+client.account[in.accountIndex].payPlan[j-1].remainingServiceFee),
+                                                        assign(amt, amt+client.account[in.accountIndex].payPlan[j-1].remainingPrepayPkgFee),
+                                                        assign(amt, amt+client.account[in.accountIndex].payPlan[j-1].remainingStampDutyFee),
+                                                        assign(amt, amt+client.account[in.accountIndex].payPlan[j-1].remainingLifeInsurance),
+                                                        assign(amt, amt+client.account[in.accountIndex].payPlan[j-1].remainingReplaceSvcFee),
+                                                        assign(amt, amt+client.account[in.accountIndex].payPlan[j-1].remainingInstallmentFee)
+                                                    ),
+
+                                                    foreach(j, 0, len(client.account[in.accountIndex].overdueFine)-1,
+                                                        condition(
+                                                            case(
+                                                                client.account[in.accountIndex].overdueFine[j].status = "U",
+                                                                    group( //Prepay Pkg Fee
+                                                                        assign(a, client.account[in.accountIndex].overdueFine[j].remainingAmount),
+                                                                        assign(amt, amt+a)
+                                                                    )
+                                                            )
+                                                        )
+                                                    )
+                                                )
+                                            ),
+
+                                            assign(fineAmount, client.account[in.accountIndex].product.Penalty[i].Rate * amt),
+
+                                            condition(
+                                                case(client.account[in.accountIndex].product.Penalty[i].Accumulative = true(),
+                                                    assign(fineAmount, fineAmount * overdueDays)
+                                                )
+                                            ),
+
+                                            procedure(generateFine)
+                                        )
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+        )
+    )
+)

@@ -1,0 +1,40 @@
+group(
+
+    assign(checkCode, "BDB"),
+    assign(process, "S0605MSLoanRepayment"),
+
+    procedure(checkValidity),
+
+    group(//Analize
+
+        condition(
+
+        //If no errors
+            case(in.msDdReturnCode = "0" & isDefined(client.account[in.accountIndex].transaction[in.transactionIndex].loanUsage),
+                group(
+                    assign(client.account[in.accountIndex].transaction[in.transactionIndex].orderStatus, "S"),
+                    assign(client.account[in.accountIndex].transaction[in.transactionIndex].successAmt, in.txnAmt),
+
+                    condition(
+                        case(client.account[in.accountIndex].transaction[in.transactionIndex].loanUsage = "M",
+                            procedure(paymentSuccessfulAdvance)
+                        ),
+                        case(client.account[in.accountIndex].transaction[in.transactionIndex].loanUsage = "O"
+                        |
+                        client.account[in.accountIndex].transaction[in.transactionIndex].loanUsage = "C",
+                            procedure(paymentSuccessfulOverdue)
+                        ),
+                        case(client.account[in.accountIndex].transaction[in.transactionIndex].loanUsage = "N",
+                            procedure(paymentSuccessfulNormal)
+                        )
+                    )
+                )
+            ),
+
+        //If error
+            case(1=1,
+                procedure(paymentUnSuccessful)
+            )
+        )
+    )
+)

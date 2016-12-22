@@ -1,0 +1,19 @@
+group
+(
+assign(product.tmp.dateOfPayment, nextStatementDate + (product.tmp.currentTerm) * month()),
+assign(product.tmp.maximumDaysOfMonth, daysInMonth(product.tmp.dateOfPayment)),
+
+condition (
+        case (cycleDay > day (nextStatementDate),
+            condition (
+                case (cycleDay <= product.tmp.maximumDaysOfMonth,
+			        setDay(product.tmp.dateOfPayment, cycleDay)
+			        ),
+			    case (cycleDay > product.tmp.maximumDaysOfMonth,
+			        setDay(product.tmp.dateOfPayment, product.tmp.maximumDaysOfMonth)
+			        )
+			    )
+		    )
+		),
+		assign(product.tmp.loanTermPaymentDueDate, product.tmp.dateOfPayment)
+)

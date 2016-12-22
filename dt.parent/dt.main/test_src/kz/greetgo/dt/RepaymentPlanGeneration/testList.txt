@@ -1,0 +1,9 @@
+group (
+foreach (i, 2, 100,
+    group
+       (
+         assign (tmpId, generateId()),
+		 assign (repaymentPlan[id:tmpId], i)
+       )
+    )
+)

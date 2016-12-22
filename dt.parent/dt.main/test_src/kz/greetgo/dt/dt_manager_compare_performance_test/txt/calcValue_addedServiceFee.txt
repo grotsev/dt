@@ -1,0 +1,50 @@
+// Value added service fee
+group (
+
+    condition (
+        case(daysBetween(client.account[in.accountIndex].createTime, businessDay())<=15,
+            group()
+            //Nothing, because if apply for advance repayment is less or equal to 15 days after opening pay only principal
+        ),
+        case (client.account[in.accountIndex].product.ChargeAdvanceRepayment.Value_addedServiceFee = "Remaining",
+            group (
+                assign(txnAmt, txnAmt + client.account[in.accountIndex].totalRemLifeInsuranceFee),
+                assign(txnAmt, txnAmt + client.account[in.accountIndex].totalRemInstallmentFee),
+                assign(txnAmt, txnAmt + client.account[in.accountIndex].totalRemPrepayPkgFee),
+                assign(txnAmt, txnAmt + client.account[in.accountIndex].totalRemReplaceServiceFee),
+                assign(txnAmt, txnAmt + client.account[in.accountIndex].totalRemAgentFee)
+            )
+        ),
+        case (client.account[in.accountIndex].product.ChargeAdvanceRepayment.Value_addedServiceFee = "CurrentTerm",
+            group (
+                assign(termNumber, client.account[in.accountIndex].currentTerm - 1),
+                assign(txnAmt, txnAmt + client.account[in.accountIndex].payPlan[termNumber].remainingLifeInsurance),
+                assign(txnAmt, txnAmt + client.account[in.accountIndex].payPlan[termNumber].remainingInstallmentFee),
+                assign(txnAmt, txnAmt + client.account[in.accountIndex].payPlan[termNumber].remainingPrepayPkgFee),
+                assign(txnAmt, txnAmt + client.account[in.accountIndex].payPlan[termNumber].remainingReplaceSvcFee),
+                assign(txnAmt, txnAmt + client.account[in.accountIndex].payPlan[termNumber].remainingAgentFee)
+            )
+        ),
+        case (client.account[in.accountIndex].product.ChargeAdvanceRepayment.Value_addedServiceFee = "SettlementDate",
+            group (
+                assign(termNumber, client.account[in.accountIndex].currentTerm - 1),
+
+                assign (feeAmt, client.account[in.accountIndex].payPlan[termNumber].remainingLifeInsurance),
+                procedure (calculateDebtTillSettlement),
+
+                assign (feeAmt, client.account[in.accountIndex].payPlan[termNumber].remainingInstallmentFee),
+                procedure (calculateDebtTillSettlement),
+
+                assign (feeAmt, client.account[in.accountIndex].payPlan[termNumber].remainingPrepayPkgFee),
+                procedure (calculateDebtTillSettlement),
+
+                assign (feeAmt, client.account[in.accountIndex].payPlan[termNumber].remainingReplaceSvcFee),
+                procedure (calculateDebtTillSettlement),
+
+                assign (feeAmt, client.account[in.accountIndex].payPlan[termNumber].remainingAgentFee),
+                procedure (calculateDebtTillSettlement)
+
+            )
+        )
+    )
+)

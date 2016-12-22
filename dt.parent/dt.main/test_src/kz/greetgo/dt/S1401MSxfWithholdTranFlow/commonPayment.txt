@@ -1,0 +1,96 @@
+/*
+For accounting payments.
+INPUT: transaction amount
+*/
+group (
+    condition (
+        case (isDefined(txnAmt),
+            group
+            (
+                group (
+                    condition (
+                        case (isDefined(toNum(txnAmt)),
+                            assign(txnAmt, toNum(txnAmt))
+                        )
+                    )
+                ),
+                //Add overpaid sum to txnAmt
+                assign(txnAmt, txnAmt + client.account[in.accountIndex].sumOverpaid),
+                assign(client.account[in.accountIndex].sumOverpaid, 0),
+
+                //Deduction
+                assign (paidTerms, 0),
+                assign (totalPaidTerms, 0),
+                group(
+                    //termNumber is Index, not number
+                    foreach(termNumber, client.account[in.accountIndex].totalPaidTerms, client.account[in.accountIndex].termToPay-1,
+                        group (
+              condition (
+                case (txnAmt > 0,
+                  group (
+
+                    condition(
+                        case(client.account[in.accountIndex].payPlan[termNumber].hasPaid = false(),
+                            assign(client.account[in.accountIndex].payPlan[termNumber].termLastPaymentDate, businessDay())
+                        )
+                     ),
+
+                    procedure(payTermPrincipal),
+                    procedure(payTermInterest),
+                    procedure(payTermServiceFee),
+                    procedure(payTermLifeInsuranceFee),
+                    procedure(payTermReplaceSvcFee),
+                    procedure(payTermInstallmentFee),
+                    procedure(payTermPrepayPkgFee),
+
+                    // Pay overdue fines if exist
+                    procedure (payOverdueFines),
+
+                    condition (
+                      case (round(client.account[in.accountIndex].payPlan[termNumber].remainingTotal, 2) = 0.00,
+                        group (
+                          assign (client.account[in.accountIndex].payPlan[termNumber].hasPaid, true()),
+                          assign (paidTerms, termNumber+1)
+                        )
+                      )
+                    ),
+
+                    condition (
+                      case (round(client.account[in.accountIndex].payPlan[termNumber].remainingTotal + overdueFineForThisTerm, 2) = 0.00,
+                          assign (totalPaidTerms, termNumber+1)
+                      )
+                    )
+
+                  )
+                )
+              )
+            )
+
+          ),
+
+          //Update values in account
+          condition
+          (
+            case (paidTerms > 0,
+              group (
+                assign (client.account[in.accountIndex].paidTerms, paidTerms),
+                assign (client.account[in.accountIndex].totalPaidTerms, totalPaidTerms),
+                assign (client.account[in.accountIndex].remainingTerms, client.account[in.accountIndex].loanTerm - paidTerms)
+              )
+            )
+          ),
+          //Update overpaid sum
+
+          condition (
+            case (txnAmt > 0,
+              group (
+                assign(client.account[in.accountIndex].sumOverpaid, client.account[in.accountIndex].sumOverpaid + txnAmt)
+              )
+            )
+          )
+
+                )
+            )
+        )
+    )
+)

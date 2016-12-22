@@ -1,0 +1,15 @@
+group
+(
+    assign (product.tmp.interest,  round(in.INTEREST_RATE * (product.floatRate + 1) * (1/12), 20)),
+	assign(j, power(product.tmp.interest + 1, product.tmp.currentTerm - 1)),
+	assign(k, power(product.tmp.interest + 1, product.tmp.repaymentTerms)),
+		condition
+		(
+			case (product.tmp.interest = 0,
+				assign(product.tmp.termPrincipalAmt, round(product.tmp.loanAmount / (product.tmp.repaymentTerms), 6))
+			),
+			case (product.tmp.interest !=0,
+				assign(product.tmp.termPrincipalAmt, round(product.tmp.loanAmount * product.tmp.interest * j / (k - 1), 6))
+			)
+		)
+)

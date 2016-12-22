@@ -1,0 +1,222 @@
+group (
+assign(client.account[id:in.accountId].product.tmp.totalPrincipalAmt, 0),
+assign(client.account[id:in.accountId].product.tmp.totalInstallmentFee, 0),
+assign(client.account[id:in.accountId].product.tmp.totalReplaceServiceFee, 0),
+assign(client.account[id:in.accountId].product.tmp.totalInsuranceFee, 0),
+assign(client.account[id:in.accountId].product.tmp.totalStampDutyFee, 0),
+assign(client.account[id:in.accountId].product.tmp.totalLifeInsuranceFee, 0),
+assign(client.account[id:in.accountId].product.tmp.totalServiceFee, 0),
+assign(client.account[id:in.accountId].product.tmp.totalPrepayPkgFee, 0),
+
+assign(client.account[id:in.accountId].product.tmp.feeTypeFlag, 0),
+assign(client.account[id:in.accountId].product.tmp.repaymentTerms, client.account[id:in.accountId].product.repaymentTerms),
+
+assign(client.account[id:in.accountId].product.tmp.chargeMethod, client.account[id:in.accountId].product.installmentFee.chargeMethod),
+assign(client.account[id:in.accountId].product.tmp.howToCalculate, client.account[id:in.accountId].product.installmentFee.howToCalculate),
+assign(client.account[id:in.accountId].product.tmp.calculationParameter,  client.account[id:in.accountId].product.installmentFee.calculationParameter),
+procedure(getFeeByFeeType),
+assign(totalInitialInstallmentFee, client.account[id:in.accountId].product.tmp.termFee),
+
+assign(client.account[id:in.accountId].product.tmp.chargeMethod, client.account[id:in.accountId].product.serviceFee.chargeMethod),
+assign(client.account[id:in.accountId].product.tmp.howToCalculate, client.account[id:in.accountId].product.serviceFee.howToCalculate),
+assign(client.account[id:in.accountId].product.tmp.calculationParameter,  client.account[id:in.accountId].product.serviceFee.calculationParameter),
+procedure(getFeeByFeeType),
+assign(totalInitialServiceFee, client.account[id:in.accountId].product.tmp.termFee),
+
+assign(client.account[id:in.accountId].product.tmp.chargeMethod, client.account[id:in.accountId].product.replaceServiceFee.chargeMethod),
+assign(client.account[id:in.accountId].product.tmp.howToCalculate, client.account[id:in.accountId].product.replaceServiceFee.howToCalculate),
+assign(client.account[id:in.accountId].product.tmp.calculationParameter,  client.account[id:in.accountId].product.replaceServiceFee.calculationParameter),
+procedure(getFeeByFeeType),
+assign(totalInitialReplaceServiceFee, client.account[id:in.accountId].product.tmp.termFee),
+
+assign(client.account[id:in.accountId].product.tmp.chargeMethod, client.account[id:in.accountId].product.insuranceFee.chargeMethod),
+assign(client.account[id:in.accountId].product.tmp.howToCalculate, client.account[id:in.accountId].product.insuranceFee.howToCalculate),
+assign(client.account[id:in.accountId].product.tmp.calculationParameter,  client.account[id:in.accountId].product.insuranceFee.calculationParameter),
+procedure(getFeeByFeeType),
+
+assign(totalInitialInsuranceFee, client.account[id:in.accountId].product.tmp.termFee),
+
+assign(totalInitialPrepayPkgFee, 0),
+condition
+(
+	case (client.account[id:in.accountId].product.prepayPkgInd = "Y",
+		group
+			(
+			assign(client.account[id:in.accountId].product.tmp.chargeMethod, client.account[id:in.accountId].product.prepayPkgFee.chargeMethod),
+			assign(client.account[id:in.accountId].product.tmp.howToCalculate, client.account[id:in.accountId].product.prepayPkgFee.howToCalculate),
+			assign(client.account[id:in.accountId].product.tmp.calculationParameter,  client.account[id:in.accountId].product.prepayPkgFee.calculationParameter),
+
+			procedure(getFeeByFeeType),
+			assign(totalInitialPrepayPkgFee, client.account[id:in.accountId].product.tmp.termFee)
+			)
+		)
+),
+assign(totalInitialStampDutyFee, 0),
+condition
+(
+	case (client.account[id:in.accountId].product.stampCustomInd = "Y",
+		group
+			(
+			assign(client.account[id:in.accountId].product.tmp.chargeMethod, client.account[id:in.accountId].product.stampDutyFee.chargeMethod),
+			assign(client.account[id:in.accountId].product.tmp.howToCalculate, client.account[id:in.accountId].product.stampDutyFee.howToCalculate),
+			assign(client.account[id:in.accountId].product.tmp.calculationParameter,  client.account[id:in.accountId].product.stampDutyFee.calculationParameter),
+
+			procedure(getFeeByFeeType),
+			assign(totalInitialStampDutyFee, client.account[id:in.accountId].product.tmp.termFee)
+			)
+		)
+),
+assign(totalInitialLifeInsuranceFee, 0),
+condition
+(
+	case (client.account[id:in.accountId].product.joinLifeInsuInd  = "Y",
+		group
+			(
+				assign(client.account[id:in.accountId].product.tmp.chargeMethod, client.account[id:in.accountId].product.lifeInsuranceFee.chargeMethod),
+				assign(client.account[id:in.accountId].product.tmp.howToCalculate, client.account[id:in.accountId].product.lifeInsuranceFee.howToCalculate),
+				assign(client.account[id:in.accountId].product.tmp.calculationParameter,  client.account[id:in.accountId].product.lifeInsuranceFee.calculationParameter),
+
+				procedure(getFeeByFeeType),
+				assign(totalInitialLifeInsuranceFee, client.account[id:in.accountId].product.tmp.termFee)
+			)
+		)
+),
+
+//Получение самого плана погашения по term-ам
+assign(client.account[id:in.accountId].product.tmp.interest, round(client.account[id:in.accountId].interest * (client.account[id:in.accountId].floatRate + 1) * (1/12), 20)),
+
+//План погашения для первого term-а
+assign(client.account[id:in.accountId].product.tmp.currentTerm, 1),
+assign(client.account[id:in.accountId].product.tmp.loanAmount, client.account[id:in.accountId].product.loanAmount),
+
+
+assign (client.account[id:in.accountId].product.tmp.termPrincipalAmt, 0),
+condition
+(
+    case (client.account[id:in.accountId].isMergeBillDay = "Y",
+		group(
+
+		procedure(getCurrentTermPrincipalForMCEI),
+
+		assign(client.account[id:in.accountId].product.tmp.loanAmount, client.account[id:in.accountId].product.loanAmount - client.account[id:in.accountId].product.tmp.termPrincipalAmt),
+		assign(client.account[id:in.accountId].product.tmp.repaymentTerms, client.account[id:in.accountId].product.repaymentTerms - 1),
+
+		procedure(getTermPaymentForMCEI),
+
+		assign(client.account[id:in.accountId].product.tmp.loanAmount, client.account[id:in.accountId].product.loanAmount),
+		assign(client.account[id:in.accountId].product.tmp.product.repaymentTerms, client.account[id:in.accountId].product.repaymentTerms),
+
+		assign(client.account[id:in.accountId].product.tmp.dailyInterest, round(client.account[id:in.accountId].interest * (1/365), 6)),
+		//TODO Поменять на in.dateOfCurrentBusinessDay
+		assign(client.account[id:in.accountId].product.tmp.numberOfDaysInFirstTerm, daysBetween(dateOfCurrentBusinessDay, client.account[id:in.accountId].nextStatementDate) + 1),
+		assign(client.account[id:in.accountId].product.tmp.currentTermInterest, round(client.account[id:in.accountId].product.loanAmount * client.account[id:in.accountId].product.tmp.dailyInterest * client.account[id:in.accountId].product.tmp.numberOfDaysInFirstTerm), 2),
+
+		assign(client.account[id:in.accountId].product.tmp.firstTermPrincipalAmt, client.account[id:in.accountId].product.tmp.termPrincipalAmt),
+		assign(client.account[id:in.accountId].product.tmp.currentTermPrincipalAmt, client.account[id:in.accountId].product.tmp.firstTermPrincipalAmt)
+		)
+	),
+	case (client.account[id:in.accountId].isMergeBillDay = "N",
+		group (
+		procedure (getTermPaymentForMCEI),
+		procedure(getCurrentTermPrincipalForMCEI),
+
+		assign(client.account[id:in.accountId].product.tmp.currentTermInterest, round(client.account[id:in.accountId].product.tmp.loanTermPayment - client.account[id:in.accountId].product.tmp.termPrincipalAmt),2),
+		assign(client.account[id:in.accountId].product.tmp.firstTermPrincipalAmt, client.account[id:in.accountId].product.tmp.currentTermPrincipalAmt)
+		)
+    )
+ ),
+
+assign(client.account[id:in.accountId].product.tmp.feeTypeFlag, 1),
+
+procedure(getTermFeesValues),
+procedure(getPaymentDueDate),
+procedure(addCurrentTermRepaymentPlanToList),
+
+assign(client.account[id:in.accountId].repaymentSchedule[0], client.account[id:in.accountId].product.tmp.currentTermRepaymentPlan),
+
+
+assign(client.account[id:in.accountId].product.tmp.feeTypeFlag, 2),
+
+foreach (termNumber, 2, client.account[id:in.accountId].product.repaymentTerms - 1,
+    group (
+    condition
+	   (
+			case (client.account[id:in.accountId].isMergeBillDay = "Y",
+			group (
+			assign(client.account[id:in.accountId].product.tmp.loanAmount, client.account[id:in.accountId].product.loanAmount - client.account[id:in.accountId].product.tmp.firstTermPrincipalAmt),
+			assign(client.account[id:in.accountId].product.tmp.repaymentTerms, client.account[id:in.accountId].product.repaymentTerms - 1),
+			assign(client.account[id:in.accountId].product.tmp.currentTerm, termNumber - 1)
+				)
+			),
+			case (client.account[id:in.accountId].isMergeBillDay = "N",
+			group (
+			assign(client.account[id:in.accountId].product.tmp.loanAmount, client.account[id:in.accountId].product.loanAmount),
+			assign(client.account[id:in.accountId].product.tmp.repaymentTerms, client.account[id:in.accountId].product.repaymentTerms),
+			assign(client.account[id:in.accountId].product.tmp.currentTerm, termNumber)
+				)
+			)
+	),
+
+	procedure(getCurrentTermPrincipalForMCEI),
+	assign(client.account[id:in.accountId].product.tmp.currentTerm, termNumber),
+	procedure(getTermFeesValues),
+	procedure(getPaymentDueDate),
+	procedure(addCurrentTermRepaymentPlanToList)
+    )
+),
+
+assign(termNumber, client.account[id:in.accountId].product.repaymentTerms),
+
+procedure(getTermFeesValues),
+
+assign(client.account[id:in.accountId].product.tmp.currentTermInterest, round(client.account[id:in.accountId].product.tmp.loanTermPayment - client.account[id:in.accountId].product.tmp.currentTermPrincipalAmt ,2)),
+
+assign(fixPrin, client.account[id:in.accountId].product.loanAmount - client.account[id:in.accountId].product.tmp.totalPrincipalAmt),
+assign(client.account[id:in.accountId].product.tmp.currentTermPrincipalAmt, client.account[id:in.accountId].currentTermPrincipalAmt + fixPrin),
+
+assign(fixInt, round(fixPrin * client.account[id:in.accountId].product.tmp.interest * (termNumber), 2)),
+assign(client.account[id:in.accountId].product.tmp.currentTermInterest, client.account[id:in.accountId].product.tmp.interest + fixInt),
+
+assign(fixFee, totalInitialInstallmentFee - client.account[id:in.accountId].product.tmp.totalInstallmentFee),
+assign(client.account[id:in.accountId].product.tmp.loanTermInstallmentFee, client.account[id:in.accountId].product.tmp.loanTermInstallmentFee + fixFee),
+
+assign(fixServiceFee, totalInitialServiceFee - client.account[id:in.accountId].product.tmp.totalServiceFee),
+assign(client.account[id:in.accountId].product.tmp.loanTermServiceFee, client.account[id:in.accountId].product.tmp.loanTermServiceFee + fixServiceFee),
+
+assign(fixInsuranceFee, totalInitialInsuranceFee - client.account[id:in.accountId].product.tmp.totalInsuranceFee),
+assign(client.account[id:in.accountId].product.tmp.loanTermInsuranceFee, client.account[id:in.accountId].product.tmp.loanTermInsuranceFee + fixInsuranceFee),
+
+assign(fixStampFee, totalInitialStampDutyFee - client.account[id:in.accountId].product.tmp.totalStampDutyFee),
+assign(client.account[id:in.accountId].product.tmp.loanTermStampDutyFee, client.account[id:in.accountId].product.tmp.loanTermStampDutyFee + fixStampFee),
+
+assign(fixLifeInsuranceFee, totalInitialLifeInsuranceFee - client.account[id:in.accountId].product.tmp.totalLifeInsuranceFee),
+assign(client.account[id:in.accountId].product.tmp.loanTermLifeInsuranceFee, client.account[id:in.accountId].product.tmp.loanTermLifeInsuranceFee + fixLifeInsuranceFee),
+
+assign(fixTotalServiceFee, totalInitialReplaceServiceFee - client.account[id:in.accountId].product.tmp.totalReplaceServiceFee),
+assign(client.account[id:in.accountId].product.tmp.loanTermReplaceServiceFee, client.account[id:in.accountId].product.tmp.loanTermReplaceServiceFee + fixTotalServiceFee),
+
+assign(fixPrepayFee, totalInitialPrepayPkgFee - client.account[id:in.accountId].product.tmp.totalPrepayPkgFee),
+assign(client.account[id:in.accountId].product.tmp.loanTermTotalPrepayPkgFee, client.account[id:in.accountId].product.tmp.loanTermTotalPrepayPkgFee + fixPrepayFee),
+
+procedure(getPaymentDueDate),
+procedure(addCurrentTermRepaymentPlanToList),
+
+	foreach (termRepaymentPlan, 0, client.account[id:in.accountId].repaymentSchedule.len() - 1,
+	 group
+		(
+		assign(client.account[id:in.accountId].repaymentScheduleSummary[termRepaymentPlan].totalAmt, client.account[id:in.accountId].repaymentSchedule[i].termPrincipalAmt +
+						   client.account[id:in.accountId].repaymentSchedule[termRepaymentPlan].loanTermInstallmentFee +
+						   client.account[id:in.accountId].repaymentSchedule[termRepaymentPlan].loanTermInterest +
+						   client.account[id:in.accountId].repaymentSchedule[termRepaymentPlan].loanStampDutyFee +
+        client.account[id:in.accountId].repaymentScheduleSummary[termRepaymentPlan].loanAgentFee, client.account[id:in.accountId].repaymentSchedule[termRepaymentPlan].loanReplaceServiceFee),
+
+		assign(client.account[id:in.accountId].repaymentScheduleSummary[termRepaymentPlan].loanTermInterest, client.account[id:in.accountId].repaymentSchedule[termRepaymentPlan].loanTermInterest),
+
+		assign(client.account[id:in.accountId].repaymentScheduleSummary[termRepaymentPlan].loanStampDutyFee, client.account[id:in.accountId].repaymentSchedule[termRepaymentPlan].loanStampDutyFee),
+
+		assign(client.account[id:in.accountId].repaymentScheduleSummary[termRepaymentPlan].loanLifeInsuranceFee, client.account[id:in.accountId].repaymentSchedule[termRepaymentPlan].loanLifeInsuranceFee),
+
+		assign(client.account[id:in.accountId].repaymentScheduleSummary[termRepaymentPlan].loanTermPaymentDueDate, client.account[id:in.accountId].repaymentSchedule[termRepaymentPlan].loanTermPaymentDueDate)
+		)
+	)
+)

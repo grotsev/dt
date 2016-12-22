@@ -1,0 +1,167 @@
+group(
+    assign(termToPay, client.account[in.accountIndex].termToPay),
+
+    assign(client.account[in.accountIndex].totalRemainingAmt, client.account[in.accountIndex].totalRemainingAmt - client.account[in.accountIndex].payPlan[termToPay].remainingTotal),
+    assign(client.account[in.accountIndex].totalRemInterest, client.account[in.accountIndex].totalRemInterest - client.account[in.accountIndex].payPlan[termToPay].remainingInterest),
+
+    condition(
+        case(
+            client.account[in.accountIndex].payPlan[termToPay].payPlanDueDate>businessDay(), //Change date and interest of payPlan
+            group(
+                condition(
+                    case(termToPay-1>0,
+                        group(
+                            assign(x, daysBetween(client.account[in.accountIndex].payPlan[termToPay-1].payPlanDueDate, businessDay())),
+                            assign(y, daysBetween(client.account[in.accountIndex].payPlan[termToPay-1].payPlanDueDate, client.account[in.accountIndex].payPlan[termToPay].payPlanDueDate))
+                        )
+                    )
+                ),
+
+                condition(
+                    case(isEmpty(x)&isEmpty(y),
+                        group(
+                            assign(x, 1),
+                            assign(y, 1)
+                        )
+                    )
+                ),
+
+                assign(remainingInterest, client.account[in.accountIndex].payPlan[termToPay].remainingInterest),
+
+                assign(client.account[in.accountIndex].payPlan[termToPay].remainingTotal, client.account[in.accountIndex].payPlan[termToPay].remainingTotal-remainingInterest),
+
+                assign(client.account[in.accountIndex].payPlan[termToPay].remainingInterest, round(remainingInterest*x/y),2),
+
+                assign(client.account[in.accountIndex].payPlan[termToPay].remainingTotal, client.account[in.accountIndex].payPlan[termToPay].remainingTotal+client.account[in.accountIndex].payPlan[termToPay].remainingInterest),
+
+                assign(client.account[in.accountIndex].payPlan[termToPay].payPlanDueDate, businessDay())
+            )
+        )
+    ),
+
+    //New interest Amount
+    assign(client.account[in.accountIndex].totalRemInterest, client.account[in.accountIndex].totalRemInterest + client.account[in.accountIndex].payPlan[termToPay].remainingInterest),
+
+
+
+    foreach(i, termToPay+1, len(client.account[in.accountIndex].payPlan) - 1, //Sum remaining principal
+        group(
+            assign(a, client.account[in.accountIndex].payPlan[i].remainingPrincipal),
+
+            assign(client.account[in.accountIndex].payPlan[termToPay].remainingPrincipal, client.account[in.accountIndex].payPlan[termToPay].remainingPrincipal+a),
+            assign(client.account[in.accountIndex].payPlan[termToPay].remainingTotal, client.account[in.accountIndex].payPlan[termToPay].remainingTotal+a),
+
+
+            //Remaining total recalculate
+            assign(client.account[in.accountIndex].totalRemainingAmt, client.account[in.accountIndex].totalRemainingAmt - client.account[in.accountIndex].payPlan[i].remainingTotal),
+            assign(client.account[in.accountIndex].totalRemInstallmentFee, client.account[in.accountIndex].totalRemInstallmentFee - client.account[in.accountIndex].payPlan[i].remainingInstallmentFee),
+            assign(client.account[in.accountIndex].totalRemLifeInsuranceFee, client.account[in.accountIndex].totalRemLifeInsuranceFee - client.account[in.accountIndex].payPlan[i].remainingLifeInsurance),
+            assign(client.account[in.accountIndex].totalRemReplaceServiceFee, client.account[in.accountIndex].totalRemReplaceServiceFee - client.account[in.accountIndex].payPlan[i].remainingReplaceSvcFee),
+            assign(client.account[in.accountIndex].totalRemPrepayPkgFee, client.account[in.accountIndex].totalRemPrepayPkgFee - client.account[in.accountIndex].payPlan[i].remainingPrepayPkgFee),
+            assign(client.account[in.accountIndex].totalRemServiceFee, client.account[in.accountIndex].totalRemServiceFee - client.account[in.accountIndex].payPlan[i].remainingServiceFee),
+            assign(client.account[in.accountIndex].totalRemInterest, client.account[in.accountIndex].totalRemInterest - client.account[in.accountIndex].payPlan[i].remainingInterest),
+            assign(client.account[in.accountIndex].totalRemAgentFee, client.account[in.accountIndex].totalRemAgentFee - client.account[in.accountIndex].payPlan[i].remainingAgentFee),
+
+            assign(client.account[in.accountIndex].payPlan[i].actual, false())
+        )
+    ),
+
+    assign(client.account[in.accountIndex].totalRemainingAmt, client.account[in.accountIndex].totalRemainingAmt + client.account[in.accountIndex].payPlan[termToPay].remainingTotal),
+
+    assign(client.account[in.accountIndex].hasCompulsoryCleaning, true()),
+
+    assign(client.account[in.accountIndex].remainingTerms, 0),
+
+    assign(client.account[in.accountIndex].termToPay, client.account[in.accountIndex].payPlan[termToPay].termNumber),
+
+    condition(
+        case(client.account[in.accountIndex].product.IsPartnerProduct = true(),
+
+            group( //Penalties
+                 assign(length, len(client.account[in.accountIndex].product.Penalty)),
+                 assign(totalPenaltySum, 0),
+
+                 foreach (i, 0, length - 1, //TODO Run throw all fines (if one day batch is down fine will not be added)
+                     group(
+                         condition(
+                             case(
+                                 dpd>0
+                                 &
+                                 client.account[in.accountIndex].product.Penalty[i].CalculationPlace = "Claim", //if not already created
+                                     group(
+                                         condition(
+                                             case(client.account[in.accountIndex].product.Penalty[i].CalculationRule = "BalanceOfPrincipal",
+                                                 assign(amt, client.account[in.accountIndex].loanAmt - client.account[in.accountIndex].totalPaidPrincipalAmt)
+                                             ),
+                                             case(client.account[in.accountIndex].product.Penalty[i].CalculationRule = "LoanPrincipal",
+                                                 assign(amt, client.account[in.accountIndex].loanAmt)
+                                             ),
+                                             case(client.account[in.accountIndex].product.Penalty[i].CalculationRule = "OverdueLoanPrincipal",
+                                                 //Total overdue principal
+                                                 assign(amt, 0),
+                                                 foreach (j, client.account[in.accountIndex].paidTerms, client.account[in.accountIndex].termToPay,
+                                                     assign(amt, amt+client.account[in.accountIndex].payPlan[j-1].remainingPrincipal)
+                                                 )
+                                             ),
+                                             case(client.account[in.accountIndex].product.Penalty[i].CalculationRule = "TotalOverdueAmount",
+                                                 //Total overdue amount
+                                                 assign(amt, 0),
+                                                 foreach (j, client.account[in.accountIndex].paidTerms, client.account[in.accountIndex].termToPay,
+                                                     assign(amt, amt+client.account[in.accountIndex].payPlan[j-1].remainingAgentFee),
+                                                     assign(amt, amt+client.account[in.accountIndex].payPlan[j-1].remainingInterest),
+                                                     assign(amt, amt+client.account[in.accountIndex].payPlan[j-1].remainingPrincipal),
+                                                     assign(amt, amt+client.account[in.accountIndex].payPlan[j-1].remainingServiceFee),
+                                                     assign(amt, amt+client.account[in.accountIndex].payPlan[j-1].remainingPrepayPkgFee),
+                                                     assign(amt, amt+client.account[in.accountIndex].payPlan[j-1].remainingStampDutyFee),
+                                                     assign(amt, amt+client.account[in.accountIndex].payPlan[j-1].remainingLifeInsurance),
+                                                     assign(amt, amt+client.account[in.accountIndex].payPlan[j-1].remainingReplaceSvcFee),
+                                                     assign(amt, amt+client.account[in.accountIndex].payPlan[j-1].remainingInstallmentFee)
+                                                 ),
+
+                                                 foreach(j, 0, len(client.account[in.accountIndex].overdueFine)-1,
+                                                     condition(
+                                                         case(
+                                                             client.account[in.accountIndex].overdueFine[j].status = "U",
+                                                                 group( //Prepay Pkg Fee
+                                                                     assign(a, client.account[in.accountIndex].overdueFine[j].remainingAmount),
+                                                                     assign(amt, amt+a)
+                                                                 )
+                                                         )
+                                                     )
+                                                 )
+                                             )
+                                         ),
+
+                                         assign(fineAmount, client.account[in.accountIndex].product.Penalty[i].Rate * amt),
+
+                                         condition(
+                                             case(client.account[in.accountIndex].product.Penalty[i].Accumulative = true(),
+                                                 assign(fineAmount, fineAmount * overdueDays)
+                                             )
+                                         ),
+
+
+                                         procedure(generateFine),
+
+                                         assign(totalPenaltySum, totalPenaltySum + fineAmount)
+                                     )
+                             )
+                         )
+                     )
+                 )
+            ),
+
+
+            assign(loanUsage, "C"),
+            assign(orderStatus, "N"),
+
+            assign(settleFeeType, "ClaimAmt"),
+            assign(term, client.account[in.accountIndex].termToPay),
+            assign(txnDirection, "-"),
+
+            assign(generateTransaction_transactionAmount, client.account[in.accountIndex].payPlan[termToPay].remainingTotal + totalPenaltySum), // calculate here
+
+            procedure(generateTransaction)
+        )
+    )
+)

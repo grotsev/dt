@@ -1,0 +1,80 @@
+group
+(
+	condition
+	(
+
+		case (product.tmp.feeTypeFlag = 0,
+		condition
+		(
+			case (product.tmp.ChargeMethod = "Terms",
+				condition
+				(
+					case (product.tmp.HowToCalculate = "FixedAmount",
+						assign(product.tmp.termFee, round(product.tmp.calculationParameter, 2))
+					),
+					case (product.tmp.HowToCalculate = "BaseRatio",
+						assign(product.tmp.termFee, round(product.tmp.calculationParameter * in.LOAN_AMT, 2))
+					)
+				)
+			),
+			case (product.tmp.ChargeMethod = "FirstTerm",
+				condition
+				(
+					case (product.tmp.HowToCalculate = "FixedAmount",
+						assign(product.tmp.termFee, round(product.tmp.calculationParameter, 2))
+					),
+					case (product.tmp.HowToCalculate = "BaseRatio",
+						assign(product.tmp.termFee, round(product.tmp.calculationParameter * in.LOAN_AMT, 2))
+					)
+				)
+			)
+		)
+		),
+
+		case (product.tmp.feeTypeFlag = 1,
+		condition
+		(
+			case (product.tmp.ChargeMethod = "Terms",
+				condition
+				(
+					case (product.tmp.HowToCalculate = "FixedAmount",
+						assign(product.tmp.termFee, round(round(product.tmp.calculationParameter, 2)/product.tmp.repaymentTerms, 2))
+					),
+					case (product.tmp.HowToCalculate = "BaseRatio",
+						assign(product.tmp.termFee, round(round(product.tmp.calculationParameter * in.LOAN_AMT, 2)/product.tmp.repaymentTerms, 2))
+					)
+				)
+			),
+			case (product.tmp.ChargeMethod = "FirstTerm",
+				condition (
+					case (product.tmp.HowToCalculate = "FixedAmount",
+						assign(product.tmp.termFee, round(product.tmp.calculationParameter, 2))
+					),
+					case (product.tmp.HowToCalculate = "BaseRatio",
+						assign(product.tmp.termFee, round(product.tmp.calculationParameter * in.LOAN_AMT, 2))
+					)
+				)
+			)
+		  )
+		),
+		case (product.tmp.feeTypeFlag = 2,
+		condition
+		(
+			case (product.tmp.ChargeMethod = "Terms",
+				condition
+				(
+					case (product.tmp.HowToCalculate = "FixedAmount",
+						assign(product.tmp.termFee, round(round(product.tmp.calculationParameter, 2)/product.tmp.repaymentTerms, 2))
+					),
+					case (product.tmp.HowToCalculate = "BaseRatio",
+						assign(product.tmp.termFee, product.tmp.calculationParameter * in.LOAN_AMT/ product.tmp.repaymentTerms)
+					)
+				)
+			),
+			case (product.tmp.ChargeMethod = "FirstTerm",
+					assign(product.tmp.termFee, 0)
+			)
+		)
+		)
+	)
+)

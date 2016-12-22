@@ -1,0 +1,117 @@
+group (
+	assign(product.tmp.loanTermPrincipalAmt, product.tmp.currentTermPrincipalAmt),
+	assign(product.tmp.totalPrincipalAmt, product.tmp.totalPrincipalAmt +  product.tmp.loanTermPrincipalAmt),
+
+	assign(product.tmp.ChargeMethod, product.installmentFee.chargeMethod),
+	assign(product.tmp.HowToCalculate, product.installmentFee.howToCalculate),
+
+    condition (
+        case (product.tmp.HowToCalculate = "FixedAmount",
+            assign(product.tmp.calculationParameter, in.INSTALLMENT_FEE_AMT)
+        ),
+        case (product.tmp.HowToCalculate = "BaseRatio",
+            assign(product.tmp.calculationParameter, in.FEE_RATE)
+        )
+    ),
+	procedure(getFeeByFeeType),
+	assign(product.tmp.loanTermInstallmentFee, product.tmp.termFee),
+	assign(product.tmp.totalInstallmentFee, product.tmp.totalInstallmentFee +  product.tmp.loanTermInstallmentFee)	,
+
+	assign(product.tmp.ChargeMethod, product.ServiceFee.ChargeMethod),
+	assign(product.tmp.HowToCalculate, product.ServiceFee.HowToCalculate),
+	condition (
+        case (product.tmp.HowToCalculate = "FixedAmount",
+            assign(product.tmp.calculationParameter, in.FEE_AMOUNT)
+        ),
+        case (product.tmp.HowToCalculate = "BaseRatio",
+            assign(product.tmp.calculationParameter, in.FEE_RATE)
+        )
+    ),
+	procedure(getFeeByFeeType),
+	assign(product.tmp.loanTermServiceFee, product.tmp.termFee),
+	assign(product.tmp.totalServiceFee, product.tmp.totalServiceFee +  product.tmp.loanTermServiceFee),
+
+	assign(product.tmp.ChargeMethod, product.InsuranceFee.ChargeMethod),
+	assign(product.tmp.HowToCalculate, product.InsuranceFee.HowToCalculate),
+	condition (
+        case (product.tmp.HowToCalculate = "FixedAmount",
+            assign(product.tmp.calculationParameter, in.INS_AMT)
+        ),
+        case (product.tmp.HowToCalculate = "BaseRatio",
+            assign(product.tmp.calculationParameter, in.INS_RATE)
+        )
+    ),
+    procedure(getFeeByFeeType),
+	assign(product.tmp.loanTermInsuranceFee, product.tmp.termFee),
+	assign(product.tmp.totalInsuranceFee, product.tmp.loanTermInsuranceFee),
+
+condition
+(
+	case (in.LIFE_INSURANCE_IND  = "Y",
+		group
+			(
+	            assign(product.tmp.ChargeMethod, product.LifeInsuranceFee.ChargeMethod),
+                condition (
+                           case (product.tmp.HowToCalculate = "FixedAmount",
+                                assign(product.tmp.calculationParameter, in.LIFE_INSU_FEE_AMT)
+                           ),
+                           case (product.tmp.HowToCalculate = "BaseRatio",
+                                assign(product.tmp.calculationParameter, in.LIFE_INSU_FEE_RATE)
+                           )
+                ),
+	            procedure(getFeeByFeeType),
+	            assign(product.tmp.loanTermLifeInsuranceFee, product.tmp.termFee),
+	            assign(product.tmp.totalLifeInsuranceFee, product.tmp.totalLifeInsuranceFee +  product.tmp.loanTermLifeInsuranceFee)
+		)
+	)
+),
+condition
+(
+	case (product.stampCustomInd = "Y",
+		group
+			(
+	            assign(product.tmp.ChargeMethod, product.stampDutyFee.chargeMethod),
+	            assign(product.tmp.HowToCalculate, product.stampDutyFee.howToCalculate),
+	            condition (
+                    case (product.tmp.HowToCalculate = "FixedAmount",
+                        assign(product.tmp.calculationParameter, in.STAMP_AMT)
+                    ),
+                    case (product.tmp.HowToCalculate = "BaseRatio",
+                          assign(product.tmp.calculationParameter, in.STAMPDUTY_RATE)
+                    )
+                ),
+	            procedure(getFeeByFeeType),
+	            assign(product.tmp.loanTermStampDutyFee, product.tmp.termFee),
+	            assign(product.tmp.totalStampDutyFee, product.tmp.totalStampDutyFee +  product.tmp.loanTermStampDutyFee)
+		)
+	)
+),
+	assign(product.tmp.ChargeMethod, product.ReplaceServiceFee.ChargeMethod),
+	assign(product.tmp.HowToCalculate, product.ReplaceServiceFee.HowToCalculate),
+	assign(product.tmp.calculationParameter,  product.ReplaceServiceFee.CalculationParameter),
+	procedure(getFeeByFeeType),
+	assign(product.tmp.loanTermReplaceServiceFee, product.tmp.termFee),
+	assign(product.tmp.totalReplaceServiceFee, product.tmp.totalReplaceServiceFee +  product.tmp.loanTermReplaceServiceFee),
+
+condition
+(
+	case (in.PREPAY_PKG_IND = "Y",
+		group
+			(
+			assign(product.tmp.ChargeMethod, product.PrepayPkgFee.ChargeMethod),
+			assign(product.tmp.HowToCalculate, product.prepayPkgFee.howToCalculate),
+			condition (
+                   case (product.tmp.HowToCalculate = "FixedAmount",
+                          assign(product.tmp.calculationParameter, in.PREPAYMENT_FEE_AMOUNT)
+                   ),
+                   case (product.tmp.HowToCalculate = "BaseRatio",
+                          assign(product.tmp.calculationParameter, in.PREPAYMENT_FEE_AMOUNT_RATE)
+                   )
+            )
+		)
+	)
+),
+	procedure(getFeeByFeeType),
+	assign(product.tmp.loanTermTotalPrepayPkgFee, product.tmp.termFee),
+	assign(product.tmp.totalPrepayPkgFee, product.tmp.totalPrepayPkgFee +  product.tmp.loanTermTotalPrepayPkgFee)
+)

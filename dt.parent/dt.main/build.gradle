@@ -1,3 +1,19 @@
+apply plugin: 'scala'
+
+sourceSets.main.scala.srcDir "src"
+sourceSets.main.java.srcDirs = []
+
+sourceSets.test.scala.srcDir "test_src"
+sourceSets.test.java.srcDirs = []
+
+compileJava.sourceCompatibility = 1.8
+compileJava.targetCompatibility = 1.8
+
+tasks.withType(ScalaCompile) {
+    sourceCompatibility = "1.8"
+    targetCompatibility = "1.8"
+}
+
 dependencies {
   //compile project(':gcory.register')
 
@@ -12,8 +28,22 @@ dependencies {
   //
   // libs
   //
+  compile "kz.greetgo.java_compiler:greetgo.java_compiler:$greetgoJavaCompilerVersion"
+  compile "org.scala-lang:scala-library:$scalaVersion"
 
   //
   // test dependencies
   //
+}
+
+uploadArchives {
+    repositories.mavenDeployer {
+        configuration = configurations.archives
+        repository(url: System.getenv('GG_REPO'))
+
+        pom.project {
+            name project.name
+            packaging 'jar'
+        }
+    }
 }

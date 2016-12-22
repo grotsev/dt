@@ -1,0 +1,19 @@
+group
+(
+assign(client.account[id:in.accountId].product.tmp.dateOfPayment, client.account[id:in.accountId].nextStatementDate + (client.account[id:in.accountId].product.tmp.currentTerm) * month()),
+assign(client.account[id:in.accountId].product.tmp.maximumDaysOfMonth, daysInMonth(client.account[id:in.accountId].product.tmp.dateOfPayment)),
+
+condition (
+        case (client.account[id:in.accountId].cycleDay > day (client.account[id:in.accountId].dateOfPayment),
+            condition (
+                case (client.account[id:in.accountId].cycleDay <= client.account[id:in.accountId].product.tmp.maximumDaysOfMonth,
+			        setDay(client.account[id:in.accountId].product.tmp.dateOfPayment, cycleDay)
+			        ),
+			    case (client.account[id:in.accountId].cycleDay > client.account[id:in.accountId].product.tmp.maximumDaysOfMonth,
+			        setDay(client.account[id:in.accountId].product.tmp.dateOfPayment, client.account[id:in.accountId].product.tmp.maximumDaysOfMonth)
+			        )
+			    )
+		    )
+		),
+		assign(client.account[id:in.accountId].product.tmp.loanTermPaymentDueDate, client.account[id:in.accountId].product.tmp.dateOfPayment)
+)

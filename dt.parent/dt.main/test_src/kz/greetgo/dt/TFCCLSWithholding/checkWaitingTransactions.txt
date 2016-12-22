@@ -1,0 +1,9 @@
+group(
+    foreach(transIndex, 0, len(client.account[in.accountIndex].transaction) - 1,
+        condition(
+            case (client.account[in.accountIndex].transaction[transIndex].orderStatus = "W",
+            exit()
+            )
+        )
+    )
+)

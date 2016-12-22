@@ -1,0 +1,98 @@
+group (
+
+  assign(client.tmp.bizDate, businessDay()),
+
+  //Validation of data
+  condition (
+    case (
+      	client.tmp.interestRate < 0,
+      	group (
+        error("Field name {INTEREST RATE}, can not be less than or equal to 0"),
+  		exit()
+    	  )
+    	),
+    case(
+      	client.tmp.contraExpireDate < businessDay(),
+        group (
+        error("Validity of the contract contraExpireDate "),
+		exit()
+    	  )
+      ),
+/*	case(
+      	//Bank code validation
+        group (
+        error("incorrect bank code"),
+		exit()
+    	  )
+      ),*/
+	case(
+      	client.tmp.country != "156",
+        group (
+        error("Field name {COUNTRY}, must be 156"),
+		exit()
+    	  )
+      ),
+	case(
+      	client.tmp.loanAmt <=0,
+        group (
+        error("Field name {CREDIT_LIMIT}, must be greater than 0"),
+		exit()
+    	  )
+      )
+  ),
+  //Validation of product attributes
+  condition (
+
+    case (
+      	client.account[id:in.accountId].product.loanType != "MCEI" & client.account[id:in.accountId].product.loanType != "MCEP",
+      	group (
+        error("1052, Invalid loan products. Not matching principal and interest / equal principal loan products"),
+  		exit()
+    	  )
+    	),
+    case (
+      	client.account[id:in.accountId].loanMold != "M" & client.tmp.loanMold != "S",
+      	group (
+        error("1052, Invalid loan products. Not a non-revolving loan products"),
+  		exit()
+    	  )
+    	),
+    case (
+      	client.tmp.loanTerm = client.account[id:in.accountId].product.initTerm,
+      	group (
+        error("1043, Field malformed. Field [LOAN TERM] is inconsistent with the loan installments sub-product"),
+  		exit()
+    	  )
+    	),
+    case (
+      	client.account[id:in.accountId].product.loanStaus != "A",
+      	group (
+        error("1039, The loan product inactive, you can not do this"),
+  		exit()
+    	  )
+    	)
+	),
+
+	case(
+	    !isDefined(in.accountId),
+	    group(
+            assign(in.accountId, generateId())
+	    )
+	),
+
+    //Date (yyMMddhhmmddSSS) +4 bit random number +3 external end of the serial number
+    procedure(genRefnbr),
+
+    //Generates account
+    procedure(createAccountInner),
+
+    //Generate Payment Transaction
+    procedure(generateTransaction),
+
+    //Native procedure call - Sending order to payment platform SMS
+    procedure (sendPayment),
+
+    //Native procedure call - Send SMS
+    procedure (sendSMS)
+)
+

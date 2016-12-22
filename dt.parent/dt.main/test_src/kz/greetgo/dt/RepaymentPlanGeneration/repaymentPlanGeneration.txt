@@ -1,0 +1,272 @@
+group (
+assign(product.tmp.totalPrincipalAmt, 0),
+assign(product.tmp.totalInstallmentFee, 0),
+assign(product.tmp.totalReplaceServiceFee, 0),
+assign(product.tmp.totalInsuranceFee, 0),
+assign(product.tmp.totalStampDutyFee, 0),
+assign(product.tmp.totalLifeInsuranceFee, 0),
+assign(product.tmp.totalServiceFee, 0),
+assign(product.tmp.totalPrepayPkgFee, 0),
+
+assign(product.tmp.feeTypeFlag, 0),
+assign(product.tmp.repaymentTerms, in.LOAN_TERM),
+
+assign(nextStatementDate, businessDay()),
+assign(cycleDay, 12),
+assign(product.isMergeBillDay, "N"),
+assign(product.floatRate, 0.1),
+
+//assign(product.InstallmentFee.ChargeMethod, "Terms"),
+//assign(product.InstallmentFee.HowToCalculate, "FixedAmount"),
+//assign(product.ServiceFee.ChargeMethod, "Terms"),
+//assign(product.ServiceFee.HowToCalculate, "FixedAmount"),
+//assign(product.ReplaceServiceFee.ChargeMethod, "Terms"),
+//assign(product.ReplaceServiceFee.HowToCalculate, "FixedAmount"),
+//assign(product.ReplaceServiceFee.CalculationParameter, 123),
+//assign(product.InsuranceFee.ChargeMethod, "Terms"),
+//assign(product.InsuranceFee.HowToCalculate, "FixedAmount"),
+//assign(product.PrepayPkgFee.ChargeMethod, "Terms"),
+//assign(product.PrepayPkgFee.HowToCalculate, "FixedAmount"),
+//assign(product.stampDutyFee.ChargeMethod, "Terms"),
+//assign(product.stampDutyFee.HowToCalculate, "FixedAmount"),
+//assign(product.LifeInsuranceFee.ChargeMethod, "Terms"),
+//assign(product.LifeInsuranceFee.HowToCalculate, "BaseRatio"),
+//assign(product.tmp.ChargeMethod, product.InstallmentFee.ChargeMethod),
+assign(product.tmp.HowToCalculate, product.InstallmentFee.HowToCalculate),
+
+assign(product.stampCustomInd, "Y"),
+assign(out.LOAN_INT_SUM, 0),
+assign(dateOfCurrentBusinessDay, businessDay()),
+
+condition (
+    case (product.tmp.HowToCalculate = "FixedAmount",
+        assign(product.tmp.calculationParameter, in.FEE_AMOUNT)
+    ),
+    case (product.tmp.HowToCalculate = "BaseRatio",
+        assign(product.tmp.calculationParameter, in.FEE_RATE)
+    )
+),
+procedure(getFeeByFeeType),
+assign(totalInitialInstallmentFee, product.tmp.termFee),
+
+assign(product.tmp.ChargeMethod, product.ServiceFee.ChargeMethod),
+assign(product.tmp.HowToCalculate, product.ServiceFee.HowToCalculate),
+
+condition (
+    case (product.tmp.HowToCalculate = "FixedAmount",
+        assign(product.tmp.calculationParameter, in.INSTALLMENT_FEE_AMT)
+    ),
+    case (product.tmp.HowToCalculate = "BaseRatio",
+        assign(product.tmp.calculationParameter, in.INSTALLMENT_FEE_RATE)
+    )
+),
+procedure(getFeeByFeeType),
+assign(totalInitialServiceFee, product.tmp.termFee),
+
+assign(product.tmp.ChargeMethod, product.ReplaceServiceFee.ChargeMethod),
+assign(product.tmp.HowToCalculate, product.ReplaceServiceFee.HowToCalculate),
+assign(product.tmp.calculationParameter, product.ReplaceServiceFee.CalculationParameter),
+procedure(getFeeByFeeType),
+assign(totalInitialReplaceServiceFee, product.tmp.termFee),
+
+assign(product.tmp.ChargeMethod, product.InsuranceFee.ChargeMethod),
+assign(product.tmp.HowToCalculate, product.InsuranceFee.HowToCalculate),
+
+condition (
+    case (product.tmp.HowToCalculate = "FixedAmount",
+        assign(product.tmp.calculationParameter, in.INS_AMT)
+    ),
+    case (product.tmp.HowToCalculate = "BaseRatio",
+        assign(product.tmp.calculationParameter, in.INS_RATE)
+    )
+),
+procedure(getFeeByFeeType),
+
+assign(totalInitialInsuranceFee, product.tmp.termFee),
+assign(totalInitialPrepayPkgFee, 0),
+condition
+(
+	case (in.PREPAY_PKG_IND = "Y",
+		group
+			(
+			assign(product.tmp.ChargeMethod, product.PrepayPkgFee.ChargeMethod),
+			assign(product.tmp.HowToCalculate, product.PrepayPkgFee.HowToCalculate),
+
+			condition (
+                case (product.tmp.HowToCalculate = "FixedAmount",
+                    assign(product.tmp.calculationParameter, in.PREPAYMENT_FEE_AMOUNT)
+                ),
+                case (product.tmp.HowToCalculate = "BaseRatio",
+                    assign(product.tmp.calculationParameter, in.PREPAYMENT_FEE_AMOUNT_RATE)
+                )
+            ),
+			procedure(getFeeByFeeType),
+			assign(totalInitialPrepayPkgFee, product.tmp.termFee)
+			)
+		)
+),
+
+assign(totalInitialStampDutyFee, 0),
+condition
+(
+	case (product.stampCustomInd = "Y",
+		group
+			(
+			assign(product.tmp.ChargeMethod, product.stampDutyFee.ChargeMethod),
+			assign(product.tmp.HowToCalculate, product.stampDutyFee.HowToCalculate),
+            condition (
+                        case (product.tmp.HowToCalculate = "FixedAmount",
+                             assign(product.tmp.calculationParameter, in.STAMP_AMT)
+                        ),
+                        case (product.tmp.HowToCalculate = "BaseRatio",
+                             assign(product.tmp.calculationParameter, in.STAMPDUTY_RATE)
+                        )
+            ),
+
+			procedure(getFeeByFeeType),
+			assign(totalInitialStampDutyFee, product.tmp.termFee)
+			)
+		)
+),
+assign(totalInitialLifeInsuranceFee, 0),
+condition
+(
+	case (in.LIFE_INSURANCE_IND  = "Y",
+		group
+			(
+				assign(product.tmp.ChargeMethod, product.LifeInsuranceFee.ChargeMethod),
+				assign(product.tmp.HowToCalculate, product.LifeInsuranceFee.HowToCalculate),
+
+                condition (
+                           case (product.tmp.HowToCalculate = "FixedAmount",
+                                assign(product.tmp.calculationParameter, in.LIFE_INSU_FEE_AMT)
+                           ),
+                           case (product.tmp.HowToCalculate = "BaseRatio",
+                                assign(product.tmp.calculationParameter, in.LIFE_INSU_FEE_RATE)
+                           )
+                ),
+				procedure(getFeeByFeeType),
+				assign(totalInitialLifeInsuranceFee, product.tmp.termFee)
+			)
+		)
+),
+
+//Получение самого плана погашения по term-ам
+assign(product.tmp.interest, round(in.INTEREST_RATE * (product.floatRate + 1) * (1/12), 20)),
+
+//План погашения для первого term-а
+assign(product.tmp.currentTerm, 1),
+assign(product.tmp.loanAmount, in.LOAN_AMT),
+
+
+assign (product.tmp.termPrincipalAmt, 0),
+condition
+(
+    case (product.isMergeBillDay = "Y",
+		group(
+
+		procedure(getCurrentTermPrincipalForMCEI),
+
+		assign(product.tmp.loanAmount, in.LOAN_AMT - product.tmp.termPrincipalAmt),
+		assign(product.tmp.repaymentTerms, in.LOAN_TERM - 1),
+        assign(product.tmp.currentTermPrincipalAmt, product.tmp.termPrincipalAmt),
+		procedure(getTermPaymentForMCEI),
+
+		assign(product.tmp.loanAmount, in.LOAN_AMT),
+		assign(product.tmp.in.LOAN_TERM, in.LOAN_TERM),
+
+		assign(product.tmp.dailyInterest, round(in.INTEREST_RATE * (1/365), 6)),
+		assign(product.tmp.numberOfDaysInFirstTerm, daysBetween(dateOfCurrentBusinessDay, nextStatementDate) + 1),
+		assign(product.tmp.currentTermInterest, round(in.LOAN_AMT * product.tmp.dailyInterest * product.tmp.numberOfDaysInFirstTerm, 2))
+		)
+	),
+	case (product.isMergeBillDay = "N",
+		group (
+		procedure (getTermPaymentForMCEI),
+		procedure(getCurrentTermPrincipalForMCEI),
+        assign (product.tmp.currentTermPrincipalAmt,  product.tmp.termPrincipalAmt),
+        assign(product.tmp.currentTermInterest, round(product.tmp.loanTermPayment - product.tmp.termPrincipalAmt, 2)),
+		assign(product.tmp.firstTermPrincipalAmt, product.tmp.currentTermPrincipalAmt)
+		)
+    )
+ ),
+
+assign(product.tmp.feeTypeFlag, 1),
+
+procedure(getTermFeesValues),
+procedure(getPaymentDueDate),
+procedure(addCurrentTermRepaymentPlanToList),
+
+assign(product.tmp.feeTypeFlag, 2),
+
+foreach (termNumber, 2, in.LOAN_TERM - 1,
+    group (
+    condition
+	   (
+			case (product.isMergeBillDay = "Y",
+			group (
+			assign(product.tmp.loanAmount, in.LOAN_AMT - product.tmp.firstTermPrincipalAmt),
+			assign(product.tmp.repaymentTerms, in.LOAN_TERM - 1),
+			assign(product.tmp.currentTerm, termNumber - 1)
+				)
+			),
+			case (product.isMergeBillDay = "N",
+			group (
+			assign(product.tmp.loanAmount, in.LOAN_AMT),
+			assign(product.tmp.repaymentTerms, in.LOAN_TERM),
+			assign(product.tmp.currentTerm, termNumber)
+				)
+			)
+	),
+
+	procedure(getCurrentTermPrincipalForMCEI),
+	assign(product.tmp.currentTerm, termNumber),
+	procedure(getTermFeesValues),
+	procedure(getPaymentDueDate),
+	assign(product.tmp.loanTermPrincipalAmt, product.tmp.termPrincipalAmt),
+	procedure(addCurrentTermRepaymentPlanToList)
+    )
+),
+
+assign(termNumber, in.LOAN_TERM),
+assign(product.tmp.currentTerm, in.LOAN_TERM),
+
+procedure(getTermFeesValues),
+
+assign(product.tmp.currentTermInterest, round(product.tmp.loanTermPayment - product.tmp.currentTermPrincipalAmt, 2)),
+
+assign(fixPrin, in.LOAN_AMT - product.tmp.totalPrincipalAmt),
+assign(product.tmp.currentTermPrincipalAmt, product.currentTermPrincipalAmt + fixPrin),
+
+assign(fixInt, round(fixPrin * product.tmp.interest * (termNumber), 2)),
+assign(product.tmp.currentTermInterest, product.tmp.interest + fixInt),
+
+assign(fixFee, totalInitialInstallmentFee - product.tmp.totalInstallmentFee),
+assign(product.tmp.loanTermInstallmentFee, product.tmp.loanTermInstallmentFee + fixFee),
+
+assign(fixServiceFee, totalInitialServiceFee - product.tmp.totalServiceFee),
+assign(product.tmp.loanTermServiceFee, product.tmp.loanTermServiceFee + fixServiceFee),
+
+assign(fixInsuranceFee, totalInitialInsuranceFee - product.tmp.totalInsuranceFee),
+assign(product.tmp.loanTermInsuranceFee, product.tmp.loanTermInsuranceFee + fixInsuranceFee),
+
+assign(fixStampFee, totalInitialStampDutyFee - product.tmp.totalStampDutyFee),
+assign(product.tmp.loanTermStampDutyFee, product.tmp.loanTermStampDutyFee + fixStampFee),
+
+assign(fixLifeInsuranceFee, totalInitialLifeInsuranceFee - product.tmp.totalLifeInsuranceFee),
+assign(product.tmp.loanTermLifeInsuranceFee, product.tmp.loanTermLifeInsuranceFee + fixLifeInsuranceFee),
+
+assign(fixTotalServiceFee, totalInitialReplaceServiceFee - product.tmp.totalReplaceServiceFee),
+assign(product.tmp.loanTermReplaceServiceFee, product.tmp.loanTermReplaceServiceFee + fixTotalServiceFee),
+
+assign(fixPrepayFee, totalInitialPrepayPkgFee - product.tmp.totalPrepayPkgFee),
+assign(product.tmp.loanTermTotalPrepayPkgFee, product.tmp.loanTermTotalPrepayPkgFee + fixPrepayFee),
+
+procedure(getPaymentDueDate),
+procedure(addCurrentTermRepaymentPlanToList),
+
+assign (out.LOAN_TERM, in.LOAN_TERM),
+assign (out.LOAN_INIT_PRIN, in.LOAN_AMT),
+assign (out.LOAN_FEE_SUM, totalInitialInstallmentFee +
+totalInitialLifeInsuranceFee + totalInitialStampDutyFee + totalInitialPrepayPkgFee + totalInitialInsuranceFee + totalInitialReplaceServiceFee + totalInitialServiceFee)
+)

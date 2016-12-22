@@ -1,0 +1,56 @@
+group (
+
+    procedure (calculateCurrentDebtForSB),
+
+    condition(
+        case(client.account[in.accountIndex].sumOverpaid>0 & debtAmt>0,
+            group(
+                condition(
+                    case(debtAmt>client.account[in.accountIndex].sumOverpaid,
+                        assign(debtAmt, debtAmt-client.account[in.accountIndex].sumOverpaid),
+                        assign(generateTransaction_transactionAmount, round(client.account[in.accountIndex].sumOverpaid, 2)),
+                        assign(client.account[in.accountIndex].sumOverpaid,0)
+                    ),
+                    case(debtAmt<=client.account[in.accountIndex].sumOverpaid,
+                        assign(client.account[in.accountIndex].sumOverpaid, client.account[in.accountIndex].sumOverpaid - debtAmt),
+                        assign(generateTransaction_transactionAmount, round(debtAmt, 2)),
+                        assign(debtAmt,0)
+                    )
+                ),
+                assign(loanUsage, "N"),
+                assign(orderStatus, "S"),
+                procedure(generateTransaction),
+
+                assign(txnAmt, generateTransaction_transactionAmount),
+                procedure(commonPayment),
+
+                assign(generateTransaction_transactionAmount, 0)
+            )
+        )
+    ),
+
+    condition (
+        case (debtAmt > 0,
+            group (
+                condition(
+                    case(
+                        round(debtAmt - currentTermDebt,2) > 0.00,
+                        group(
+                            assign(generateTransaction_transactionAmount, round(debtAmt - currentTermDebt, 2)),
+                            assign(loanUsage, "O"),
+                            assign(orderStatus, "N"),
+                            procedure(generateTransaction),
+
+                            assign(debtAmt, debtAmt - generateTransaction_transactionAmount)
+                        )
+                    )
+                ),
+
+                assign(generateTransaction_transactionAmount, round(debtAmt, 2)),
+                assign(loanUsage, "N"),
+                assign(orderStatus, "N"),
+                procedure(generateTransaction)
+            )
+        )
+    )
+)

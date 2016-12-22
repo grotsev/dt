@@ -1,0 +1,405 @@
+//***Peter***
+group(
+   group(
+
+         assign(client.account[id:in.accountId].acctNbr, nextNumber()~""),
+
+         assign(client.tmp.acctNbr, client.account[id:in.accountId].acctNbr),
+         assign(client.account[id:in.accountId].createTime, businessDay()),
+
+         condition(
+           case(isEmpty(client.tmp.contrNbr),
+            procedure(genContrNbr)
+           )
+         ),
+
+         assign(client.account[id:in.accountId].contrNbr, client.tmp.contrNbr)
+     ),
+
+     group(
+         //skipEom = Y Next need to add this value to the product
+         //assign(client.tmp.skipEom, "Y"), //RuleInstalmentDate
+
+         assign(client.tmp.nextStmtDate, businessDay()),
+
+         case(client.account[id:in.accountId].product.RuleInstalmentDate="Replace",
+             group(
+                 case(day(client.tmp.nextStmtDate)=29,
+                     group(
+                         assign(client.tmp.nextStmtDate, setDay(client.tmp.nextStmtDate, 2)),
+                         assign(client.tmp.nextStmtDate, client.tmp.nextStmtDate+month())
+                     )
+                  ),
+                  case(day(client.tmp.nextStmtDate)=30,
+                      group(
+                         assign(client.tmp.nextStmtDate, setDay(client.tmp.nextStmtDate, 3)),
+                         assign(client.tmp.nextStmtDate, client.tmp.nextStmtDate+month())
+                      )
+                  ),
+                  case(day(client.tmp.nextStmtDate)=31,
+                      group(
+                         assign(client.tmp.nextStmtDate, setDay(client.tmp.nextStmtDate, 4)),
+                         assign(client.tmp.nextStmtDate, client.tmp.nextStmtDate+month())
+                      )
+                  )
+
+             )
+          ),
+
+          assign(client.account[id:in.accountId].cycleDay, day(client.tmp.nextStmtDate)),
+
+          assign(client.account[id:in.accountId].nextStmtDate, client.tmp.nextStmtDate + month()),
+
+          assign(client.account[id:in.accountId].pmtDueDate, client.account[id:in.accountId].nextStmtDate),
+
+          assign(client.account[id:in.accountId].graceDate, client.account[id:in.accountId].pmtDueDate + day() * client.account[id:in.accountId].product.BusinessParameters.GracePeriod)
+      ),
+
+
+     group(
+         assign(client.uuid, client.tmp.uuid),
+         assign(client.account[id:in.accountId].productCd, client.tmp.loanCode),
+         assign(client.account[id:in.accountId].name, client.customername),
+         assign(client.account[id:in.accountId].gender, client.gender),
+         assign(client.account[id:in.accountId].mobileNo, client.cellPhone),
+         assign(client.account[id:in.accountId].corpName, client.workCorp),
+         assign(client.account[id:in.accountId].ddBankName, client.tmp.bankname),
+         assign(client.account[id:in.accountId].ddBankBranch, client.tmp.bankcode),
+         assign(client.account[id:in.accountId].ddBankAcctNbr, client.tmp.putpaycardid),
+         assign(client.account[id:in.accountId].ddBankAcctName, client.tmp.bankcardowner),
+         assign(client.account[id:in.accountId].ddBankCity, client.tmp.bankcity),
+         assign(client.account[id:in.accountId].ddBankCityCode, client.tmp.bankcitycode),
+         assign(client.account[id:in.accountId].ddBankProvince, client.tmp.bankprovince),
+         assign(client.account[id:in.accountId].ddBankProvinceCode, client.tmp.bankprovincecode),
+         assign(client.account[id:in.accountId].acctExpireDate, client.tmp.contraExpireDate),
+         assign(client.account[id:in.accountId].applicationNo, client.tmp.applyNo),
+         assign(client.account[id:in.accountId].agreementRateExpireDate, client.tmp.agreeRateExpireDate),
+         assign(client.account[id:in.accountId].acqId, client.tmp.cooperatorID),
+         assign(client.account[id:in.accountId].loanMold, client.account[id:in.accountId].product.LoanMold),
+         assign(client.account[id:in.accountId].prepayPkgInd, client.tmp.prepayPkgInd)
+
+     ),
+
+     group(
+
+         assign(client.account[id:in.accountId].loanFeeDefId, client.tmp.loanFeeDefId),
+         assign(client.account[id:in.accountId].purpose, client.tmp.purpose),
+         assign(client.account[id:in.accountId].applyDate, client.tmp.applyDate),
+         assign(client.account[id:in.accountId].subTerminalType, client.tmp.subTerminalType),
+         assign(client.account[id:in.accountId].joinLifeInsuInd, client.tmp.jionLifeInsuInd)
+     ),
+
+  //RepaymentTerms.UNIT only month
+     group(
+
+       assign(termsNumber, client.account[id:in.accountId].product.RepaymentTerms.Parameter),
+
+       condition(
+         case(isDefined(client.tmp.agreeRateInd),
+           assign(client.account[id:in.accountId].agreeRateInd, client.tmp.agreeRateInd)
+         ),
+         case(1=1,
+           assign(client.account[id:in.accountId].agreeRateInd, "Y")
+         )
+       ),
+
+     //ServiceFee
+       condition(
+         case(client.account[id:in.accountId].product.ServiceFee.HowToCalculate = "BaseRatio",
+             condition(
+                 case(client.tmp.agreeRateInd = true() & isDefined(client.tmp.feeRate),
+                     group(
+                         assign(client.account[id:in.accountId].feeRate, client.tmp.feeRate),
+                         condition(
+                            case(client.account[id:in.accountId].product.ServiceFee.ChargeMethod = "Terms",
+                                assign(client.account[id:in.accountId].feeRate, client.tmp.feeRate * termsNumber)
+                            )
+                         )
+                     )
+                 ),
+
+                 case(1=1,
+                     assign(client.account[id:in.accountId].feeRate, client.account[id:in.accountId].product.ServiceFee.CalculationParameter)
+                 )
+             )
+         ),
+         case(client.account[id:in.accountId].product.ServiceFee.HowToCalculate = "FixedAmount",
+             condition(
+                 case(client.tmp.agreeRateInd=true()&isDefined(client.tmp.feeAmount) ,
+                     assign(client.account[id:in.accountId].feeAmt, client.tmp.feeAmount)
+                 ),
+                 case(1=1,
+                     assign(client.account[id:in.accountId].feeAmt, client.account[id:in.accountId].product.ServiceFee.CalculationParameter)
+                 )
+             )
+         )
+       ),
+
+     //Life Insurance plan
+
+     condition(
+         case(client.account[id:in.accountId].product.LifeInsuranceFee.HowToCalculate = "BaseRatio",
+             condition(
+                         case(client.tmp.agreeRateInd=true()&isDefined(client.tmp.lifeInsuFeeRate) ,
+                             group(
+                                assign(client.account[id:in.accountId].lifeInsuFeeRate, client.tmp.lifeInsuFeeRate),
+                                condition(
+                                    case(client.account[id:in.accountId].product.LifeInsuranceFee.ChargeMethod = "Terms",
+                                        assign(client.account[id:in.accountId].lifeInsuFeeRate, client.tmp.lifeInsuFeeRate * termsNumber)
+                                    )
+                                )
+                             )
+                         ),
+                         case(1=1,
+                              assign(client.account[id:in.accountId].lifeInsuFeeRate, client.account[id:in.accountId].product.LifeInsuranceFee.CalculationParameter)
+                         )
+              )
+
+         ),
+         case(client.account[id:in.accountId].product.LifeInsuranceFee.HowToCalculate = "FixedAmount",
+             condition(
+                         case(client.tmp.agreeRateInd=true()&isDefined(client.tmp.lifeInsuFeeAmt) ,
+                             assign(client.account[id:in.accountId].lifeInsuFeeAmt, client.tmp.lifeInsuFeeAmt)
+                         ),
+                         case(1=1,
+                             assign(client.account[id:in.accountId].lifeInsuFeeAmt, client.account[id:in.accountId].product.LifeInsuranceFee.CalculationParameter)
+                         )
+              )
+         )
+
+     ),
+     //Insurance plan
+
+        condition(
+                case(client.account[id:in.accountId].product.InsurancePlan.HowToCalculate = "BaseRatio",
+                    condition(
+                         case(client.tmp.agreeRateInd=true()&isDefined(client.tmp.insRate) ,
+                             group(
+                                 assign(client.account[id:in.accountId].insuranceRate, client.tmp.insRate),
+                                 condition(
+                                    case(client.account[id:in.accountId].product.InsurancePlan.ChargeMethod = "Terms",
+                                        assign(client.account[id:in.accountId].insuranceRate, client.tmp.insRate * termsNumber)
+                                    )
+                                 )
+                             )
+                         ),
+                         case(1=1,
+                             assign(client.account[id:in.accountId].insuranceRate, client.account[id:in.accountId].product.InsurancePlan.CalculationParameter)
+                         )
+                    )
+                ),
+                 case(client.account[id:in.accountId].product.InsurancePlan.HowToCalculate = "FixedAmount",
+                     condition(
+                         case(client.tmp.agreeRateInd=true()&isDefined(client.tmp.insAmt) ,
+                             assign(client.account[id:in.accountId].insAmt, client.tmp.insAmt)
+                         ),
+                         case(1=1,
+                             assign(client.account[id:in.accountId].insAmt, client.account[id:in.accountId].product.InsurancePlan.CalculationParameter)
+                         )
+                     )
+                 )
+        ),
+
+      // FlexibleRepaymentServicePacket
+
+        condition(
+                case(client.account[id:in.accountId].product.FlexibleRepaymentServicePacket.HowToCalculate = "BaseRatio",
+                     condition(
+                         case(client.tmp.agreeRateInd=true()&isDefined(client.tmp.installmentFeeRate) ,
+                             group(
+                                 assign(client.account[id:in.accountId].installmentFeeRate, client.tmp.installmentFeeRate),
+                                 condition(
+                                    case(client.account[id:in.accountId].product.FlexibleRepaymentServicePacket.ChargeMethod = "Terms",
+                                        assign(client.account[id:in.accountId].installmentFeeRate, client.tmp.installmentFeeRate * termsNumber)
+                                    )
+                                 )
+                             )
+                         ),
+                         case(1=1,
+                             assign(client.account[id:in.accountId].installmentFeeRate, client.account[id:in.accountId].FlexibleRepaymentServicePacket.CalculationParameter)
+                         )
+                     )
+                ),
+                case(client.account[id:in.accountId].product.FlexibleRepaymentServicePacket.HowToCalculate = "FixedAmount",
+                     condition(
+                         case(client.tmp.agreeRateInd=true()&isDefined(client.tmp.installmentFeeAmt) ,
+                             assign(client.account[id:in.accountId].installmentFeeAmt, client.tmp.installmentFeeAmt)
+                         ),
+                         case(1=1,
+                             assign(client.account[id:in.accountId].installmentFeeAmt, client.account[id:in.accountId].FlexibleRepaymentServicePacket.CalculationParameter)
+                         )
+                     )
+                )
+        ),
+      // AdvanceRepaymentServiceFee
+        condition(
+                case(client.account[id:in.accountId].product.AdvanceRepaymentServiceFee.HowToCalculate = "BaseRatio",
+                     condition(
+                         case(client.tmp.agreeRateInd=true()&isDefined(client.tmp.prepaymentFeeRate) ,
+                             assign(client.account[id:in.accountId].prepayPkgFeeRate, client.tmp.prepaymentFeeRate * termsNumber)
+                         ),
+                         case(1=1,
+                             assign(client.account[id:in.accountId].prepayPkgFeeRate, client.account[id:in.accountId].product.AdvanceRepaymentServiceFee.CalculationParameter)
+                         )
+                     )
+                ),
+                 case(client.account[id:in.accountId].product.AdvanceRepaymentServiceFee.HowToCalculate = "FixedAmount",
+                     condition(
+                         case(client.tmp.agreeRateInd=true()&isDefined(client.tmp.prepaymentFeeAmt),
+                             assign(client.account[id:in.accountId].prepayPkgFeeAmt, client.tmp.prepaymentFeeAmt)
+                         ),
+                         case(1=1,
+                             assign(client.account[id:in.accountId].prepayPkgFeeAmt, client.account[id:in.accountId].product.AdvanceRepaymentServiceFee.CalculationParameter)
+                         )
+                     )
+                 )
+         ),
+
+      //InterestPenalty - DailyInterestRate
+         condition(
+             case(client.tmp.agreeRateInd=true()&isDefined(client.tmp.penaltyRate) ,
+                 assign(client.account[id:in.accountId].penaltyRate, client.tmp.penaltyRate)
+             ),
+             case(1=1,
+                 assign(client.account[id:in.accountId].penaltyRate, client.account[id:in.accountId].product.InterestPenalty.DailyInterestRate)
+             )
+         ),
+
+       //NEED TO ANALIZE
+         condition(
+             case(client.tmp.agreeRateInd=true()&isDefined(client.tmp.compoundRate) ,
+                 assign(client.account[id:in.accountId].compoundRate, client.tmp.compoundRate)
+             ),
+             case(1=1,
+                 assign(client.account[id:in.accountId].compoundRate, client.account[id:in.accountId].product.compoundRate)
+             )
+         ),
+        //Interest
+         condition(
+             case(client.tmp.agreeRateInd=true()&isDefined(client.tmp.interestRate) ,
+                 assign(client.account[id:in.accountId].interestRate, client.tmp.interestRate)
+             ),
+             case(1=1,
+                 assign(client.account[id:in.accountId].interestRate, client.account[id:in.accountId].product.Interest)
+             )
+         ),
+
+
+      condition(
+             case(client.account[id:in.accountId].product.StampDutyFee.HowToCalculate = "BaseRatio",
+                 condition(
+                     case(client.tmp.agreeRateInd=true()&isDefined(client.tmp.stampRate) ,
+                         group(
+                            assign(client.account[id:in.accountId].stampdutyRate, client.tmp.stampRate),
+                            condition(
+                                case(client.account[id:in.accountId].product.StampDutyFee.ChargeMethod = "Terms",
+                                    assign(client.account[id:in.accountId].stampdutyRate, client.tmp.stampRate * termsNumber)
+                                )
+                            )
+                         )
+                     ),
+                     case(1=1,
+                         assign(client.account[id:in.accountId].stampdutyRate, client.account[id:in.accountId].product.StampDutyFee.CalculationParameter)
+                     )
+                 )
+             )
+      ),
+
+     condition(
+         case(client.account[id:in.accountId].product.StampDutyFee.HowToCalculate = "FixedAmount",
+             condition(
+                 case(client.tmp.agreeRateInd=true()&isDefined(client.tmp.stampAmt) ,
+                     assign(client.account[id:in.accountId].stampAmt, client.tmp.stampAmt)
+                 ),
+                 case(1=1,
+                     assign(client.account[id:in.accountId].stampAmt, StampDutyFee.CalculationParameter)
+                 )
+               )
+             )
+         ),
+
+
+  //NO NEED FOR MS LOAN
+         condition(
+             case(client.tmp.agreeRateInd=true()&isDefined(client.tmp.agentFeeAmount) ,
+                 assign(client.account[id:in.accountId].replaceSvcFeeAmt, client.tmp.agentFeeAmount)
+             ),
+             case(1=1,
+                 assign(client.account[id:in.accountId].replaceSvcFeeAmt, client.account[id:in.accountId].product.replaceFeeAmt)
+             )
+         ),
+
+
+         condition(
+             case(client.tmp.agreeRateInd=true()&isDefined(client.tmp.agentFeeRate) ,
+                 assign(client.account[id:in.accountId].agentFeeRate, client.tmp.agentFeeRate * termsNumber)
+             ),
+             case(1=1,
+                 assign(client.account[id:in.accountId].agentFeeRate, client.account[id:in.accountId].product.agentFeeRate)
+             )
+         ),
+
+//NEED TO CONFIRM
+         condition(
+             case(isDefined(client.tmp.replaceFeeRate) ,
+                 assign(client.account[id:in.accountId].replaceFeeRate, client.tmp.replaceFeeRate * termsNumber)
+             ),
+             case(1=1,
+                 assign(client.account[id:in.accountId].replaceFeeRate, client.account[id:in.accountId].product.replaceFeeRate)
+             )
+         ),
+
+
+         condition(
+             case(isDefined(client.tmp.replacePenaltyRate) ,
+                 assign(client.account[id:in.accountId].replacePenaltyRate, client.account[id:in.accountId].product.replacePenaltyRate)
+             ),
+             case(1=1,
+                 assign(client.account[id:in.accountId].replacePenaltyRate, 0)
+             )
+         )
+
+     ),
+
+     group(
+          assign(client.account[id:in.accountId].acctType, "E"),
+          assign(client.account[id:in.accountId].owningBranch, "000000001")
+     ),
+
+     group(
+        assign ( client.account[id:in.accountId].custSource, client.tmp.inputSource),
+
+        assign ( client.account[id:in.accountId].loanTerm, client.tmp.loanTerm),
+        assign ( client.account[id:in.accountId].loanAmt, client.tmp.loanAmt)
+     ),
+
+
+    group(
+        //Values for paid accounting
+        //TODO create in account
+        assign(client.account[id:in.accountId].totalPaidPrincipalAmt, 0.00),
+        assign(client.account[id:in.accountId].totalPaidInterest, 0.00),
+        assign(client.account[id:in.accountId].paidInstallmentFee, 0.00),
+        assign(client.account[id:in.accountId].totalPaidStampDutyFee, 0.00),
+        assign(client.account[id:in.accountId].totalPaidServiceFee, 0.00),
+        assign(client.account[id:in.accountId].totalPaidLifeInsuranceFee, 0.00),
+        assign(client.account[id:in.accountId].totalPaidPrepayPkgFee, 0.00),
+        assign(client.account[id:in.accountId].totalPaidReplaceServiceFee, 0.00),
+        assign(client.account[id:in.accountId].paidSumOfDebtTillBizDate, 0.00),
+        assign(client.account[id:in.accountId].totalPaidInstallmentFee, 0.00),
+        assign(client.account[id:in.accountId].sumOverpaid, 0.00),
+
+        assign(client.account[id:in.accountId].paidTerms, 0.00),
+        assign(client.account[id:in.accountId].totalPaidTerms, 0.00)
+
+    ),
+    assign (client.account[id:in.accountId].remainingTerms, client.account[id:in.accountId].loanTerm),
+
+    assign(in.accountIndex, index(client.account[id:in.accountId])),
+
+    //***** ILYAS
+    assign (client.account[id:in.accountId].hasAdvancedClearing, false()),
+    assign (client.account[id:in.accountId].returnOverpayment, false()),
+    assign (client.account[id:in.accountId].hasCompulsoryCleaning, false())
+
+)

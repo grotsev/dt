@@ -1,0 +1,111 @@
+group (
+  Object(in, Num(idx), Num(accountIndex), Num(overdueAmt), Str(accountId)),
+  assign(client.tmp.bizDate, businessDay()),
+
+  //Validation of data
+  condition (
+    case (
+        client.tmp.interestRate < 0,
+        group (
+        error("Field name {INTEREST RATE}, can not be less than or equal to 0"),
+      exit()
+        )
+      ),
+    case(
+        client.tmp.contraExpireDate < businessDay(),
+        group (
+        error("Validity of the contract contraExpireDate"),
+    exit()
+        )
+      ),
+/*  case(
+        //Bank code validation
+        group (
+        error("incorrect bank code"),
+    exit()
+        )
+      ),*/
+  case(
+        client.country != "156",
+        group (
+        error("Field name {COUNTRY}, must be 156"),
+    exit()
+        )
+      ),
+  case(
+        client.tmp.loanAmt <=0,
+        group (
+        error("Field name {CREDIT_LIMIT}, must be greater than 0"),
+    exit()
+        )
+      )
+  ),
+  //Validation of product attributes
+  condition (
+
+    case (
+        client.account[id:in.accountId].product.LoanMold != "M" & client.account[id:in.accountId].product.LoanMold != "S",
+        group (
+            error("1052, Invalid loan products. Not a non-revolving loan products"),
+            exit()
+        )
+      ),
+    case (
+        client.account[id:in.accountId].product.LoanStatus!= "A",
+        group (
+            error("1039, The loan product inactive, you can not do this"),
+            exit()
+        )
+      )
+  ),
+
+  case(
+      !isDefined(in.accountId),
+      group(
+            assign(in.accountId, generateId())
+      )
+  ),
+
+    //Date (yyMMddhhmmddSSS) +4 bit random number +3 external end of the serial number
+    procedure(genRefnbr),
+
+    //Generates account
+    procedure(createAccountInner),
+
+    //Generate Payment Transaction
+    assign(generateTransaction_transactionAmount, client.tmp.loanAmt),
+    assign(orderStatus, "N"),
+    assign(loanUsage, "L"),
+    procedure(generateTransaction),
+
+
+    assign (client.account[id:in.accountId].isFrozen, false()),
+
+    //Native procedure call - Sending order to payment platform SMS
+    procedure (sendPayment),
+
+    //After response is received from payment platform
+    condition (
+      case (client.account[id:in.accountId].transaction[id:transId].orderStatus = "E",
+        group (
+          assign (client.account[id:in.accountId].isAbnormal, true()),
+          exit()
+        )
+      ),
+      case (1 = 1,
+        group (
+          assign(client.account[id:in.accountId].isAbnormal, false()),
+
+          condition(
+            case (client.account[id:in.accountId].transaction[id:transId].orderStatus = "S",
+              procedure (generatePayPlan)
+
+            )
+          )
+        )
+      )
+    ),
+
+    //Native procedure call - Send SMS
+    procedure (sendSMS)
+)

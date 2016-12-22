@@ -1,0 +1,13 @@
+group
+(
+    assign(j, power((product.tmp.interest + 1), product.tmp.repaymentTerms)),
+	condition
+		(
+			case (product.tmp.interest = 0,
+				assign(product.tmp.loanTermPayment, round((product.tmp.loanAmount)  / (product.tmp.repaymentTerms)), 6)
+			),
+			case (product.tmp.interest != 0,
+				assign(product.tmp.loanTermPayment, round(product.tmp.interest * j / (j - 1), 6))
+			)
+		)
+)

@@ -1,0 +1,72 @@
+group (
+    condition (
+        case (isDefined(toNum(txnAmt)),
+            assign(txnAmt, toNum(txnAmt))
+        )
+    ),
+    condition (
+        case (isDefined(toNum(termNumber)),
+            assign(termNumber, toNum(termNumber))
+        )
+    ),
+    condition (
+        case (isDefined(toNum(in.accountIndex)),
+            assign(in.accountIndex,toNum(in.accountIndex))
+        )
+    ),
+
+
+    condition (
+      case (txnAmt >= client.account[in.accountIndex].payPlan[termNumber - 1].remainingInterest & client.account[in.accountIndex].payPlan[termNumber - 1].remainingInterest > 0,
+        group (
+
+        assign(client.account[in.accountIndex].payPlan[termNumber - 1].remainingTotal, round(client.account[in.accountIndex].payPlan[termNumber - 1].remainingTotal
+          - client.account[in.accountIndex].payPlan[termNumber - 1].remainingInterest, 2)),
+
+        assign(client.account[in.accountIndex].payPlan[termNumber - 1].paidTotal, round(client.account[in.accountIndex].payPlan[termNumber - 1].paidTotal
+          + client.account[in.accountIndex].payPlan[termNumber - 1].remainingInterest, 2)),
+
+        assign(client.account[in.accountIndex].payPlan[termNumber - 1].paidInterest,
+        round(client.account[in.accountIndex].payPlan[termNumber - 1].paidInterest + client.account[in.accountIndex].payPlan[termNumber - 1].remainingInterest, 2)),
+
+                group (
+                    assign(client.account[in.accountIndex].totalPaidInterest, round(client.account[in.accountIndex].totalPaidInterest + client.account[in.accountIndex].payPlan[termNumber - 1].remainingInterest, 2)),
+                    assign(client.account[in.accountIndex].totalRemInterest, round(client.account[in.accountIndex].totalRemInterest - client.account[in.accountIndex].payPlan[termNumber - 1].remainingInterest, 2)),
+
+                    assign(client.account[in.accountIndex].paidSumOfDebtTillBizDate, round (client.account[in.accountIndex].paidSumOfDebtTillBizDate + client.account[in.accountIndex].payPlan[termNumber - 1].remainingInterest, 2)),
+                    assign(client.account[in.accountIndex].totalRemainingAmt, round(client.account[in.accountIndex].totalRemainingAmt - client.account[in.accountIndex].payPlan[termNumber - 1].remainingInterest, 2))
+                ),
+
+                assign(txnAmt, round(txnAmt - client.account[in.accountIndex].payPlan[termNumber - 1].remainingInterest, 2)),
+        assign(client.account[in.accountIndex].payPlan[termNumber - 1].remainingInterest, 0)
+
+       )
+      ),
+      case (txnAmt < client.account[in.accountIndex].payPlan[termNumber - 1].remainingInterest & txnAmt > 0,
+        group (
+        assign(client.account[in.accountIndex].payPlan[termNumber - 1].remainingTotal, round(client.account[in.accountIndex].payPlan[termNumber - 1].remainingTotal
+          - txnAmt, 2)),
+
+        assign(client.account[in.accountIndex].payPlan[termNumber - 1].paidTotal, round(client.account[in.accountIndex].payPlan[termNumber - 1].paidTotal
+          + txnAmt, 2)),
+
+        assign(client.account[in.accountIndex].payPlan[termNumber - 1].paidInterest,
+        round (client.account[in.accountIndex].payPlan[termNumber - 1].paidInterest + txnAmt, 2)),
+
+
+              assign(client.account[in.accountIndex].payPlan[termNumber - 1].remainingInterest,
+                round(client.account[in.accountIndex].payPlan[termNumber - 1].remainingInterest - txnAmt, 2)),
+
+                group (
+                    assign(client.account[in.accountIndex].totalPaidInterest, round(client.account[in.accountIndex].totalPaidInterest + txnAmt, 2)),
+                    assign(client.account[in.accountIndex].totalRemInterest, round(client.account[in.accountIndex].totalRemInterest - txnAmt, 2)),
+
+                    assign(client.account[in.accountIndex].paidSumOfDebtTillBizDate, round (client.account[in.accountIndex].paidSumOfDebtTillBizDate + txnAmt, 2)),
+                    assign(client.account[in.accountIndex].totalRemainingAmt, round (client.account[in.accountIndex].totalRemainingAmt - txnAmt, 2))
+                ),
+
+                assign(txnAmt, 0)
+        )
+      )
+  )
+)

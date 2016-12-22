@@ -1,0 +1,255 @@
+group
+( //** prepareForAdvanceClearing ** //
+    assign(payPlanIndex, client.account[in.accountIndex].currentTerm-1),
+
+    group(
+            assign(client.account[in.accountIndex].totalRemainingAmt,
+                client.account[in.accountIndex].totalRemainingAmt - client.account[in.accountIndex].payPlan[payPlanIndex].remainingTotal)
+    ),
+
+    foreach (j, 0, len(client.account[in.accountIndex].payPlan)-1,
+        group(
+            condition(
+                case(client.account[in.accountIndex].payPlan[j].termNumber <= client.account[in.accountIndex].currentTerm,
+                    continue()
+                )
+            ),
+
+            group(//Sum paid amounts together, for MS loan they should be 0
+                group( //paidPrincipal
+                    assign(a, client.account[in.accountIndex].payPlan[payPlanIndex].paidPrincipal),
+                    assign(b, client.account[in.accountIndex].payPlan[j].paidPrincipal),
+                    procedure(sumProcedure),
+                    assign(client.account[in.accountIndex].payPlan[payPlanIndex].paidPrincipal, sum),
+                    assign(client.account[in.accountIndex].payPlan[j].paidPrincipal, 0)
+                ),
+
+                group( //paidInterest
+                    assign(a, client.account[in.accountIndex].payPlan[payPlanIndex].paidInterest),
+                    assign(b, client.account[in.accountIndex].payPlan[j].paidInterest),
+                    procedure(sumProcedure),
+                    assign(client.account[in.accountIndex].payPlan[payPlanIndex].paidInterest, sum),
+                    assign(client.account[in.accountIndex].payPlan[j].paidInterest, 0)
+                ),
+
+                group( //paidLifeInsurance
+                    assign(a, client.account[in.accountIndex].payPlan[payPlanIndex].paidLifeInsurance),
+                    assign(b, client.account[in.accountIndex].payPlan[j].paidLifeInsurance),
+                    procedure(sumProcedure),
+                    assign(client.account[in.accountIndex].payPlan[payPlanIndex].paidLifeInsurance, sum),
+                    assign(client.account[in.accountIndex].payPlan[j].paidLifeInsurance, 0)
+                ),
+
+                group( //paidServiceFee
+                    assign(a, client.account[in.accountIndex].payPlan[payPlanIndex].paidServiceFee),
+                    assign(b, client.account[in.accountIndex].payPlan[j].paidServiceFee),
+                    procedure(sumProcedure),
+                    assign(client.account[in.accountIndex].payPlan[payPlanIndex].paidServiceFee, sum),
+                    assign(client.account[in.accountIndex].payPlan[j].paidServiceFee, 0)
+                ),
+
+                group( //paidReplaceSvcFee
+                    assign(a, client.account[in.accountIndex].payPlan[payPlanIndex].paidReplaceSvcFee),
+                    assign(b, client.account[in.accountIndex].payPlan[j].paidReplaceSvcFee),
+                    procedure(sumProcedure),
+                    assign(client.account[in.accountIndex].payPlan[payPlanIndex].paidReplaceSvcFee, sum),
+                    assign(client.account[in.accountIndex].payPlan[j].paidReplaceSvcFee, 0)
+                ),
+
+                group( //paidPrepayPkgFee
+                    assign(a, client.account[in.accountIndex].payPlan[payPlanIndex].paidPrepayPkgFee),
+                    assign(b, client.account[in.accountIndex].payPlan[j].paidPrepayPkgFee),
+                    procedure(sumProcedure),
+                    assign(client.account[in.accountIndex].payPlan[payPlanIndex].paidPrepayPkgFee, sum),
+                    assign(client.account[in.accountIndex].payPlan[j].paidPrepayPkgFee, 0)
+                ),
+
+                group( //paidInstallmentFee
+                    assign(a, client.account[in.accountIndex].payPlan[payPlanIndex].paidInstallmentFee),
+                    assign(b, client.account[in.accountIndex].payPlan[j].paidInstallmentFee),
+                    procedure(sumProcedure),
+                    assign(client.account[in.accountIndex].payPlan[payPlanIndex].paidInstallmentFee, sum),
+                    assign(client.account[in.accountIndex].payPlan[j].paidInstallmentFee, 0)
+                ),
+
+                group( //paidTotal
+                    assign(a, client.account[in.accountIndex].payPlan[payPlanIndex].paidTotal),
+                    assign(b, client.account[in.accountIndex].payPlan[j].paidTotal),
+                    procedure(sumProcedure),
+                    assign(client.account[in.accountIndex].payPlan[payPlanIndex].paidTotal, sum),
+                    assign(client.account[in.accountIndex].payPlan[j].paidTotal, 0)
+                )
+            ),
+
+            group(//Sum all remainings
+                condition(
+                    case(client.account[in.accountIndex].product.ChargeAdvanceRepayment.Principal = "Remaining",
+                        group( //remainingPrincipal
+                            assign(a, client.account[in.accountIndex].payPlan[payPlanIndex].remainingPrincipal),
+                            assign(b, client.account[in.accountIndex].payPlan[j].remainingPrincipal),
+                            procedure(sumProcedure),
+                            assign(client.account[in.accountIndex].payPlan[payPlanIndex].remainingPrincipal, sum),
+                            assign(client.account[in.accountIndex].payPlan[j].remainingPrincipal, 0)
+                        )
+                    ),
+                    case(1=1,
+                        assign(client.account[in.accountIndex].totalRemPrincipalAmt,
+                            client.account[in.accountIndex].totalRemPrincipalAmt - client.account[in.accountIndex].payPlan[j].remainingPrincipal),
+                        assign(client.account[in.accountIndex].payPlan[j].remainingTotal,
+                            client.account[in.accountIndex].payPlan[j].remainingTotal - client.account[in.accountIndex].payPlan[j].remainingPrincipal)
+                    )
+                ),
+                condition(
+                    case(client.account[in.accountIndex].product.ChargeAdvanceRepayment.Interest = "Remaining",
+                        group( //remainingInterest
+                            assign(a, client.account[in.accountIndex].payPlan[payPlanIndex].remainingInterest),
+                            assign(b, client.account[in.accountIndex].payPlan[j].remainingInterest),
+                            procedure(sumProcedure),
+                            assign(client.account[in.accountIndex].payPlan[payPlanIndex].remainingInterest, sum),
+                            assign(client.account[in.accountIndex].payPlan[j].remainingInterest, 0)
+                        )
+                    ),
+                    case(1=1,
+                        assign(client.account[in.accountIndex].totalRemInterest,
+                            client.account[in.accountIndex].totalRemInterest - client.account[in.accountIndex].payPlan[j].remainingInterest),
+                        assign(client.account[in.accountIndex].payPlan[j].remainingTotal,
+                            client.account[in.accountIndex].payPlan[j].remainingTotal - client.account[in.accountIndex].payPlan[j].remainingInterest)
+                    )
+                ),
+                condition(
+                    case(client.account[in.accountIndex].product.ChargeAdvanceRepayment.ServiceFee = "Remaining",
+                        group( //remainingServiceFee
+                            assign(a, client.account[in.accountIndex].payPlan[payPlanIndex].remainingServiceFee),
+                            assign(b, client.account[in.accountIndex].payPlan[j].remainingServiceFee),
+                            procedure(sumProcedure),
+                            assign(client.account[in.accountIndex].payPlan[payPlanIndex].remainingServiceFee, sum),
+                            assign(client.account[in.accountIndex].payPlan[j].remainingServiceFee, 0)
+                        )
+                    ),
+                    case(1=1,
+                        assign(client.account[in.accountIndex].totalRemServiceFee,
+                            client.account[in.accountIndex].totalRemServiceFee - client.account[in.accountIndex].payPlan[j].remainingServiceFee),
+                        assign(client.account[in.accountIndex].payPlan[j].remainingTotal,
+                            client.account[in.accountIndex].payPlan[j].remainingTotal - client.account[in.accountIndex].payPlan[j].remainingServiceFee)
+                    )
+                ),
+                condition(
+                    case(client.account[in.accountIndex].product.ChargeAdvanceRepayment.Value_addedServiceFee = "Remaining",
+                        group( //remainingLifeInsurance
+                            assign(a, client.account[in.accountIndex].payPlan[payPlanIndex].remainingLifeInsurance),
+                            assign(b, client.account[in.accountIndex].payPlan[j].remainingLifeInsurance),
+                            procedure(sumProcedure),
+                            assign(client.account[in.accountIndex].payPlan[payPlanIndex].remainingLifeInsurance, sum),
+                            assign(client.account[in.accountIndex].payPlan[j].remainingLifeInsurance, 0)
+                        ),
+
+                        group( //remainingReplaceSvcFee
+                            assign(a, client.account[in.accountIndex].payPlan[payPlanIndex].remainingReplaceSvcFee),
+                            assign(b, client.account[in.accountIndex].payPlan[j].remainingReplaceSvcFee),
+                            procedure(sumProcedure),
+                            assign(client.account[in.accountIndex].payPlan[payPlanIndex].remainingReplaceSvcFee, sum),
+                            assign(client.account[in.accountIndex].payPlan[j].remainingReplaceSvcFee, 0)
+                        ),
+                        group( //remainingPrepayPkgFee
+                            assign(a, client.account[in.accountIndex].payPlan[payPlanIndex].remainingPrepayPkgFee),
+                            assign(b, client.account[in.accountIndex].payPlan[j].remainingPrepayPkgFee),
+                            procedure(sumProcedure),
+                            assign(client.account[in.accountIndex].payPlan[payPlanIndex].remainingPrepayPkgFee, sum),
+                            assign(client.account[in.accountIndex].payPlan[j].remainingPrepayPkgFee, 0)
+                        ),
+                        group( //remainingInstallmentFee
+                            assign(a, client.account[in.accountIndex].payPlan[payPlanIndex].remainingInstallmentFee),
+                            assign(b, client.account[in.accountIndex].payPlan[j].remainingInstallmentFee),
+                            procedure(sumProcedure),
+                            assign(client.account[in.accountIndex].payPlan[payPlanIndex].remainingInstallmentFee, sum),
+                            assign(client.account[in.accountIndex].payPlan[j].remainingInstallmentFee, 0)
+                        )
+                    ),
+                    case(1=1,
+                        assign(client.account[in.accountIndex].totalRemLifeInsuranceFee,
+                            client.account[in.accountIndex].totalRemLifeInsuranceFee - client.account[in.accountIndex].payPlan[j].remainingLifeInsurance),
+                        assign(client.account[in.accountIndex].totalRemReplaceServiceFee,
+                            client.account[in.accountIndex].totalRemReplaceServiceFee - client.account[in.accountIndex].payPlan[j].remainingReplaceSvcFee),
+                        assign(client.account[in.accountIndex].totalRemPrepayPkgFee,
+                            client.account[in.accountIndex].totalRemPrepayPkgFee - client.account[in.accountIndex].payPlan[j].remainingPrepayPkgFee),
+                        assign(client.account[in.accountIndex].totalRemInstallmentFee,
+                            client.account[in.accountIndex].totalRemInstallmentFee - client.account[in.accountIndex].payPlan[j].remainingInstallmentFee),
+
+                        assign(client.account[in.accountIndex].payPlan[j].remainingTotal,
+                            client.account[in.accountIndex].payPlan[j].remainingTotal - client.account[in.accountIndex].payPlan[j].remainingLifeInsurance),
+                        assign(client.account[in.accountIndex].payPlan[j].remainingTotal,
+                            client.account[in.accountIndex].payPlan[j].remainingTotal - client.account[in.accountIndex].payPlan[j].remainingReplaceSvcFee),
+                        assign(client.account[in.accountIndex].payPlan[j].remainingTotal,
+                            client.account[in.accountIndex].payPlan[j].remainingTotal - client.account[in.accountIndex].payPlan[j].remainingPrepayPkgFee),
+                        assign(client.account[in.accountIndex].payPlan[j].remainingTotal,
+                            client.account[in.accountIndex].payPlan[j].remainingTotal - client.account[in.accountIndex].payPlan[j].remainingInstallmentFee)
+                    )
+                ),
+
+                group( //remainingTotal
+                    assign(client.account[in.accountIndex].payPlan[payPlanIndex].remainingTotal,
+                        client.account[in.accountIndex].payPlan[payPlanIndex].remainingTotal + client.account[in.accountIndex].payPlan[j].remainingTotal),
+                    assign(client.account[in.accountIndex].totalRemainingAmt,
+                        client.account[in.accountIndex].totalRemainingAmt - client.account[in.accountIndex].payPlan[j].remainingTotal),
+                    assign(client.account[in.accountIndex].payPlan[j].remainingTotal, 0)
+                )
+            ),
+
+            assign(client.account[in.accountIndex].payPlan[j].actual, false())
+        )
+    ),
+
+    group( //No fees, because if apply for advance repayment is less or equal to 15 days after opening pay only principal
+        condition(
+            case(daysBetween(client.account[in.accountIndex].createTime, client.account[in.accountIndex].appliedAdvanceRepaymentDate)<=15,
+                group(
+                    assign(client.account[in.accountIndex].totalRemInstallmentFee,
+                        client.account[in.accountIndex].totalRemInstallmentFee - client.account[in.accountIndex].payPlan[payPlanIndex].remainingInstallmentFee),
+                    assign(client.account[in.accountIndex].payPlan[payPlanIndex].remainingInstallmentFee, 0),
+
+                    assign(client.account[in.accountIndex].totalRemInterest,
+                        client.account[in.accountIndex].totalRemInterest - client.account[in.accountIndex].payPlan[payPlanIndex].remainingInterest),
+                    assign(client.account[in.accountIndex].payPlan[payPlanIndex].remainingInterest, 0),
+
+                    assign(client.account[in.accountIndex].totalRemLifeInsuranceFee,
+                        client.account[in.accountIndex].totalRemLifeInsuranceFee - client.account[in.accountIndex].payPlan[payPlanIndex].remainingLifeInsurance),
+                    assign(client.account[in.accountIndex].payPlan[payPlanIndex].remainingLifeInsurance, 0),
+
+                    assign(client.account[in.accountIndex].totalRemPrepayPkgFee,
+                         client.account[in.accountIndex].totalRemPrepayPkgFee - client.account[in.accountIndex].payPlan[payPlanIndex].remainingPrepayPkgFee),
+                    assign(client.account[in.accountIndex].payPlan[payPlanIndex].remainingPrepayPkgFee, 0),
+
+                    assign(client.account[in.accountIndex].totalRemReplaceServiceFee,
+                        client.account[in.accountIndex].totalRemReplaceServiceFee - client.account[in.accountIndex].payPlan[payPlanIndex].remainingReplaceSvcFee),
+                    assign(client.account[in.accountIndex].payPlan[payPlanIndex].remainingReplaceSvcFee, 0),
+
+                    assign(client.account[in.accountIndex].payPlan[payPlanIndex].remainingStampDutyFee, 0),
+
+                    assign(client.account[in.accountIndex].totalRemServiceFee,
+                        client.account[in.accountIndex].totalRemServiceFee - client.account[in.accountIndex].payPlan[payPlanIndex].remainingServiceFee),
+                    assign(client.account[in.accountIndex].payPlan[payPlanIndex].remainingServiceFee, 0),
+
+                    assign(client.account[in.accountIndex].payPlan[payPlanIndex].remainingTotal,
+                        client.account[in.accountIndex].payPlan[payPlanIndex].remainingPrincipal)
+
+                )
+            ),
+            case(1=1,
+                group( //paid and unpaid advance repayment transaction fee amount
+                    assign(client.account[in.accountIndex].payPlan[payPlanIndex].paidAdvanceRepaymentFee, 0),
+                    assign(client.account[in.accountIndex].payPlan[payPlanIndex].remAdvanceRepaymentFee,
+                        client.account[in.accountIndex].product.AdvanceRepaymentServiceFee[0].parameter),
+                    assign(client.account[in.accountIndex].payPlan[payPlanIndex].remainingTotal,
+                        client.account[in.accountIndex].payPlan[payPlanIndex].remainingTotal + client.account[in.accountIndex].payPlan[payPlanIndex].remAdvanceRepaymentFee)
+                )
+            )
+        )
+    ),
+
+    group(
+            assign(client.account[in.accountIndex].totalRemainingAmt,
+                client.account[in.accountIndex].totalRemainingAmt + client.account[in.accountIndex].payPlan[payPlanIndex].remainingTotal)
+    ),
+
+    assign(client.account[in.accountIndex].termToPay, client.account[in.accountIndex].payPlan[payPlanIndex].termNumber)
+)

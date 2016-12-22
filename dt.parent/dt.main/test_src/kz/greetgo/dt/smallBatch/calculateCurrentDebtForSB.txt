@@ -1,0 +1,85 @@
+group(
+    assign(debtAmt, 0),
+    assign(currentTermDebt, 0),
+    foreach (j, 0, len(client.account[in.accountIndex].payPlan)-1,
+            group(
+                condition(
+                    case(client.account[in.accountIndex].payPlan[j].hasPaid = true() |
+                          client.account[in.accountIndex].payPlan[j].payPlanDueDate > businessDay() |
+                          client.account[in.accountIndex].payPlan[j].actual = false(),
+                          group(
+                            continue()
+                          )
+                    )
+                ), //We need only previous and non paid
+
+                assign(termDebt, 0),
+
+                message( client.account[in.accountIndex].payPlan[j].payPlanDueDate ~ " : " ~ businessDay()),
+
+                group( //Principal
+                    assign(a, client.account[in.accountIndex].payPlan[j].remainingPrincipal),
+                    assign(termDebt, termDebt+a)
+                ),
+
+
+                group( //Interest
+                    assign(a, client.account[in.accountIndex].payPlan[j].remainingInterest),
+                    assign(termDebt, termDebt+a)
+                ),
+
+
+                group( //Life Insurance Amt
+                    assign(a, client.account[in.accountIndex].payPlan[j].remainingLifeInsurance),
+                    assign(termDebt, termDebt+a)
+                ),
+
+                group( //Service Fee Amt
+                    assign(a, client.account[in.accountIndex].payPlan[j].remainingServiceFee),
+                    assign(termDebt, termDebt+a)
+                ),
+
+                group( //Replace Svc Fee
+                    assign(a, client.account[in.accountIndex].payPlan[j].remainingReplaceSvcFee),
+                    assign(termDebt, termDebt+a)
+                ),
+
+                group( //Prepay Pkg Fee
+                    assign(a, client.account[in.accountIndex].payPlan[j].remainingPrepayPkgFee),
+                    assign(termDebt, termDebt+a)
+                ),
+
+                assign(debtAmt, debtAmt +termDebt),
+
+                condition(
+                    case(
+                        client.account[in.accountIndex].payPlan[j].termNumber = client.account[in.accountIndex].termToPay,
+
+                        assign(currentTermDebt, termDebt)
+                    )
+                )
+
+            )
+        ),
+
+     //Calculate overdueFines
+
+     assign(fineAmt, 0),
+
+     foreach(j, 0, len(client.account[in.accountIndex].overdueFine)-1,
+         condition(
+             case(
+                 client.account[in.accountIndex].overdueFine[j].status = "U",
+                     group( //Prepay Pkg Fee
+                         assign(a, client.account[in.accountIndex].overdueFine[j].remainingAmount),
+                         assign(fineAmt, fineAmt+a)
+                     )
+             )
+         )
+     ),
+
+      group( //Overdue
+          assign(a, fineAmt),
+          assign(debtAmt, debtAmt+a)
+      )
+)

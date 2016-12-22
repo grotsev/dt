@@ -1,0 +1,17 @@
+group(
+     assign (repaymentPlanId, generateId()),
+     assign(client.account[id:in.accountId].product.repaymentScheduleTermValues[id:repaymentPlanId].loanAmount, client.account[id:in.accountId].product.product.loanAmount),
+     assign(client.account[id:in.accountId].product.repaymentScheduleTermValues[id:repaymentPlanId].repaymentTerms, client.account[id:in.accountId].product.product.repaymentTerms),
+     assign(client.account[id:in.accountId].product.repaymentScheduleTermValues[id:repaymentPlanId].termNumber, client.account[id:in.accountId].product.product.tmp.currentTerm),
+     assign(client.account[id:in.accountId].product.repaymentScheduleTermValues[id:repaymentPlanId].loanTermPrincipalAmt, client.account[id:in.accountId].product.product.tmp.loanTermPrincipalAmt),
+     assign(client.account[id:in.accountId].product.repaymentScheduleTermValues[id:repaymentPlanId].loanTermInstallmentFee, client.account[id:in.accountId].product.product.tmp.loanTermInstallmentFee),
+     assign(client.account[id:in.accountId].product.repaymentScheduleTermValues[id:repaymentPlanId].loanTermServiceFee, client.account[id:in.accountId].product.product.tmp.loanTermServiceFee),
+     assign(client.account[id:in.accountId].product.repaymentScheduleTermValues[id:repaymentPlanId].loanTermInterest, client.account[id:in.accountId].product.product.tmp.currentTermInterest),
+     assign(client.account[id:in.accountId].product.repaymentScheduleTermValues[id:repaymentPlanId].loanTermPaymentDueDate, client.account[id:in.accountId].product.product.tmp.loanTermPaymentDueDate),
+     assign(client.account[id:in.accountId].product.repaymentScheduleTermValues[id:repaymentPlanId].loanTermInsuranceFee, client.account[id:in.accountId].product.product.tmp.loanTermInsuranceFee),
+     assign(client.account[id:in.accountId].product.repaymentScheduleTermValues[id:repaymentPlanId].loanStampDutyFee, client.account[id:in.accountId].product.product.tmp.loanTermStampDutyFee),
+     assign(client.account[id:in.accountId].product.repaymentScheduleTermValues[id:repaymentPlanId].loanLifeInsuranceFee, client.account[id:in.accountId].product.product.tmp.loanTermLifeInsuranceFee),
+     assign(client.account[id:in.accountId].product.repaymentScheduleTermValues[id:repaymentPlanId].loanReplaceServiceFee, client.account[id:in.accountId].product.product.tmp.loanTermReplaceServiceFee),
+     assign(client.account[id:in.accountId].product.repaymentScheduleTermValues[id:repaymentPlanId].loanTermTotalPrepayPkgFee, client.account[id:in.accountId].product.product.tmp.loanTermTotalPrepayPkgFee),
+     assign(client.account[id:in.accountId].product.repaymentScheduleTermValues[id:repaymentPlanId].graceDate, client.account[id:in.accountId].product.repaymentScheduleTermValues[id:repaymentPlanId].loanTermPaymentDueDate + client.account[id:in.accountId].product.numberOfGracePeriodDays * day())
+)

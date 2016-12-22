@@ -1,0 +1,50 @@
+group (
+
+  procedure (calculateCurrentDebt),
+
+    condition (
+        case (debtAmt > 0,
+            group (
+                assign(loanUsage, "O"),
+                assign(orderStatus, "N"),
+                assign(generateTransaction_transactionAmount, debtAmt),
+
+                //Divide txnAmt into chunks
+                condition (
+                    case (client.account[in.accountIndex].ddBankBranch="0303",
+                        group (
+                            assign (generateTransaction_transactionAmount, round(generateTransaction_transactionAmount * 0.8, 2)),
+                            procedure (generateTransaction),
+                            assign (generateTransaction_transactionAmount, round(generateTransaction_transactionAmount * 0.2, 2)),
+                            procedure (generateTransaction)
+                        )
+                    ),
+                    case (client.account[in.accountIndex].ddBankBranch!="0303",
+                        group (
+
+                            assign(numberOfDivisions, log(2, debtAmt/20)),
+
+                            foreach (i, 1, numberOfDivisions,
+                                group (
+                                    assign(generateTransaction_transactionAmount, round(debtAmt/2, 2)),
+                                    assign(debtAmt, debtAmt - generateTransaction_transactionAmount),
+
+                                    procedure (generateTransaction)
+                                )
+                            ),
+
+                            //Last transaction amount
+                            assign (generateTransaction_transactionAmount, round(debtAmt, 2)),
+
+                            condition (
+                                case (generateTransaction_transactionAmount > 0,
+                                    procedure(generateTransaction)
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+        )
+    )
+)

@@ -1,0 +1,6 @@
+group (
+	assign(dayNumber, day(date)),
+    assign(numberOfDaysInMonth, daysInMonth(date)),
+
+    assign(txnAmt, txnAmt + feeAmt * dayNumber/numberOfDaysInMonth)
+)

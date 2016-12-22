@@ -1,0 +1,50 @@
+group(
+
+    assign(client.account[in.accountIndex].advanceClearingTerm, client.account[in.accountIndex].transaction[in.transactionIndex].term),
+    procedure(prepareForAdvanceClearing),
+
+    condition(
+        case(client.account[in.accountIndex].sumOverpaid>0,
+            assign(txnAmt, txnAmt + client.account[in.accountIndex].sumOverpaid)
+        )
+    ),
+
+    assign(txnAmt, client.account[in.accountIndex].transaction[in.transactionIndex].txnAmt),
+    procedure(commonPayment),
+
+    assign(dateFrom, client.account[in.accountIndex].transaction[in.transactionIndex].createTime),
+    procedure(calculateCurrentDebt),
+
+    condition(
+        case(debtAmt-fineAmt=0 & fineAmt-afterTransactionFine=0, //Only after this transaction fine
+            group(
+                assign(removeDate, client.account[in.accountIndex].transaction[in.transactionIndex].createTime),
+                procedure(removeUnnecessaryFines)
+            )
+        )
+    ),
+
+    condition(
+        case(debtAmt<=client.account[in.accountIndex].product.ToleranceValue.CPDOverdueToleranceValue,
+            assign(client.account[in.accountIndex].cpdBeginDate, empty())
+        )
+    ),
+
+    condition(
+        case(debtAmt<=client.account[in.accountIndex].product.ToleranceValue.DPDOverdueToleranceValue,
+            assign(client.account[in.accountIndex].overdueDate, empty())
+        )
+    ),
+
+    condition( //Check for error in small batch
+        case(debtAmt>0,
+            message("Account mistake " ~ client.account[in.accountIndex].id)
+        )
+    ),
+
+    condition(
+        case(debtAmt = 0,
+            procedure(closeAccount)
+        )
+    )
+)

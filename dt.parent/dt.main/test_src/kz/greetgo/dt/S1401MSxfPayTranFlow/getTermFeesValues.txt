@@ -1,0 +1,140 @@
+group (
+
+        condition(
+            case (isEmpty(currentTermPrincipalAmt),
+                group (
+                    error("currentTermPrincipalAmt is undefined. Procedure getTermFeesValues"),
+                    exit()
+                )
+            )
+        ),
+
+
+        assign(loanTermPrincipalAmt, currentTermPrincipalAmt),
+        assign(totalPrincipalAmt, totalPrincipalAmt +  loanTermPrincipalAmt),
+
+        assign(chargeMethod, installmentFeeChargeMethod),
+        assign(howToCalculate, howToCalculateInstallmentFee),
+
+        condition (
+            case (howToCalculate = "FixedAmount",
+                assign(calculationParameter, in.INSTALLMENT_FEE_AMT)
+            ),
+            case (howToCalculate = "BaseRatio",
+                assign(calculationParameter, in.INSTALLMENT_FEE_RATE)
+            )
+        ),
+
+        procedure(getFeeByFeeType),
+
+        assign(loanTermInstallmentFee, termFee),
+        assign(totalInstallmentFee, totalInstallmentFee +  loanTermInstallmentFee),
+
+        assign(chargeMethod, serviceFeeChargeMethod),
+        assign(howToCalculate, howToCalculateServiceFee),
+
+        condition (
+            case (howToCalculate = "FixedAmount",
+                assign(calculationParameter, in.FEE_AMOUNT)
+            ),
+            case (howToCalculate = "BaseRatio",
+                assign(calculationParameter, in.FEE_RATE)
+            )
+        ),
+
+        procedure(getFeeByFeeType),
+        assign(loanTermServiceFee, termFee),
+
+        assign(totalServiceFee, totalServiceFee +  loanTermServiceFee),
+
+        assign(chargeMethod, insuranceFeeChargeMethod),
+        assign(howToCalculate, howToCalculateInsuranceFee),
+
+        condition (
+            case (howToCalculate = "FixedAmount",
+                assign(calculationParameter, in.INS_AMT)
+            ),
+            case (howToCalculate = "BaseRatio",
+                assign(calculationParameter, in.INS_RATE)
+            )
+        ),
+
+        procedure(getFeeByFeeType),
+        assign(loanTermInsuranceFee, termFee),
+        assign(totalInsuranceFee, totalInsuranceFee +loanTermInsuranceFee),
+
+    condition
+    (
+        case (in.LIFE_INSURANCE_IND  = "Y",
+            group
+                (
+                    assign(chargeMethod, lifeInsuranceFeeChargeMethod),
+                    assign(howToCalculate, howToCalculateLifeInsuranceFee),
+
+                    condition (
+                               case (howToCalculate = "FixedAmount",
+                                    assign(calculationParameter, in.LIFE_INSU_FEE_AMT)
+                               ),
+                               case (howToCalculate = "BaseRatio",
+                                    assign(calculationParameter, in.LIFE_INSU_FEE_RATE)
+                               )
+                    ),
+                    procedure(getFeeByFeeType),
+                    assign(loanTermLifeInsuranceFee, termFee),
+                    assign(totalLifeInsuranceFee, totalLifeInsuranceFee +  loanTermLifeInsuranceFee)
+            )
+        ),
+        case (1 = 1,
+            assign(loanTermLifeInsuranceFee, 0)
+        )
+    ),
+
+
+    assign(chargeMethod, stampDutyFeeChargeMethod),
+    assign(howToCalculate, howToCalculateStampDutyFee),
+    condition (
+        case (howToCalculate = "FixedAmount",
+            assign(calculationParameter, in.STAMP_AMT)
+        ),
+        case (howToCalculate = "BaseRatio",
+            assign(calculationParameter, in.STAMPDUTY_RATE)
+        )
+    ),
+
+    procedure(getFeeByFeeType),
+    assign(loanTermStampDutyFee, termFee),
+    assign(totalStampDutyFee, totalStampDutyFee +  loanTermStampDutyFee),
+
+    assign(chargeMethod, replaceServiceFeeChargeMethod),
+    assign(howToCalculate,  howToCalculateReplaceServiceFee),
+	assign(calculationParameter, replaceServiceFeeCalculationParameter),
+
+	procedure(getFeeByFeeType),
+	assign(loanTermReplaceServiceFee, termFee),
+	assign(totalReplaceServiceFee, totalReplaceServiceFee +  loanTermReplaceServiceFee),
+
+    condition
+    (
+        case (in.PREPAY_PKG_IND = "Y",
+            group
+            (
+                assign(chargeMethod, prepayPkgFeeChargeMethod),
+                assign(howToCalculate, howToCalculatePrepayPkgFee),
+                condition (
+                       case (howToCalculate = "FixedAmount",
+                              assign(calculationParameter, in.PREPAYMENT_FEE_AMOUNT)
+                       ),
+                       case (howToCalculate = "BaseRatio",
+                              assign(calculationParameter, in.PREPAYMENT_FEE_AMOUNT_RATE)
+                       )
+                ),
+                procedure(getFeeByFeeType),
+                assign(loanTermPrepayPkgFee, termFee),
+                assign(totalPrepayPkgFee, totalPrepayPkgFee +  loanTermPrepayPkgFee)
+            )
+        ),
+        case (1 = 1,
+            assign(loanTermPrepayPkgFee, 0)
+        )
+    )
+)

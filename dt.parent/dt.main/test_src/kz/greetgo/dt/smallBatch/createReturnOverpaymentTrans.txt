@@ -1,0 +1,12 @@
+group (
+    condition(
+        case(client.account[in.accountIndex].sumOverpaid>0,
+             assign(generateTransaction_transactionAmount, round(client.account[in.accountIndex].sumOverpaid, 2)),
+             assign(loanUsage, "D"),
+             assign(orderStatus, "N"),
+             procedure(generateTransaction),
+
+             assign(client.account[in.accountIndex].sumOverpaid, 0)
+        )
+    )
+)

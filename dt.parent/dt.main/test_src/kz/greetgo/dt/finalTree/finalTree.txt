@@ -1,0 +1,73 @@
+group(
+    foreach(i, 0, len(in.accountIndexes) - 1,
+        group (
+            assign(in.accountIndex, in.accountIndexes[i].value),
+
+            procedure(debtCheck),
+
+            assign(watingTansactionExists, false()),
+            assign(watingTansactionNotClaim, false()),
+
+            foreach(transIndex, 0, len(client.account[in.accountIndex].transaction) - 1,
+                condition(
+                    case (client.account[in.accountIndex].transaction[transIndex].orderStatus = "W",
+                      assign(watingTansactionExists, true()),
+
+                      condition(case(
+                        client.account[in.accountIndex].transaction[transIndex].loanUsage != "C",
+                        assign(watingTansactionNotClaim, true())
+                      ))
+                    )
+                )
+            ),
+
+            assign(compulsoryCondition,
+                client.account[in.accountIndex].dpdDays>=client.account[in.accountIndex].product.compulsorySettlement.CPD |
+                (client.account[in.accountIndex].product.IsPartnerProduct = true()
+                    & client.account[in.accountIndex].dpdDays>=client.account[in.accountIndex].product.Partner.ClaimDays)
+            ),
+
+            condition(//Set claim if CPD >=91
+                case(
+                    compulsoryCondition
+                    &
+                    client.account[in.accountIndex].hasCompulsoryCleaning = false()
+                    &
+                    client.account[in.accountIndex].termToPay < client.account[in.accountIndex].loanTerm
+                    &
+                    watingTansactionExists=false(),
+
+                    group(
+                        procedure(createCompulsoryClearingPlan)
+                    )
+                )
+            ),
+
+            condition( //Create compensation for this term
+                case(
+                    client.account[in.accountIndex].product.IsPartnerProduct = true()
+                    &
+                    daysBetween(client.account[in.accountIndex].payPlan[client.account[in.accountIndex].termToPay-1].payPlanDueDate, businessDay())
+                      >= client.account[in.accountIndex].product.Partner.CompensationDays
+                    &
+                    client.account[in.accountIndex].product.Partner.CreateCompensation = true()
+                    &
+                    watingTansactionNotClaim=false()
+                    &
+                    client.account[in.accountIndex].hasCompulsoryCleaning = false(),
+
+                    group(
+                        procedure(createCompensationForCurrentTerm),
+                        assign(client.account[in.accountIndex].batchDate, client.account[in.accountIndex].batchDate + month())
+                    )
+                )
+
+            ),
+
+
+            procedure(moveCurrentTerm),
+
+            procedure(checkWaitingTransactions)
+        )
+    )
+)

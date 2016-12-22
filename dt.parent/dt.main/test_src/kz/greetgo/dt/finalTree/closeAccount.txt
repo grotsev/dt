@@ -1,0 +1,12 @@
+group(
+    assign(client.account[in.accountIndex].closedDate, businessDay()),
+    assign(client.account[in.accountIndex].nextStmtDate, empty()),
+    assign(client.account[in.accountIndex].batchDate, empty()),
+
+    condition(
+        case(client.account[in.accountIndex].sumOverpaid>0,
+            assign(client.account[in.accountIndex].returnOverpayment,  true()),
+            assign(client.account[in.accountIndex].batchDate, businessDay())
+        )
+    )
+)

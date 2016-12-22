@@ -1,0 +1,56 @@
+group
+(
+	condition (
+		case (isEmpty(nextStmtDate),
+			group (
+				error ("nextStmtDate is undefined. Procedure : getPaymentDueDate"),
+				exit()
+			)
+		),
+		case (isEmpty(currentTerm),
+			group (
+				error("currentTerm is undefined. Procedure : getPaymentDueDate"),
+				exit()
+			)
+		)
+	),
+
+
+    condition(
+        case (!isEmpty(date(nextStmtDate)),
+           assign(nextStmtDate, date(nextStmtDate))
+           )
+    ),
+
+	assign(cycleDay, day(nextStmtDate)),
+
+	condition(case (!isEmpty(toNum(currentTerm)),
+	        assign(currentTerm, toNum(currentTerm))
+	    )
+	),
+
+	assign(dateOfPayment, nextStmtDate + (currentTerm - 1) * month()),
+	assign(maximumDaysOfMonth, daysInMonth(dateOfPayment)),
+
+	condition (
+		case (cycleDay > day (nextStmtDate),
+			condition (
+				case (cycleDay <= maximumDaysOfMonth,
+					setDay(dateOfPayment, cycleDay)
+					),
+				case (cycleDay > maximumDaysOfMonth,
+					setDay(dateOfPayment, maximumDaysOfMonth)
+					)
+				)
+		)
+	),
+	assign(loanTermPaymentDueDate, dateOfPayment),
+
+	condition(case (isEmpty (loanTermPaymentDueDate),
+			group(
+				error ("loanTermPaymentDueDate is empty. nextStmtDate: "~nextStmtDate~" CurrentTerm: " ~ currentTerm ~ " CycleDay: "~ cycleDay),
+				exit()
+			)
+		)
+	)
+)

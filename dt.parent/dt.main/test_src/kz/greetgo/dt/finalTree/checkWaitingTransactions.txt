@@ -1,0 +1,25 @@
+group(
+    foreach(transIndex, 0, len(client.account[in.accountIndex].transaction) - 1,
+        condition(
+            case (client.account[in.accountIndex].transaction[transIndex].orderStatus = "W"
+            &
+            daysBetween(businessDay(), client.account[in.accountIndex].transaction[transIndex].createTime)>=5,
+                group(
+                    assign(client.account[in.accountIndex].transaction[transIndex].orderStatus, "E"),
+                    assign(client.account[in.accountIndex].transaction[transIndex].responseMessage, "Out of 5 days"),
+                    assign(client.account[in.accountIndex].transaction[transIndex].failureAmt, client.account[in.accountIndex].transaction[transIndex].txnAmt),
+
+                    condition(
+                        case(
+                        client.account[in.accountIndex].hasAdvancedClearing = true(),
+                            group(
+                                assign(client.account[in.accountIndex].hasAdvancedClearing, false()),
+                                assign(client.account[in.accountIndex].batchDate, client.account[in.accountIndex].nextStmtDate)
+                            )
+                        )
+                    )
+                )
+            )
+        )
+    )
+)
