@@ -2429,7 +2429,7 @@ public abstract class AbstractDtManagerTest {
   public void foreach_break_complex() throws Exception {
     SortedMap<String, DtType> scope = new TreeMap<>();
     scope.put("in.accountIndexes.0.value", new Num(BigDecimal.valueOf(0)));
-    scope.put("in.accountIndex", new Num(BigDecimal.valueOf(0)));
+    //scope.put("in.accountIndex", new Num(BigDecimal.valueOf(0)));
     scope.put("client.account.0.closedDate", new Dat(LocalDate.now()));
 
     DtManagerWrapper m = createDtManager(nativeFunctions);
@@ -2446,6 +2446,30 @@ public abstract class AbstractDtManagerTest {
         "            )\n" +
         "        )\n" +
         "    )\n" +
+        ")");
+
+    m.compile();
+    m.executeTree("main", scope);
+
+    SortedMap<String, DtType> outScope = m.getScope();
+    see(outScope);
+  }
+
+  @Test
+  public void type_inference() throws Exception {
+    SortedMap<String, DtType> scope = new TreeMap<>();
+    scope.put("overdueDay", new Dat(LocalDate.now()));
+
+    DtManagerWrapper m = createDtManager(nativeFunctions);
+    m.setStructure(new AstObj(
+        new HashMap<String, AstType>(){{
+          put("overdueDay", new AstDat());
+        }}
+    ));
+
+    m.registerTree("main", "group(\n" +
+        "           assign(message,\"asdasdasd\" ~ overdueDay),\n" +
+        "           assign(x,message)\n" +
         ")");
 
     m.compile();

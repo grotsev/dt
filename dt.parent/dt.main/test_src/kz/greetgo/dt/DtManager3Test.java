@@ -64,4 +64,10 @@ public class DtManager3Test extends AbstractDtManagerTest {
   public void foreach_break_complex() throws Exception {
     super.foreach_break_complex();
   }
+
+  @Override
+  public void type_inference() throws Exception {
+    super.type_inference();
+  }
+
 }
