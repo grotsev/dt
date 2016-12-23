@@ -2426,6 +2426,36 @@ public abstract class AbstractDtManagerTest {
   }
 
   @Test
+  public void foreach_break_complex() throws Exception {
+    SortedMap<String, DtType> scope = new TreeMap<>();
+    scope.put("in.accountIndexes.0.value", new Num(BigDecimal.valueOf(0)));
+    scope.put("in.accountIndex", new Num(BigDecimal.valueOf(0)));
+    scope.put("client.account.0.closedDate", new Dat(LocalDate.now()));
+
+    DtManagerWrapper m = createDtManager(nativeFunctions);
+    m.setStructure(TestData$.MODULE$.complexBreak());
+
+    m.registerTree("main", "group(\n" +
+        "    foreach(i, 0, len(in.accountIndexes) - 1,\n" +
+        "        group (\n" +
+        "            assign(in.accountIndex, in.accountIndexes[i].value),\n" +
+        "            condition(\n" +
+        "              case(isDefined(client.account[in.accountIndex].closedDate) & isEmpty(client.account[in.accountIndex].batchDate),\n" +
+        "                  break()\n" +
+        "              )\n" +
+        "            )\n" +
+        "        )\n" +
+        "    )\n" +
+        ")");
+
+    m.compile();
+    m.executeTree("main", scope);
+
+    SortedMap<String, DtType> outScope = m.getScope();
+    see(outScope);
+  }
+
+  @Test
   public void emptyGroup() {
     DtManagerWrapper m = createDtManager(nativeFunctions);
     m.setStructure(new AstObj(

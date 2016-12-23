@@ -59,4 +59,9 @@ public class DtManager3Test extends AbstractDtManagerTest {
   public void emptyGroup() {
     super.emptyGroup();
   }
+
+  @Override
+  public void foreach_break_complex() throws Exception {
+    super.foreach_break_complex();
+  }
 }

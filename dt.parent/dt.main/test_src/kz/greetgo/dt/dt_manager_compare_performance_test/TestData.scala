@@ -128,10 +128,10 @@ object TestData {
   val person: AstObj = obj(
     "person" -> obj(
       "address" -> objs(
-          "street" -> AstStr(),
-          "title" -> AstStr()
-        )
+        "street" -> AstStr(),
+        "title" -> AstStr()
       )
+    )
   )
 
   val client2: AstObj = obj(
@@ -162,6 +162,20 @@ object TestData {
           )
         )
       ))
+  )
+
+  val complexBreak: AstObj = obj(
+    "client" -> obj(
+      "account" -> objs(
+        "closedDate" -> AstDat(),
+        "batchDate" -> AstDat()
+      )),
+    "in" -> obj(
+      "accountIndex" -> AstNum(),
+      "accountIndexes" -> objs(
+        "value" -> AstNum()
+      )
+    )
   )
 
 }
