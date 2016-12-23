@@ -1,0 +1,1542 @@
+__client_last_lock_time__	STR
+__client_lock__	STR
+tmp.idType	STR
+tmp.refNbr	STR
+tmp.inputSource	STR
+tmp.serviceSn	STR
+tmp.serviceId	STR
+tmp.requestTime	STR
+account.0.custSource	STR
+account.0.manualCompulsoryClearingPlanChanged	BOOL
+account.0.hasManualCompulsoryClearing	BOOL
+account.0.manualComClearingTerm	NUM
+account.0.manualComClearingAppliedDate	DATE
+account.0.overdueFine.0.id	STR
+account.0.overdueFine.0.paidAmount	NUM
+account.0.overdueFine.0.overdueFineType	STR
+account.0.overdueFine.0.message	STR
+account.0.overdueFine.0.actual	BOOL
+account.0.overdueFine.0.remainingAmount	NUM
+account.0.overdueFine.0.term	NUM
+account.0.overdueFine.0.status	STR
+account.0.overdueFine.0.date	DATE
+account.0.settlePlatform.0.id	STR
+account.0.settlePlatform.0.settleFeeType	STR
+account.0.settlePlatform.0.settleAmt	NUM
+account.0.settlePlatform.0.postDate	DATE
+account.0.settlePlatform.0.settleTerm	NUM
+account.0.settlePlatform.0.settleSend	BOOL
+account.0.settlePlatform.0.settleTxnDirection	STR
+account.0.cpdBeginDate	DATE
+account.0.cpdDays	NUM
+account.0.lastCompensationTerm	NUM
+account.0.lastMaxFine	NUM
+account.0.lastMaxAgentFine	NUM
+account.0.advanceClearingTerm	NUM
+account.0.acctExpireDate	DATE	23.09.17 00:00
+account.0.acctNbr	STR	10000003
+account.0.acctType	STR	E
+account.0.acqId	STR	10000000
+account.0.advanceRepaymentAgentSvcFee	NUM	0
+account.0.advanceRepaymentAmount	NUM	2000
+account.0.advanceRepaymentApplyTerm	NUM	1
+account.0.advanceRepaymentInterest	NUM	0
+account.0.advanceRepaymentLifeInsurance	NUM	0
+account.0.advanceRepaymentPrepayPkgFee	NUM	0
+account.0.advanceRepaymentPrincipal	NUM	2000
+account.0.advanceRepaymentSumOverpaid	NUM	0
+account.0.advanceRepaymentSvcFee	NUM	0
+account.0.advanceRepaymentTxnFee	NUM	0
+account.0.agentFeeAmount	NUM	0
+account.0.agreeRateInd	BOOL	1
+account.0.applicationNo	STR	5,23602360119857E+017
+account.0.appliedAdvanceRepaymentDate	DATE	23.12.16 00:00
+account.0.applyDate	DATE	07.10.34 00:00
+account.0.batchDate	DATE	23.01.17 00:00
+account.0.closedDate	DATE	23.12.16 00:00
+account.0.contractStatus	STR	T
+account.0.contrNbr	STR	1,101341007E+017
+account.0.corpName	STR	测试版的
+account.0.createTime	DATE	23.12.16 00:00
+account.0.currentTerm	NUM	1
+account.0.cycleDay	NUM	23
+account.0.ddBankAcctName	STR	梅花
+account.0.ddBankAcctNbr	STR	6,21226120866646E+018
+account.0.ddBankBranch	STR	102
+account.0.ddBankCity	STR	市辖区
+account.0.ddBankCityCode	STR	500100
+account.0.ddBankName	STR	工商银行
+account.0.ddBankProvince	STR	重庆市
+account.0.ddBankProvinceCode	STR	500000
+account.0.feeAmt	NUM	53
+account.0.feeRate	NUM	0,02649996
+account.0.gender	STR	M
+account.0.graceDate	DATE	23.01.17 00:00
+account.0.hasAdvancedClearing	BOOL	1
+account.0.hasCompulsoryCleaning	BOOL	0
+account.0.id	STR	TpMFOdSRddfHhHZOL
+account.0.installmentFeeAmt	NUM	0
+account.0.interestRate	NUM	0,174
+account.0.isAbnormal	BOOL	0
+account.0.isLoanReleased	BOOL	1
+account.0.joinLifeInsuInd	BOOL	1
+account.0.lifeInsuFeeAmt	NUM	14
+account.0.lifeInsuFeeRate	NUM	0,00700002
+account.0.loanAmt	NUM	2000
+account.0.loanFeeDefId	STR	9
+account.0.loanMold	STR	S
+account.0.loanReleaseDate	DATE	23.12.16 00:00
+account.0.loanTerm	NUM	9
+account.0.mobileNo	STR	13600000010
+account.0.name	STR	梅花
+account.0.nextStmtDate	DATE	23.01.17 00:00
+account.0.owningBranch	STR	1
+account.0.paidSumOfDebtTillBizDate	NUM	2000
+account.0.paidTerms	NUM	9
+account.0.payPlan.0.actual	BOOL	1
+account.0.payPlan.0.hasPaid	BOOL	1
+account.0.payPlan.0.paidAdvanceRepaymentFee	NUM	0
+account.0.payPlan.0.paidAgentFee	NUM	0
+account.0.payPlan.0.paidInstallmentFee	NUM	0
+account.0.payPlan.0.paidInterest	NUM	0
+account.0.payPlan.0.paidLifeInsurance	NUM	0
+account.0.payPlan.0.paidPrepayPkgFee	NUM	0
+account.0.payPlan.0.paidPrincipal	NUM	2000
+account.0.payPlan.0.paidReplaceSvcFee	NUM	0
+account.0.payPlan.0.paidServiceFee	NUM	0
+account.0.payPlan.0.paidStampDutyFee	NUM	0
+account.0.payPlan.0.paidTotal	NUM	2000
+account.0.payPlan.0.payPlanDueDate	DATE	23.01.17 00:00
+account.0.payPlan.0.planStatus	STR	N
+account.0.payPlan.0.remAdvanceRepaymentFee	NUM	0
+account.0.payPlan.0.remainingAgentFee	NUM	0
+account.0.payPlan.0.remainingInstallmentFee	NUM	0
+account.0.payPlan.0.remainingInterest	NUM	0
+account.0.payPlan.0.remainingLifeInsurance	NUM	0
+account.0.payPlan.0.remainingPrepayPkgFee	NUM	0
+account.0.payPlan.0.remainingPrincipal	NUM	0
+account.0.payPlan.0.remainingReplaceSvcFee	NUM	0
+account.0.payPlan.0.remainingServiceFee	NUM	0
+account.0.payPlan.0.remainingStampDutyFee	NUM	0,1
+account.0.payPlan.0.remainingTotal	NUM	0
+account.0.payPlan.0.termNumber	NUM	1
+account.0.payPlan.1.actual	BOOL	0
+account.0.payPlan.1.hasPaid	BOOL	0
+account.0.payPlan.1.paidAdvanceRepaymentFee	NUM	0
+account.0.payPlan.1.paidAgentFee	NUM	0
+account.0.payPlan.1.paidInstallmentFee	NUM	0
+account.0.payPlan.1.paidInterest	NUM	0
+account.0.payPlan.1.paidLifeInsurance	NUM	0
+account.0.payPlan.1.paidPrepayPkgFee	NUM	0
+account.0.payPlan.1.paidPrincipal	NUM	0
+account.0.payPlan.1.paidReplaceSvcFee	NUM	0
+account.0.payPlan.1.paidServiceFee	NUM	0
+account.0.payPlan.1.paidStampDutyFee	NUM	0
+account.0.payPlan.1.paidTotal	NUM	0
+account.0.payPlan.1.payPlanDueDate	DATE	23.02.17 00:00
+account.0.payPlan.1.planStatus	STR	N
+account.0.payPlan.1.remAdvanceRepaymentFee	NUM	0
+account.0.payPlan.1.remainingAgentFee	NUM	0
+account.0.payPlan.1.remainingInstallmentFee	NUM	0
+account.0.payPlan.1.remainingInterest	NUM	0
+account.0.payPlan.1.remainingLifeInsurance	NUM	0
+account.0.payPlan.1.remainingPrepayPkgFee	NUM	0
+account.0.payPlan.1.remainingPrincipal	NUM	0
+account.0.payPlan.1.remainingReplaceSvcFee	NUM	0
+account.0.payPlan.1.remainingServiceFee	NUM	0
+account.0.payPlan.1.remainingStampDutyFee	NUM	0
+account.0.payPlan.1.remainingTotal	NUM	0
+account.0.payPlan.1.termNumber	NUM	2
+account.0.payPlan.2.actual	BOOL	0
+account.0.payPlan.2.hasPaid	BOOL	0
+account.0.payPlan.2.paidAdvanceRepaymentFee	NUM	0
+account.0.payPlan.2.paidAgentFee	NUM	0
+account.0.payPlan.2.paidInstallmentFee	NUM	0
+account.0.payPlan.2.paidInterest	NUM	0
+account.0.payPlan.2.paidLifeInsurance	NUM	0
+account.0.payPlan.2.paidPrepayPkgFee	NUM	0
+account.0.payPlan.2.paidPrincipal	NUM	0
+account.0.payPlan.2.paidReplaceSvcFee	NUM	0
+account.0.payPlan.2.paidServiceFee	NUM	0
+account.0.payPlan.2.paidStampDutyFee	NUM	0
+account.0.payPlan.2.paidTotal	NUM	0
+account.0.payPlan.2.payPlanDueDate	DATE	23.03.17 00:00
+account.0.payPlan.2.planStatus	STR	N
+account.0.payPlan.2.remAdvanceRepaymentFee	NUM	0
+account.0.payPlan.2.remainingAgentFee	NUM	0
+account.0.payPlan.2.remainingInstallmentFee	NUM	0
+account.0.payPlan.2.remainingInterest	NUM	0
+account.0.payPlan.2.remainingLifeInsurance	NUM	0
+account.0.payPlan.2.remainingPrepayPkgFee	NUM	0
+account.0.payPlan.2.remainingPrincipal	NUM	0
+account.0.payPlan.2.remainingReplaceSvcFee	NUM	0
+account.0.payPlan.2.remainingServiceFee	NUM	0
+account.0.payPlan.2.remainingStampDutyFee	NUM	0
+account.0.payPlan.2.remainingTotal	NUM	0
+account.0.payPlan.2.termNumber	NUM	3
+account.0.payPlan.3.actual	BOOL	0
+account.0.payPlan.3.hasPaid	BOOL	0
+account.0.payPlan.3.paidAdvanceRepaymentFee	NUM	0
+account.0.payPlan.3.paidAgentFee	NUM	0
+account.0.payPlan.3.paidInstallmentFee	NUM	0
+account.0.payPlan.3.paidInterest	NUM	0
+account.0.payPlan.3.paidLifeInsurance	NUM	0
+account.0.payPlan.3.paidPrepayPkgFee	NUM	0
+account.0.payPlan.3.paidPrincipal	NUM	0
+account.0.payPlan.3.paidReplaceSvcFee	NUM	0
+account.0.payPlan.3.paidServiceFee	NUM	0
+account.0.payPlan.3.paidStampDutyFee	NUM	0
+account.0.payPlan.3.paidTotal	NUM	0
+account.0.payPlan.3.payPlanDueDate	DATE	23.04.17 00:00
+account.0.payPlan.3.planStatus	STR	N
+account.0.payPlan.3.remAdvanceRepaymentFee	NUM	0
+account.0.payPlan.3.remainingAgentFee	NUM	0
+account.0.payPlan.3.remainingInstallmentFee	NUM	0
+account.0.payPlan.3.remainingInterest	NUM	0
+account.0.payPlan.3.remainingLifeInsurance	NUM	0
+account.0.payPlan.3.remainingPrepayPkgFee	NUM	0
+account.0.payPlan.3.remainingPrincipal	NUM	0
+account.0.payPlan.3.remainingReplaceSvcFee	NUM	0
+account.0.payPlan.3.remainingServiceFee	NUM	0
+account.0.payPlan.3.remainingStampDutyFee	NUM	0
+account.0.payPlan.3.remainingTotal	NUM	0
+account.0.payPlan.3.termNumber	NUM	4
+account.0.payPlan.4.actual	BOOL	0
+account.0.payPlan.4.hasPaid	BOOL	0
+account.0.payPlan.4.paidAdvanceRepaymentFee	NUM	0
+account.0.payPlan.4.paidAgentFee	NUM	0
+account.0.payPlan.4.paidInstallmentFee	NUM	0
+account.0.payPlan.4.paidInterest	NUM	0
+account.0.payPlan.4.paidLifeInsurance	NUM	0
+account.0.payPlan.4.paidPrepayPkgFee	NUM	0
+account.0.payPlan.4.paidPrincipal	NUM	0
+account.0.payPlan.4.paidReplaceSvcFee	NUM	0
+account.0.payPlan.4.paidServiceFee	NUM	0
+account.0.payPlan.4.paidStampDutyFee	NUM	0
+account.0.payPlan.4.paidTotal	NUM	0
+account.0.payPlan.4.payPlanDueDate	DATE	23.05.17 00:00
+account.0.payPlan.4.planStatus	STR	N
+account.0.payPlan.4.remAdvanceRepaymentFee	NUM	0
+account.0.payPlan.4.remainingAgentFee	NUM	0
+account.0.payPlan.4.remainingInstallmentFee	NUM	0
+account.0.payPlan.4.remainingInterest	NUM	0
+account.0.payPlan.4.remainingLifeInsurance	NUM	0
+account.0.payPlan.4.remainingPrepayPkgFee	NUM	0
+account.0.payPlan.4.remainingPrincipal	NUM	0
+account.0.payPlan.4.remainingReplaceSvcFee	NUM	0
+account.0.payPlan.4.remainingServiceFee	NUM	0
+account.0.payPlan.4.remainingStampDutyFee	NUM	0
+account.0.payPlan.4.remainingTotal	NUM	0
+account.0.payPlan.4.termNumber	NUM	5
+account.0.payPlan.5.actual	BOOL	0
+account.0.payPlan.5.hasPaid	BOOL	0
+account.0.payPlan.5.paidAdvanceRepaymentFee	NUM	0
+account.0.payPlan.5.paidAgentFee	NUM	0
+account.0.payPlan.5.paidInstallmentFee	NUM	0
+account.0.payPlan.5.paidInterest	NUM	0
+account.0.payPlan.5.paidLifeInsurance	NUM	0
+account.0.payPlan.5.paidPrepayPkgFee	NUM	0
+account.0.payPlan.5.paidPrincipal	NUM	0
+account.0.payPlan.5.paidReplaceSvcFee	NUM	0
+account.0.payPlan.5.paidServiceFee	NUM	0
+account.0.payPlan.5.paidStampDutyFee	NUM	0
+account.0.payPlan.5.paidTotal	NUM	0
+account.0.payPlan.5.payPlanDueDate	DATE	23.06.17 00:00
+account.0.payPlan.5.planStatus	STR	N
+account.0.payPlan.5.remAdvanceRepaymentFee	NUM	0
+account.0.payPlan.5.remainingAgentFee	NUM	0
+account.0.payPlan.5.remainingInstallmentFee	NUM	0
+account.0.payPlan.5.remainingInterest	NUM	0
+account.0.payPlan.5.remainingLifeInsurance	NUM	0
+account.0.payPlan.5.remainingPrepayPkgFee	NUM	0
+account.0.payPlan.5.remainingPrincipal	NUM	0
+account.0.payPlan.5.remainingReplaceSvcFee	NUM	0
+account.0.payPlan.5.remainingServiceFee	NUM	0
+account.0.payPlan.5.remainingStampDutyFee	NUM	0
+account.0.payPlan.5.remainingTotal	NUM	0
+account.0.payPlan.5.termNumber	NUM	6
+account.0.payPlan.6.actual	BOOL	0
+account.0.payPlan.6.hasPaid	BOOL	0
+account.0.payPlan.6.paidAdvanceRepaymentFee	NUM	0
+account.0.payPlan.6.paidAgentFee	NUM	0
+account.0.payPlan.6.paidInstallmentFee	NUM	0
+account.0.payPlan.6.paidInterest	NUM	0
+account.0.payPlan.6.paidLifeInsurance	NUM	0
+account.0.payPlan.6.paidPrepayPkgFee	NUM	0
+account.0.payPlan.6.paidPrincipal	NUM	0
+account.0.payPlan.6.paidReplaceSvcFee	NUM	0
+account.0.payPlan.6.paidServiceFee	NUM	0
+account.0.payPlan.6.paidStampDutyFee	NUM	0
+account.0.payPlan.6.paidTotal	NUM	0
+account.0.payPlan.6.payPlanDueDate	DATE	23.07.17 00:00
+account.0.payPlan.6.planStatus	STR	N
+account.0.payPlan.6.remAdvanceRepaymentFee	NUM	0
+account.0.payPlan.6.remainingAgentFee	NUM	0
+account.0.payPlan.6.remainingInstallmentFee	NUM	0
+account.0.payPlan.6.remainingInterest	NUM	0
+account.0.payPlan.6.remainingLifeInsurance	NUM	0
+account.0.payPlan.6.remainingPrepayPkgFee	NUM	0
+account.0.payPlan.6.remainingPrincipal	NUM	0
+account.0.payPlan.6.remainingReplaceSvcFee	NUM	0
+account.0.payPlan.6.remainingServiceFee	NUM	0
+account.0.payPlan.6.remainingStampDutyFee	NUM	0
+account.0.payPlan.6.remainingTotal	NUM	0
+account.0.payPlan.6.termNumber	NUM	7
+account.0.payPlan.7.actual	BOOL	0
+account.0.payPlan.7.hasPaid	BOOL	0
+account.0.payPlan.7.paidAdvanceRepaymentFee	NUM	0
+account.0.payPlan.7.paidAgentFee	NUM	0
+account.0.payPlan.7.paidInstallmentFee	NUM	0
+account.0.payPlan.7.paidInterest	NUM	0
+account.0.payPlan.7.paidLifeInsurance	NUM	0
+account.0.payPlan.7.paidPrepayPkgFee	NUM	0
+account.0.payPlan.7.paidPrincipal	NUM	0
+account.0.payPlan.7.paidReplaceSvcFee	NUM	0
+account.0.payPlan.7.paidServiceFee	NUM	0
+account.0.payPlan.7.paidStampDutyFee	NUM	0
+account.0.payPlan.7.paidTotal	NUM	0
+account.0.payPlan.7.payPlanDueDate	DATE	23.08.17 00:00
+account.0.payPlan.7.planStatus	STR	N
+account.0.payPlan.7.remAdvanceRepaymentFee	NUM	0
+account.0.payPlan.7.remainingAgentFee	NUM	0
+account.0.payPlan.7.remainingInstallmentFee	NUM	0
+account.0.payPlan.7.remainingInterest	NUM	0
+account.0.payPlan.7.remainingLifeInsurance	NUM	0
+account.0.payPlan.7.remainingPrepayPkgFee	NUM	0
+account.0.payPlan.7.remainingPrincipal	NUM	0
+account.0.payPlan.7.remainingReplaceSvcFee	NUM	0
+account.0.payPlan.7.remainingServiceFee	NUM	0
+account.0.payPlan.7.remainingStampDutyFee	NUM	0
+account.0.payPlan.7.remainingTotal	NUM	0
+account.0.payPlan.7.termNumber	NUM	8
+account.0.payPlan.8.actual	BOOL	0
+account.0.payPlan.8.hasPaid	BOOL	0
+account.0.payPlan.8.paidAdvanceRepaymentFee	NUM	0
+account.0.payPlan.8.paidAgentFee	NUM	0
+account.0.payPlan.8.paidInstallmentFee	NUM	0
+account.0.payPlan.8.paidInterest	NUM	0
+account.0.payPlan.8.paidLifeInsurance	NUM	0
+account.0.payPlan.8.paidPrepayPkgFee	NUM	0
+account.0.payPlan.8.paidPrincipal	NUM	0
+account.0.payPlan.8.paidReplaceSvcFee	NUM	0
+account.0.payPlan.8.paidServiceFee	NUM	0
+account.0.payPlan.8.paidStampDutyFee	NUM	0
+account.0.payPlan.8.paidTotal	NUM	0
+account.0.payPlan.8.payPlanDueDate	DATE	23.09.17 00:00
+account.0.payPlan.8.planStatus	STR	N
+account.0.payPlan.8.remAdvanceRepaymentFee	NUM	0
+account.0.payPlan.8.remainingAgentFee	NUM	0
+account.0.payPlan.8.remainingInstallmentFee	NUM	0
+account.0.payPlan.8.remainingInterest	NUM	0
+account.0.payPlan.8.remainingLifeInsurance	NUM	0
+account.0.payPlan.8.remainingPrepayPkgFee	NUM	0
+account.0.payPlan.8.remainingPrincipal	NUM	0
+account.0.payPlan.8.remainingReplaceSvcFee	NUM	0
+account.0.payPlan.8.remainingServiceFee	NUM	0
+account.0.payPlan.8.remainingStampDutyFee	NUM	0,1
+account.0.payPlan.8.remainingTotal	NUM	0
+account.0.payPlan.8.termNumber	NUM	9
+account.0.pmtDueDate	DATE	23.01.17 00:00
+account.0.prepaymentFeeAmt	NUM	135
+account.0.prepayPkgFeeAmt	NUM	15
+account.0.prepayPkgInd	BOOL	1
+account.0.product.agentFine.0.Max	NUM
+account.0.product.agentFine.0.Min	NUM
+account.0.product.agentFine.0.parameter	NUM
+account.0.product.Penalty.0.type	STR
+account.0.product.Penalty.0.CalculationRule	STR
+account.0.product.Penalty.0.HowToCalculate	STR
+account.0.product.Penalty.0.divider	NUM
+account.0.product.Penalty.0.CalculationParameter	NUM
+account.0.product.Penalty.0.Accumulative	BOOL
+account.0.product.Penalty.0.penaltyUsedTerm	NUM
+account.0.product.advanceRepaymentApply.applyBefore	NUM	5
+account.0.product.advanceRepaymentApply.canToApply	BOOL	1
+account.0.product.advanceRepaymentApply.deductBefore	NUM	3
+account.0.product.AdvanceRepaymentServiceFee.0.BaseType	STR	RemainingPrincipal
+account.0.product.AdvanceRepaymentServiceFee.0.HowToCalculate	STR	FixedAmount
+account.0.product.AdvanceRepaymentServiceFee.0.MaxLoanPeriod	NUM	99
+account.0.product.AdvanceRepaymentServiceFee.0.parameter	NUM	200
+account.0.product.BusinessParameters.GracePeriod	NUM	0
+account.0.product.ChargeAdvanceRepayment.Interest	STR	SettlementDate
+account.0.product.ChargeAdvanceRepayment.Principal	STR	Remaining
+account.0.product.ChargeAdvanceRepayment.ServiceFee	STR	CurrentTerm
+account.0.product.ChargeAdvanceRepayment.Value_addedServiceFee	STR	CurrentTerm
+account.0.product.compulsorySettlement.CPD	NUM	91
+account.0.product.ElectronicTemplate.0.ElectronicTemplateFlag	STR	M
+account.0.product.ElectronicTemplate.0.ElectronicTemplateType	STR	W
+account.0.product.Exemption.exemptionAmount	NUM	0
+account.0.product.Exemption.exemptionDays	NUM	100
+account.0.product.Fine.0.BaseType	STR	RemainingPrincipal
+account.0.product.Fine.0.HowToCalculate	STR	FixedAmount
+account.0.product.Fine.0.Max	NUM	90
+account.0.product.Fine.0.Min	NUM	90
+account.0.product.Fine.0.parameter	NUM	100
+account.0.product.Fine.1.BaseType	STR	RemainingPrincipal
+account.0.product.Fine.1.HowToCalculate	STR	FixedAmount
+account.0.product.Fine.1.Max	NUM	20
+account.0.product.Fine.1.Min	NUM	20
+account.0.product.Fine.1.parameter	NUM	75
+account.0.product.Fine.2.BaseType	STR	RemainingPrincipal
+account.0.product.Fine.2.HowToCalculate	STR	FixedAmount
+account.0.product.Fine.2.Max	NUM	60
+account.0.product.Fine.2.Min	NUM	60
+account.0.product.Fine.2.parameter	NUM	100
+account.0.product.Fine.3.BaseType	STR	RemainingPrincipal
+account.0.product.Fine.3.HowToCalculate	STR	FixedAmount
+account.0.product.Fine.3.Max	NUM	60
+account.0.product.Fine.3.Min	NUM	60
+account.0.product.Fine.3.parameter	NUM	200
+account.0.product.Fine.4.BaseType	STR	RemainingPrincipal
+account.0.product.Fine.4.HowToCalculate	STR	FixedAmount
+account.0.product.Fine.4.Max	NUM	10
+account.0.product.Fine.4.Min	NUM	10
+account.0.product.Fine.4.parameter	NUM	50
+account.0.product.Fine.5.BaseType	STR	RemainingPrincipal
+account.0.product.Fine.5.HowToCalculate	STR	FixedAmount
+account.0.product.Fine.5.Max	NUM	30
+account.0.product.Fine.5.Min	NUM	30
+account.0.product.Fine.5.parameter	NUM	100
+account.0.product.FineCalculationType	STR	CPD
+account.0.product.FlexibleRepaymentServicePacket.CalculationParameter	NUM	15
+account.0.product.FlexibleRepaymentServicePacket.ChargeMethod	STR	Terms
+account.0.product.FlexibleRepaymentServicePacket.HowToCalculate	STR	FixedAmount
+account.0.product.Hesitation.value	NUM	15
+account.0.product.id	STR	531bGLQq4lpFAotb1
+account.0.product.InterestRate	NUM	0,174
+account.0.product.IsPartnerProduct	BOOL
+account.0.product.Partner.Partners	STR
+account.0.product.Partner.ClaimDays	NUM
+account.0.product.Partner.CompensationDays	NUM
+account.0.product.Partner.CreateCompensation	BOOL
+account.0.product.LifeInsuranceFee.CalculationParameter	NUM	0,007
+account.0.product.LifeInsuranceFee.ChargeMethod	STR	Terms
+account.0.product.LifeInsuranceFee.HowToCalculate	STR	BaseRatio
+account.0.product.limit	NUM	20000
+account.0.product.LoanAmount.MaxAmount	NUM	2500
+account.0.product.LoanAmount.MinAmount	NUM	1000
+account.0.product.LoanMold	STR	S
+account.0.product.LoanStatus	STR	A
+account.0.product.LoanType	STR	MCEI
+account.0.product.RepayManner	STR	CPM
+account.0.product.RepaymentTerms.Parameter	NUM	9
+account.0.product.RepaymentTerms.Unit	STR	Month
+account.0.product.returnOverpayment.min	NUM	100
+account.0.product.returnOverpayment.returnBefore	NUM	3
+account.0.product.RuleInstalmentDate	STR	Shift
+account.0.product.ServiceFee.CalculationParameter	NUM	0,0265
+account.0.product.ServiceFee.ChargeMethod	STR	Terms
+account.0.product.ServiceFee.HowToCalculate	STR	BaseRatio
+account.0.product.StampDutyFee.CalculationParameter	NUM	0,00005
+account.0.product.StampDutyFee.ChargeMethod	STR	FirstTerm
+account.0.product.StampDutyFee.HowToCalculate	STR	BaseRatio
+account.0.product.TerminateAgeCd	NUM	4
+account.0.product.ToleranceValue.CPDOverdueToleranceValue	NUM	50
+account.0.product.ToleranceValue.DPDOverdueToleranceValue	NUM	50
+account.0.product.type	STR	Instalment
+account.0.productCd	STR	1101
+account.0.purpose	STR	PL01
+account.0.remainingTerms	NUM	0
+account.0.requestTime	STR	20341007102916
+account.0.returnOverpayment	BOOL	0
+account.0.serviceId	STR	TNRAAcctSetupWithDraw
+account.0.serviceSn	STR	8,3251098550449E+031
+account.0.stampAmt	NUM	0,2
+account.0.stampdutyRate	NUM	0,00005
+account.0.subTerminalType	STR	Android
+account.0.sumOverpaid	NUM	0
+account.0.terminalReason	STR	P
+account.0.termToPay	NUM	0
+account.0.totalPaidAdvanceRepaymentFee	NUM	0
+account.0.totalPaidAgentFee	NUM	0
+account.0.totalPaidInstallmentFee	NUM	0
+account.0.totalPaidInterest	NUM	0
+account.0.totalPaidLifeInsuranceFee	NUM	0
+account.0.totalPaidPrepayPkgFee	NUM	0
+account.0.totalPaidPrincipalAmt	NUM	2000
+account.0.totalPaidServiceFee	NUM	0
+account.0.totalPaidStampDutyFee	NUM	0
+account.0.totalPaidTerms	NUM	9
+account.0.totalRemAgentFee	NUM	0
+account.0.totalRemainingAmt	NUM	0
+account.0.totalRemInstallmentFee	NUM	0
+account.0.totalRemInterest	NUM	0
+account.0.totalRemLifeInsuranceFee	NUM	0
+account.0.totalRemPrepayPkgFee	NUM	0
+account.0.totalRemPrincipalAmt	NUM	0
+account.0.totalRemReplaceServiceFee	NUM	0
+account.0.totalRemServiceFee	NUM	0
+account.0.totalRemStampDutyFee	NUM	0,2
+account.0.transaction.0.applicationNo	STR
+account.0.transaction.0.productCd	STR
+account.0.transaction.0.settleFeeType	STR
+account.0.transaction.0.txnDirection	STR
+account.0.transaction.0.acctNbr	STR	10000003
+account.0.transaction.0.acctType	STR	E
+account.0.transaction.0.acqId	STR	10000000
+account.0.transaction.0.businessDate	DATE	23.12.16 00:00
+account.0.transaction.0.cardNo	STR	6,21226120866646E+018
+account.0.transaction.0.cardType	STR	0
+account.0.transaction.0.certId	STR	1,41028199312022E+017
+account.0.transaction.0.certType	STR	6
+account.0.transaction.0.city	STR	市辖区
+account.0.transaction.0.commandType	STR	SPA
+account.0.transaction.0.comparedInd	BOOL	0
+account.0.transaction.0.cooperationId	STR
+account.0.transaction.0.contrNbr	STR	1,101341007E+017
+account.0.transaction.0.createTime	DATE	23.12.16 00:00
+account.0.transaction.0.currency	STR	156
+account.0.transaction.0.failureAmt	NUM	0
+account.0.transaction.0.dueBillNo	STR
+account.0.transaction.0.flag	STR	0
+account.0.transaction.0.id	STR	OORadlmIkxxzC6cfI
+account.0.transaction.0.loanUsage	STR	L
+account.0.transaction.0.matchInd	STR	Y
+account.0.transaction.0.mobileNumber	STR
+account.0.transaction.0.onlineFlag	BOOL	1
+account.0.transaction.0.openBankId	STR	102
+account.0.transaction.0.openBankName	STR	工商银行
+account.0.transaction.0.optDatetime	DATE	23.12.16 00:00
+account.0.transaction.0.orderStatus	STR	S
+account.0.transaction.0.orderTime	DATE	23.12.16 00:00
+account.0.transaction.0.org	STR	1
+account.0.transaction.0.payBizCode	STR	1
+account.0.transaction.0.payChannelId	STR	1
+account.0.transaction.0.channelId	STR
+account.0.transaction.0.priv1	STR	T110E5
+account.0.transaction.0.purpose	STR	放款申请
+account.0.transaction.0.refNbr	STR	1,6122310295819E+021
+account.0.transaction.0.requestTime	STR	20341007102916
+account.0.transaction.0.responseCode	STR	0
+account.0.transaction.0.responseMessage	STR	操作成功
+account.0.transaction.0.sendTime	DATE	23.12.16 00:00
+account.0.transaction.0.serviceId	STR	TNRAAcctSetupWithDraw
+account.0.transaction.0.serviceSn	STR	8,3251098550449E+031
+account.0.transaction.0.setupDate	DATE	23.12.16 00:00
+account.0.transaction.0.state	STR	重庆市
+account.0.transaction.0.subBank	STR	1
+account.0.transaction.0.successAmt	NUM	2000
+account.0.transaction.0.txnAmt	NUM	2000
+account.0.transaction.0.txnType	STR	AgentDebit
+account.0.transaction.0.usrName	STR	梅花
+account.0.transaction.1.acctNbr	STR	10000003
+account.0.transaction.1.acctType	STR	E
+account.0.transaction.1.acqId	STR	10000000
+account.0.transaction.1.businessDate	DATE	23.12.16 00:00
+account.0.transaction.1.cardNo	STR	6,21226120866646E+018
+account.0.transaction.1.cardType	STR	0
+account.0.transaction.1.certId	STR	1,41028199312022E+017
+account.0.transaction.1.certType	STR	6
+account.0.transaction.1.city	STR	市辖区
+account.0.transaction.1.comparedInd	BOOL	0
+account.0.transaction.1.contrNbr	STR	1,101341007E+017
+account.0.transaction.1.createTime	DATE	23.12.16 00:00
+account.0.transaction.1.currency	STR	156
+account.0.transaction.1.failureAmt	NUM	0
+account.0.transaction.1.flag	STR	0
+account.0.transaction.1.id	STR	76LfunEM8Ft44aylc
+account.0.transaction.1.loanUsage	STR	M
+account.0.transaction.1.matchInd	STR	Y
+account.0.transaction.1.onlineFlag	BOOL	1
+account.0.transaction.1.openBankId	STR	102
+account.0.transaction.1.openBankName	STR	工商银行
+account.0.transaction.1.optDatetime	DATE	23.12.16 00:00
+account.0.transaction.1.orderStatus	STR	S
+account.0.transaction.1.orderTime	DATE	23.12.16 00:00
+account.0.transaction.1.org	STR	1
+account.0.transaction.1.payBizCode	STR	0
+account.0.transaction.1.payChannelId	STR	1
+account.0.transaction.1.priv1	STR	T110E5
+account.0.transaction.1.purpose	STR	提前结清
+account.0.transaction.1.responseCode	STR	0
+account.0.transaction.1.responseMessage	STR	操作成功
+account.0.transaction.1.sendTime	DATE	23.12.16 00:00
+account.0.transaction.1.setupDate	DATE	23.12.16 00:00
+account.0.transaction.1.state	STR	重庆市
+account.0.transaction.1.subBank	STR	1
+account.0.transaction.1.successAmt	NUM	2000
+account.0.transaction.1.term	NUM	1
+account.0.transaction.1.txnAmt	NUM	2000
+account.0.transaction.1.txnType	STR	AgentCredit
+account.0.transaction.1.usrName	STR	梅花
+account.1.acctExpireDate	DATE	23.09.17 00:00
+account.1.acctNbr	STR	10000004
+account.1.acctType	STR	E
+account.1.acqId	STR	10000000
+account.1.agentFeeAmount	NUM	0
+account.1.agreeRateInd	BOOL	1
+account.1.applicationNo	STR	5,23606733965234E+017
+account.1.applyDate	DATE	07.10.34 00:00
+account.1.batchDate	DATE	23.01.17 00:00
+account.1.contractStatus	STR	A
+account.1.contrNbr	STR	1,101341007E+017
+account.1.corpName	STR	测试版的
+account.1.createTime	DATE	23.12.16 00:00
+account.1.currentTerm	NUM	5
+account.1.cycleDay	NUM	23
+account.1.ddBankAcctName	STR	梅花
+account.1.ddBankAcctNbr	STR	6,21226120866646E+018
+account.1.ddBankBranch	STR	102
+account.1.ddBankCity	STR	市辖区
+account.1.ddBankCityCode	STR	500100
+account.1.ddBankName	STR	工商银行
+account.1.ddBankProvince	STR	重庆市
+account.1.ddBankProvinceCode	STR	500000
+account.1.feeAmt	NUM	66
+account.1.feeRate	NUM	0,02649996
+account.1.gender	STR	M
+account.1.graceDate	DATE	23.01.17 00:00
+account.1.hasAdvancedClearing	BOOL	0
+account.1.hasCompulsoryCleaning	BOOL	0
+account.1.id	STR	mi9jFSIO1MAIpTdIB
+account.1.installmentFeeAmt	NUM	0
+account.1.interestRate	NUM	0,174
+account.1.isAbnormal	BOOL	0
+account.1.isLoanReleased	BOOL	1
+account.1.joinLifeInsuInd	BOOL	1
+account.1.lifeInsuFeeAmt	NUM	18
+account.1.lifeInsuFeeRate	NUM	0,00700002
+account.1.loanAmt	NUM	2500
+account.1.loanFeeDefId	STR	9
+account.1.loanMold	STR	S
+account.1.loanReleaseDate	DATE	23.12.16 00:00
+account.1.loanTerm	NUM	9
+account.1.mobileNo	STR	13600000010
+account.1.name	STR	梅花
+account.1.nextStmtDate	DATE	23.01.17 00:00
+account.1.owningBranch	STR	1
+account.1.paidSumOfDebtTillBizDate	NUM	0
+account.1.paidTerms	NUM	0
+account.1.payPlan.0.actual	BOOL	1
+account.1.payPlan.0.hasPaid	BOOL	0
+account.1.payPlan.0.paidAgentFee	NUM	0
+account.1.payPlan.0.paidInstallmentFee	NUM	0
+account.1.payPlan.0.paidInterest	NUM	0
+account.1.payPlan.0.paidLifeInsurance	NUM	0
+account.1.payPlan.0.paidPrepayPkgFee	NUM	0
+account.1.payPlan.0.paidPrincipal	NUM	0
+account.1.payPlan.0.paidServiceFee	NUM	0
+account.1.payPlan.0.paidStampDutyFee	NUM	0
+account.1.payPlan.0.paidTotal	NUM	0
+account.1.payPlan.0.payPlanDueDate	DATE	23.01.17 00:00
+account.1.payPlan.0.planStatus	STR	N
+account.1.payPlan.0.remainingAgentFee	NUM	0
+account.1.payPlan.0.remainingInstallmentFee	NUM	0
+account.1.payPlan.0.remainingInterest	NUM	36,25
+account.1.payPlan.0.remainingLifeInsurance	NUM	1,94
+account.1.payPlan.0.remainingPrepayPkgFee	NUM	15
+account.1.payPlan.0.remainingPrincipal	NUM	262,05
+account.1.payPlan.0.remainingServiceFee	NUM	7,36
+account.1.payPlan.0.remainingStampDutyFee	NUM	0,13
+account.1.payPlan.0.remainingTotal	NUM	322,6
+account.1.payPlan.0.termNumber	NUM	1
+account.1.payPlan.1.actual	BOOL	1
+account.1.payPlan.1.hasPaid	BOOL	0
+account.1.payPlan.1.paidAgentFee	NUM	0
+account.1.payPlan.1.paidInstallmentFee	NUM	0
+account.1.payPlan.1.paidInterest	NUM	0
+account.1.payPlan.1.paidLifeInsurance	NUM	0
+account.1.payPlan.1.paidPrepayPkgFee	NUM	0
+account.1.payPlan.1.paidPrincipal	NUM	0
+account.1.payPlan.1.paidServiceFee	NUM	0
+account.1.payPlan.1.paidStampDutyFee	NUM	0
+account.1.payPlan.1.paidTotal	NUM	0
+account.1.payPlan.1.payPlanDueDate	DATE	23.02.17 00:00
+account.1.payPlan.1.planStatus	STR	N
+account.1.payPlan.1.remainingAgentFee	NUM	0
+account.1.payPlan.1.remainingInstallmentFee	NUM	0
+account.1.payPlan.1.remainingInterest	NUM	32,45
+account.1.payPlan.1.remainingLifeInsurance	NUM	1,94
+account.1.payPlan.1.remainingPrepayPkgFee	NUM	15
+account.1.payPlan.1.remainingPrincipal	NUM	265,85
+account.1.payPlan.1.remainingServiceFee	NUM	7,36
+account.1.payPlan.1.remainingStampDutyFee	NUM	0
+account.1.payPlan.1.remainingTotal	NUM	322,6
+account.1.payPlan.1.termNumber	NUM	2
+account.1.payPlan.2.actual	BOOL	1
+account.1.payPlan.2.hasPaid	BOOL	0
+account.1.payPlan.2.paidAgentFee	NUM	0
+account.1.payPlan.2.paidInstallmentFee	NUM	0
+account.1.payPlan.2.paidInterest	NUM	0
+account.1.payPlan.2.paidLifeInsurance	NUM	0
+account.1.payPlan.2.paidPrepayPkgFee	NUM	0
+account.1.payPlan.2.paidPrincipal	NUM	0
+account.1.payPlan.2.paidServiceFee	NUM	0
+account.1.payPlan.2.paidStampDutyFee	NUM	0
+account.1.payPlan.2.paidTotal	NUM	0
+account.1.payPlan.2.payPlanDueDate	DATE	23.03.17 00:00
+account.1.payPlan.2.planStatus	STR	N
+account.1.payPlan.2.remainingAgentFee	NUM	0
+account.1.payPlan.2.remainingInstallmentFee	NUM	0
+account.1.payPlan.2.remainingInterest	NUM	28,59
+account.1.payPlan.2.remainingLifeInsurance	NUM	1,94
+account.1.payPlan.2.remainingPrepayPkgFee	NUM	15
+account.1.payPlan.2.remainingPrincipal	NUM	269,71
+account.1.payPlan.2.remainingServiceFee	NUM	7,36
+account.1.payPlan.2.remainingStampDutyFee	NUM	0
+account.1.payPlan.2.remainingTotal	NUM	322,6
+account.1.payPlan.2.termNumber	NUM	3
+account.1.payPlan.3.actual	BOOL	1
+account.1.payPlan.3.hasPaid	BOOL	0
+account.1.payPlan.3.paidAgentFee	NUM	0
+account.1.payPlan.3.paidInstallmentFee	NUM	0
+account.1.payPlan.3.paidInterest	NUM	0
+account.1.payPlan.3.paidLifeInsurance	NUM	0
+account.1.payPlan.3.paidPrepayPkgFee	NUM	0
+account.1.payPlan.3.paidPrincipal	NUM	0
+account.1.payPlan.3.paidServiceFee	NUM	0
+account.1.payPlan.3.paidStampDutyFee	NUM	0
+account.1.payPlan.3.paidTotal	NUM	0
+account.1.payPlan.3.payPlanDueDate	DATE	23.04.17 00:00
+account.1.payPlan.3.planStatus	STR	N
+account.1.payPlan.3.remainingAgentFee	NUM	0
+account.1.payPlan.3.remainingInstallmentFee	NUM	0
+account.1.payPlan.3.remainingInterest	NUM	24,68
+account.1.payPlan.3.remainingLifeInsurance	NUM	1,94
+account.1.payPlan.3.remainingPrepayPkgFee	NUM	15
+account.1.payPlan.3.remainingPrincipal	NUM	273,62
+account.1.payPlan.3.remainingServiceFee	NUM	7,36
+account.1.payPlan.3.remainingStampDutyFee	NUM	0
+account.1.payPlan.3.remainingTotal	NUM	322,6
+account.1.payPlan.3.termNumber	NUM	4
+account.1.payPlan.4.actual	BOOL	1
+account.1.payPlan.4.hasPaid	BOOL	0
+account.1.payPlan.4.paidAgentFee	NUM	0
+account.1.payPlan.4.paidInstallmentFee	NUM	0
+account.1.payPlan.4.paidInterest	NUM	0
+account.1.payPlan.4.paidLifeInsurance	NUM	0
+account.1.payPlan.4.paidPrepayPkgFee	NUM	0
+account.1.payPlan.4.paidPrincipal	NUM	0
+account.1.payPlan.4.paidServiceFee	NUM	0
+account.1.payPlan.4.paidStampDutyFee	NUM	0
+account.1.payPlan.4.paidTotal	NUM	0
+account.1.payPlan.4.payPlanDueDate	DATE	23.05.17 00:00
+account.1.payPlan.4.planStatus	STR	N
+account.1.payPlan.4.remainingAgentFee	NUM	0
+account.1.payPlan.4.remainingInstallmentFee	NUM	0
+account.1.payPlan.4.remainingInterest	NUM	20,71
+account.1.payPlan.4.remainingLifeInsurance	NUM	1,94
+account.1.payPlan.4.remainingPrepayPkgFee	NUM	15
+account.1.payPlan.4.remainingPrincipal	NUM	277,59
+account.1.payPlan.4.remainingServiceFee	NUM	7,36
+account.1.payPlan.4.remainingStampDutyFee	NUM	0
+account.1.payPlan.4.remainingTotal	NUM	322,6
+account.1.payPlan.4.termNumber	NUM	5
+account.1.payPlan.5.actual	BOOL	1
+account.1.payPlan.5.hasPaid	BOOL	0
+account.1.payPlan.5.paidAgentFee	NUM	0
+account.1.payPlan.5.paidInstallmentFee	NUM	0
+account.1.payPlan.5.paidInterest	NUM	0
+account.1.payPlan.5.paidLifeInsurance	NUM	0
+account.1.payPlan.5.paidPrepayPkgFee	NUM	0
+account.1.payPlan.5.paidPrincipal	NUM	0
+account.1.payPlan.5.paidServiceFee	NUM	0
+account.1.payPlan.5.paidStampDutyFee	NUM	0
+account.1.payPlan.5.paidTotal	NUM	0
+account.1.payPlan.5.payPlanDueDate	DATE	23.06.17 00:00
+account.1.payPlan.5.planStatus	STR	N
+account.1.payPlan.5.remainingAgentFee	NUM	0
+account.1.payPlan.5.remainingInstallmentFee	NUM	0
+account.1.payPlan.5.remainingInterest	NUM	16,69
+account.1.payPlan.5.remainingLifeInsurance	NUM	1,94
+account.1.payPlan.5.remainingPrepayPkgFee	NUM	15
+account.1.payPlan.5.remainingPrincipal	NUM	281,61
+account.1.payPlan.5.remainingServiceFee	NUM	7,36
+account.1.payPlan.5.remainingStampDutyFee	NUM	0
+account.1.payPlan.5.remainingTotal	NUM	322,6
+account.1.payPlan.5.termNumber	NUM	6
+account.1.payPlan.6.actual	BOOL	1
+account.1.payPlan.6.hasPaid	BOOL	0
+account.1.payPlan.6.paidAgentFee	NUM	0
+account.1.payPlan.6.paidInstallmentFee	NUM	0
+account.1.payPlan.6.paidInterest	NUM	0
+account.1.payPlan.6.paidLifeInsurance	NUM	0
+account.1.payPlan.6.paidPrepayPkgFee	NUM	0
+account.1.payPlan.6.paidPrincipal	NUM	0
+account.1.payPlan.6.paidServiceFee	NUM	0
+account.1.payPlan.6.paidStampDutyFee	NUM	0
+account.1.payPlan.6.paidTotal	NUM	0
+account.1.payPlan.6.payPlanDueDate	DATE	23.07.17 00:00
+account.1.payPlan.6.planStatus	STR	N
+account.1.payPlan.6.remainingAgentFee	NUM	0
+account.1.payPlan.6.remainingInstallmentFee	NUM	0
+account.1.payPlan.6.remainingInterest	NUM	12,61
+account.1.payPlan.6.remainingLifeInsurance	NUM	1,94
+account.1.payPlan.6.remainingPrepayPkgFee	NUM	15
+account.1.payPlan.6.remainingPrincipal	NUM	285,69
+account.1.payPlan.6.remainingServiceFee	NUM	7,36
+account.1.payPlan.6.remainingStampDutyFee	NUM	0
+account.1.payPlan.6.remainingTotal	NUM	322,6
+account.1.payPlan.6.termNumber	NUM	7
+account.1.payPlan.7.actual	BOOL	1
+account.1.payPlan.7.hasPaid	BOOL	0
+account.1.payPlan.7.paidAgentFee	NUM	0
+account.1.payPlan.7.paidInstallmentFee	NUM	0
+account.1.payPlan.7.paidInterest	NUM	0
+account.1.payPlan.7.paidLifeInsurance	NUM	0
+account.1.payPlan.7.paidPrepayPkgFee	NUM	0
+account.1.payPlan.7.paidPrincipal	NUM	0
+account.1.payPlan.7.paidServiceFee	NUM	0
+account.1.payPlan.7.paidStampDutyFee	NUM	0
+account.1.payPlan.7.paidTotal	NUM	0
+account.1.payPlan.7.payPlanDueDate	DATE	23.08.17 00:00
+account.1.payPlan.7.planStatus	STR	N
+account.1.payPlan.7.remainingAgentFee	NUM	0
+account.1.payPlan.7.remainingInstallmentFee	NUM	0
+account.1.payPlan.7.remainingInterest	NUM	8,46
+account.1.payPlan.7.remainingLifeInsurance	NUM	1,94
+account.1.payPlan.7.remainingPrepayPkgFee	NUM	15
+account.1.payPlan.7.remainingPrincipal	NUM	289,84
+account.1.payPlan.7.remainingServiceFee	NUM	7,36
+account.1.payPlan.7.remainingStampDutyFee	NUM	0
+account.1.payPlan.7.remainingTotal	NUM	322,6
+account.1.payPlan.7.termNumber	NUM	8
+account.1.payPlan.8.actual	BOOL	1
+account.1.payPlan.8.hasPaid	BOOL	0
+account.1.payPlan.8.paidAgentFee	NUM	0
+account.1.payPlan.8.paidInstallmentFee	NUM	0
+account.1.payPlan.8.paidInterest	NUM	0
+account.1.payPlan.8.paidLifeInsurance	NUM	0
+account.1.payPlan.8.paidPrepayPkgFee	NUM	0
+account.1.payPlan.8.paidPrincipal	NUM	0
+account.1.payPlan.8.paidServiceFee	NUM	0
+account.1.payPlan.8.paidStampDutyFee	NUM	0
+account.1.payPlan.8.paidTotal	NUM	0
+account.1.payPlan.8.payPlanDueDate	DATE	23.09.17 00:00
+account.1.payPlan.8.planStatus	STR	N
+account.1.payPlan.8.remainingAgentFee	NUM	0
+account.1.payPlan.8.remainingInstallmentFee	NUM	0
+account.1.payPlan.8.remainingInterest	NUM	4,26
+account.1.payPlan.8.remainingLifeInsurance	NUM	1,98
+account.1.payPlan.8.remainingPrepayPkgFee	NUM	15
+account.1.payPlan.8.remainingPrincipal	NUM	294,04
+account.1.payPlan.8.remainingServiceFee	NUM	7,37
+account.1.payPlan.8.remainingStampDutyFee	NUM	0,13
+account.1.payPlan.8.remainingTotal	NUM	322,65
+account.1.payPlan.8.termNumber	NUM	9
+account.1.pmtDueDate	DATE	23.01.17 00:00
+account.1.prepaymentFeeAmt	NUM	135
+account.1.prepayPkgFeeAmt	NUM	15
+account.1.prepayPkgInd	BOOL	1
+account.1.product.advanceRepaymentApply.applyBefore	NUM	5
+account.1.product.advanceRepaymentApply.canToApply	BOOL	1
+account.1.product.advanceRepaymentApply.deductBefore	NUM	3
+account.1.product.AdvanceRepaymentServiceFee.0.BaseType	STR	RemainingPrincipal
+account.1.product.AdvanceRepaymentServiceFee.0.HowToCalculate	STR	FixedAmount
+account.1.product.AdvanceRepaymentServiceFee.0.MaxLoanPeriod	NUM	99
+account.1.product.AdvanceRepaymentServiceFee.0.parameter	NUM	200
+account.1.product.BusinessParameters.GracePeriod	NUM	0
+account.1.product.ChargeAdvanceRepayment.Interest	STR	SettlementDate
+account.1.product.ChargeAdvanceRepayment.Principal	STR	Remaining
+account.1.product.ChargeAdvanceRepayment.ServiceFee	STR	CurrentTerm
+account.1.product.ChargeAdvanceRepayment.Value_addedServiceFee	STR	CurrentTerm
+account.1.product.compulsorySettlement.CPD	NUM	91
+account.1.product.ElectronicTemplate.0.ElectronicTemplateFlag	STR	M
+account.1.product.ElectronicTemplate.0.ElectronicTemplateType	STR	W
+account.1.product.Exemption.exemptionAmount	NUM	0
+account.1.product.Exemption.exemptionDays	NUM	100
+account.1.product.Fine.0.BaseType	STR	RemainingPrincipal
+account.1.product.Fine.0.HowToCalculate	STR	FixedAmount
+account.1.product.Fine.0.Max	NUM	90
+account.1.product.Fine.0.Min	NUM	90
+account.1.product.Fine.0.parameter	NUM	100
+account.1.product.Fine.1.BaseType	STR	RemainingPrincipal
+account.1.product.Fine.1.HowToCalculate	STR	FixedAmount
+account.1.product.Fine.1.Max	NUM	20
+account.1.product.Fine.1.Min	NUM	20
+account.1.product.Fine.1.parameter	NUM	75
+account.1.product.Fine.2.BaseType	STR	RemainingPrincipal
+account.1.product.Fine.2.HowToCalculate	STR	FixedAmount
+account.1.product.Fine.2.Max	NUM	60
+account.1.product.Fine.2.Min	NUM	60
+account.1.product.Fine.2.parameter	NUM	100
+account.1.product.Fine.3.BaseType	STR	RemainingPrincipal
+account.1.product.Fine.3.HowToCalculate	STR	FixedAmount
+account.1.product.Fine.3.Max	NUM	60
+account.1.product.Fine.3.Min	NUM	60
+account.1.product.Fine.3.parameter	NUM	200
+account.1.product.Fine.4.BaseType	STR	RemainingPrincipal
+account.1.product.Fine.4.HowToCalculate	STR	FixedAmount
+account.1.product.Fine.4.Max	NUM	10
+account.1.product.Fine.4.Min	NUM	10
+account.1.product.Fine.4.parameter	NUM	50
+account.1.product.Fine.5.BaseType	STR	RemainingPrincipal
+account.1.product.Fine.5.HowToCalculate	STR	FixedAmount
+account.1.product.Fine.5.Max	NUM	30
+account.1.product.Fine.5.Min	NUM	30
+account.1.product.Fine.5.parameter	NUM	100
+account.1.product.FineCalculationType	STR	CPD
+account.1.product.FlexibleRepaymentServicePacket.CalculationParameter	NUM	15
+account.1.product.FlexibleRepaymentServicePacket.ChargeMethod	STR	Terms
+account.1.product.FlexibleRepaymentServicePacket.HowToCalculate	STR	FixedAmount
+account.1.product.Hesitation.value	NUM	15
+account.1.product.id	STR	531bGLQq4lpFAotb1
+account.1.product.InterestRate	NUM	0,174
+account.1.product.LifeInsuranceFee.CalculationParameter	NUM	0,007
+account.1.product.LifeInsuranceFee.ChargeMethod	STR	Terms
+account.1.product.LifeInsuranceFee.HowToCalculate	STR	BaseRatio
+account.1.product.limit	NUM	20000
+account.1.product.LoanAmount.MaxAmount	NUM	2500
+account.1.product.LoanAmount.MinAmount	NUM	1000
+account.1.product.LoanMold	STR	S
+account.1.product.LoanStatus	STR	A
+account.1.product.LoanType	STR	MCEI
+account.1.product.RepayManner	STR	CPM
+account.1.product.RepaymentTerms.Parameter	NUM	9
+account.1.product.RepaymentTerms.Unit	STR	Month
+account.1.product.returnOverpayment.min	NUM	100
+account.1.product.returnOverpayment.returnBefore	NUM	3
+account.1.product.RuleInstalmentDate	STR	Shift
+account.1.product.ServiceFee.CalculationParameter	NUM	0,0265
+account.1.product.ServiceFee.ChargeMethod	STR	Terms
+account.1.product.ServiceFee.HowToCalculate	STR	BaseRatio
+account.1.product.StampDutyFee.CalculationParameter	NUM	0,00005
+account.1.product.StampDutyFee.ChargeMethod	STR	FirstTerm
+account.1.product.StampDutyFee.HowToCalculate	STR	BaseRatio
+account.1.product.TerminateAgeCd	NUM	4
+account.1.product.ToleranceValue.CPDOverdueToleranceValue	NUM	50
+account.1.product.ToleranceValue.DPDOverdueToleranceValue	NUM	50
+account.1.product.type	STR	Instalment
+account.1.productCd	STR	1101
+account.1.purpose	STR	PL01
+account.1.remainingTerms	NUM	9
+account.1.requestTime	STR	20341007103841
+account.1.returnOverpayment	BOOL	0
+account.1.serviceId	STR	TNRAAcctSetupWithDraw
+account.1.serviceSn	STR	6,71444217204529E+031
+account.1.stampAmt	NUM	0,26
+account.1.stampdutyRate	NUM	0,00005
+account.1.subTerminalType	STR	Android
+account.1.sumOverpaid	NUM	0
+account.1.termToPay	NUM	4
+account.1.totalPaidAgentFee	NUM	0
+account.1.totalPaidInstallmentFee	NUM	0
+account.1.totalPaidInterest	NUM	0
+account.1.totalPaidLifeInsuranceFee	NUM	0
+account.1.totalPaidPrepayPkgFee	NUM	0
+account.1.totalPaidPrincipalAmt	NUM	0
+account.1.totalPaidServiceFee	NUM	0
+account.1.totalPaidStampDutyFee	NUM	0
+account.1.totalPaidTerms	NUM	0
+account.1.totalRemAgentFee	NUM	0
+account.1.totalRemainingAmt	NUM	2903,45
+account.1.totalRemInstallmentFee	NUM	0
+account.1.totalRemInterest	NUM	184,7
+account.1.totalRemLifeInsuranceFee	NUM	17,5
+account.1.totalRemPrepayPkgFee	NUM	135
+account.1.totalRemPrincipalAmt	NUM	2500
+account.1.totalRemServiceFee	NUM	66,25
+account.1.totalRemStampDutyFee	NUM	0,26
+account.1.transaction.0.acctNbr	STR	10000004
+account.1.transaction.0.acctType	STR	E
+account.1.transaction.0.acqId	STR	10000000
+account.1.transaction.0.businessDate	DATE	23.12.16 00:00
+account.1.transaction.0.cardNo	STR	6,21226120866646E+018
+account.1.transaction.0.cardType	STR	0
+account.1.transaction.0.certId	STR	1,41028199312022E+017
+account.1.transaction.0.certType	STR	6
+account.1.transaction.0.city	STR	市辖区
+account.1.transaction.0.commandType	STR	SPA
+account.1.transaction.0.comparedInd	BOOL	0
+account.1.transaction.0.contrNbr	STR	1,101341007E+017
+account.1.transaction.0.createTime	DATE	23.12.16 00:00
+account.1.transaction.0.currency	STR	156
+account.1.transaction.0.failureAmt	NUM	0
+account.1.transaction.0.flag	STR	0
+account.1.transaction.0.id	STR	r59V6n1yhMStLkODO
+account.1.transaction.0.inputSource	STR
+account.1.transaction.0.serviceSn	STR
+account.1.transaction.0.loanUsage	STR	L
+account.1.transaction.0.matchInd	STR	Y
+account.1.transaction.0.onlineFlag	BOOL	1
+account.1.transaction.0.openBankId	STR	102
+account.1.transaction.0.openBankName	STR	工商银行
+account.1.transaction.0.optDatetime	DATE	23.12.16 00:00
+account.1.transaction.0.orderStatus	STR	S
+account.1.transaction.0.orderTime	DATE	23.12.16 00:00
+account.1.transaction.0.org	STR	1
+account.1.transaction.0.payBizCode	STR	1
+account.1.transaction.0.payChannelId	STR	1
+account.1.transaction.0.priv1	STR	T110E5
+account.1.transaction.0.purpose	STR	放款申请
+account.1.transaction.0.refNbr	STR	1,61223103923406E+021
+account.1.transaction.0.requestTime	STR	20341007103841
+account.1.transaction.0.responseCode	STR	0
+account.1.transaction.0.responseMessage	STR	操作成功
+account.1.transaction.0.sendTime	DATE	23.12.16 00:00
+account.1.transaction.0.serviceId	STR	TNRAAcctSetupWithDraw
+account.1.transaction.0.serviceSn	STR	6,71444217204529E+031
+account.1.transaction.0.setupDate	DATE	23.12.16 00:00
+account.1.transaction.0.state	STR	重庆市
+account.1.transaction.0.subBank	STR	1
+account.1.transaction.0.successAmt	NUM	2500
+account.1.transaction.0.txnAmt	NUM	2500
+account.1.transaction.0.txnType	STR	AgentDebit
+account.1.transaction.0.usrName	STR	梅花
+account.1.transaction.1.acctNbr	STR	10000004
+account.1.transaction.1.acctType	STR	E
+account.1.transaction.1.acqId	STR	10000000
+account.1.transaction.1.businessDate	DATE	23.01.17 00:00
+account.1.transaction.1.cardNo	STR	6,21226120866646E+018
+account.1.transaction.1.cardType	STR	0
+account.1.transaction.1.certId	STR	1,41028199312022E+017
+account.1.transaction.1.certType	STR	6
+account.1.transaction.1.city	STR	市辖区
+account.1.transaction.1.commandType	STR	SDB
+account.1.transaction.1.comparedInd	BOOL	0
+account.1.transaction.1.contrNbr	STR	1,101341007E+017
+account.1.transaction.1.createTime	DATE	23.01.17 00:00
+account.1.transaction.1.currency	STR	156
+account.1.transaction.1.failureAmt	NUM	0
+account.1.transaction.1.flag	STR	0
+account.1.transaction.1.id	STR	CzXWg5ADsMJUslTEE
+account.1.transaction.1.loanUsage	STR	N
+account.1.transaction.1.matchInd	STR	Y
+account.1.transaction.1.openBankId	STR	102
+account.1.transaction.1.openBankName	STR	工商银行
+account.1.transaction.1.optDatetime	DATE	23.01.17 00:00
+account.1.transaction.1.orderStatus	STR	W
+account.1.transaction.1.orderTime	DATE	23.01.17 00:00
+account.1.transaction.1.org	STR	1
+account.1.transaction.1.payBizCode	STR	0
+account.1.transaction.1.payChannelId	STR	1
+account.1.transaction.1.priv1	STR	T110E5
+account.1.transaction.1.purpose	STR	正常扣款
+account.1.transaction.1.sendTime	DATE	23.01.17 00:00
+account.1.transaction.1.setupDate	DATE	23.01.17 00:00
+account.1.transaction.1.state	STR	重庆市
+account.1.transaction.1.subBank	STR	1
+account.1.transaction.1.successAmt	NUM	0
+account.1.transaction.1.term	NUM	2
+account.1.transaction.1.txnAmt	NUM	322,6
+account.1.transaction.1.txnType	STR	AgentCredit
+account.1.transaction.1.usrName	STR	梅花
+account.2.acctExpireDate	DATE	24.10.17 00:00
+account.2.acctNbr	STR	10000007
+account.2.acctType	STR	E
+account.2.acqId	STR	10000000
+account.2.agentFeeAmount	NUM	0
+account.2.agreeRateInd	BOOL	1
+account.2.applicationNo	STR	5,23618529514099E+017
+account.2.applyDate	DATE	07.10.34 00:00
+account.2.batchDate	DATE	24.02.17 00:00
+account.2.batchSms.0.batchSmsId	STR	QAd3jA8AURYcIS2vU
+account.2.batchSms.0.batchSmsIsSend	BOOL	0
+account.2.batchSms.0.batchSmsParamAmount	NUM	322,6
+account.2.batchSms.0.batchSmsParamCutDate	DATE	25.04.17 00:00
+account.2.batchSms.0.batchSmsParamName	STR	梅花
+account.2.batchSms.0.batchSmsParamPartcardno	STR	8890
+account.2.batchSms.0.batchSmsParamSdate	DATE	25.04.17 00:00
+account.2.batchSms.0.batchSmsTemplateCode	STR	from_success
+account.2.batchSms.0.bSmsParamSuccessAmt	NUM	322,6
+account.2.contractStatus	STR	A
+account.2.contrNbr	STR	1,101161223E+017
+account.2.corpName	STR	测试版的
+account.2.createTime	DATE	24.01.17 00:00
+account.2.currentTerm	NUM	4
+account.2.cycleDay	NUM	24
+account.2.ddBankAcctName	STR	梅花
+account.2.ddBankAcctNbr	STR	6,21226120866646E+018
+account.2.ddBankBranch	STR	102
+account.2.ddBankCity	STR	市辖区
+account.2.ddBankCityCode	STR	500100
+account.2.ddBankName	STR	工商银行
+account.2.ddBankProvince	STR	重庆市
+account.2.ddBankProvinceCode	STR	500000
+account.2.dpdDays	NUM	1
+account.2.feeAmt	NUM	66
+account.2.feeRate	NUM	0,02649996
+account.2.gender	STR	M
+account.2.graceDate	DATE	24.02.17 00:00
+account.2.hasAdvancedClearing	BOOL	0
+account.2.hasCompulsoryCleaning	BOOL	0
+account.2.id	STR	6lTUHQIXpUmMqAUVK
+account.2.installmentFeeAmt	NUM	0
+account.2.interestRate	NUM	0,174
+account.2.isAbnormal	BOOL	0
+account.2.isLoanReleased	BOOL	1
+account.2.joinLifeInsuInd	BOOL	1
+account.2.lifeInsuFeeAmt	NUM	18
+account.2.lifeInsuFeeRate	NUM	0,00700002
+account.2.loanAmt	NUM	2500
+account.2.loanFeeDefId	STR	9
+account.2.loanMold	STR	S
+account.2.loanReleaseDate	DATE	24.01.17 00:00
+account.2.loanTerm	NUM	9
+account.2.mobileNo	STR	13600000010
+account.2.name	STR	梅花
+account.2.nextStmtDate	DATE	24.02.17 00:00
+account.2.overdueDate	DATE	24.04.17 00:00
+account.2.owningBranch	STR	1
+account.2.paidSumOfDebtTillBizDate	NUM	967,8
+account.2.paidTerms	NUM	3
+account.2.payPlan.0.actual	BOOL	1
+account.2.payPlan.0.hasPaid	BOOL	1
+account.2.payPlan.0.paidAgentFee	NUM	0
+account.2.payPlan.0.paidInstallmentFee	NUM	0
+account.2.payPlan.0.paidInterest	NUM	36,25
+account.2.payPlan.0.paidLifeInsurance	NUM	1,94
+account.2.payPlan.0.paidPrepayPkgFee	NUM	15
+account.2.payPlan.0.paidPrincipal	NUM	262,05
+account.2.payPlan.0.paidServiceFee	NUM	7,36
+account.2.payPlan.0.paidStampDutyFee	NUM	0
+account.2.payPlan.0.paidTotal	NUM	322,6
+account.2.payPlan.0.payPlanDueDate	DATE	24.02.17 00:00
+account.2.payPlan.0.planStatus	STR	N
+account.2.payPlan.0.remainingAgentFee	NUM	0
+account.2.payPlan.0.remainingInstallmentFee	NUM	0
+account.2.payPlan.0.remainingInterest	NUM	0
+account.2.payPlan.0.remainingLifeInsurance	NUM	0
+account.2.payPlan.0.remainingPrepayPkgFee	NUM	0
+account.2.payPlan.0.remainingPrincipal	NUM	0
+account.2.payPlan.0.remainingServiceFee	NUM	0
+account.2.payPlan.0.remainingStampDutyFee	NUM	0,13
+account.2.payPlan.0.remainingTotal	NUM	0
+account.2.payPlan.0.termLastPaymentDate	DATE	25.04.17 00:00
+account.2.payPlan.0.termNumber	NUM	1
+account.2.payPlan.1.actual	BOOL	1
+account.2.payPlan.1.hasPaid	BOOL	1
+account.2.payPlan.1.paidAgentFee	NUM	0
+account.2.payPlan.1.paidInstallmentFee	NUM	0
+account.2.payPlan.1.paidInterest	NUM	32,45
+account.2.payPlan.1.paidLifeInsurance	NUM	1,94
+account.2.payPlan.1.paidPrepayPkgFee	NUM	15
+account.2.payPlan.1.paidPrincipal	NUM	265,85
+account.2.payPlan.1.paidServiceFee	NUM	7,36
+account.2.payPlan.1.paidStampDutyFee	NUM	0
+account.2.payPlan.1.paidTotal	NUM	322,6
+account.2.payPlan.1.payPlanDueDate	DATE	24.03.17 00:00
+account.2.payPlan.1.planStatus	STR	N
+account.2.payPlan.1.remainingAgentFee	NUM	0
+account.2.payPlan.1.remainingInstallmentFee	NUM	0
+account.2.payPlan.1.remainingInterest	NUM	0
+account.2.payPlan.1.remainingLifeInsurance	NUM	0
+account.2.payPlan.1.remainingPrepayPkgFee	NUM	0
+account.2.payPlan.1.remainingPrincipal	NUM	0
+account.2.payPlan.1.remainingServiceFee	NUM	0
+account.2.payPlan.1.remainingStampDutyFee	NUM	0
+account.2.payPlan.1.remainingTotal	NUM	0
+account.2.payPlan.1.termLastPaymentDate	DATE	25.04.17 00:00
+account.2.payPlan.1.termNumber	NUM	2
+account.2.payPlan.2.actual	BOOL	1
+account.2.payPlan.2.hasPaid	BOOL	1
+account.2.payPlan.2.paidAgentFee	NUM	0
+account.2.payPlan.2.paidInstallmentFee	NUM	0
+account.2.payPlan.2.paidInterest	NUM	28,59
+account.2.payPlan.2.paidLifeInsurance	NUM	1,94
+account.2.payPlan.2.paidPrepayPkgFee	NUM	15
+account.2.payPlan.2.paidPrincipal	NUM	269,71
+account.2.payPlan.2.paidServiceFee	NUM	7,36
+account.2.payPlan.2.paidStampDutyFee	NUM	0
+account.2.payPlan.2.paidTotal	NUM	322,6
+account.2.payPlan.2.payPlanDueDate	DATE	24.04.17 00:00
+account.2.payPlan.2.planStatus	STR	N
+account.2.payPlan.2.remainingAgentFee	NUM	0
+account.2.payPlan.2.remainingInstallmentFee	NUM	0
+account.2.payPlan.2.remainingInterest	NUM	0
+account.2.payPlan.2.remainingLifeInsurance	NUM	0
+account.2.payPlan.2.remainingPrepayPkgFee	NUM	0
+account.2.payPlan.2.remainingPrincipal	NUM	0
+account.2.payPlan.2.remainingServiceFee	NUM	0
+account.2.payPlan.2.remainingStampDutyFee	NUM	0
+account.2.payPlan.2.remainingTotal	NUM	0
+account.2.payPlan.2.termLastPaymentDate	DATE	25.04.17 00:00
+account.2.payPlan.2.termNumber	NUM	3
+account.2.payPlan.3.actual	BOOL	1
+account.2.payPlan.3.hasPaid	BOOL	0
+account.2.payPlan.3.paidAgentFee	NUM	0
+account.2.payPlan.3.paidInstallmentFee	NUM	0
+account.2.payPlan.3.paidInterest	NUM	0
+account.2.payPlan.3.paidLifeInsurance	NUM	0
+account.2.payPlan.3.paidPrepayPkgFee	NUM	0
+account.2.payPlan.3.paidPrincipal	NUM	0
+account.2.payPlan.3.paidServiceFee	NUM	0
+account.2.payPlan.3.paidStampDutyFee	NUM	0
+account.2.payPlan.3.paidTotal	NUM	0
+account.2.payPlan.3.payPlanDueDate	DATE	24.05.17 00:00
+account.2.payPlan.3.planStatus	STR	N
+account.2.payPlan.3.remainingAgentFee	NUM	0
+account.2.payPlan.3.remainingInstallmentFee	NUM	0
+account.2.payPlan.3.remainingInterest	NUM	24,68
+account.2.payPlan.3.remainingLifeInsurance	NUM	1,94
+account.2.payPlan.3.remainingPrepayPkgFee	NUM	15
+account.2.payPlan.3.remainingPrincipal	NUM	273,62
+account.2.payPlan.3.remainingServiceFee	NUM	7,36
+account.2.payPlan.3.remainingStampDutyFee	NUM	0
+account.2.payPlan.3.remainingTotal	NUM	322,6
+account.2.payPlan.3.termNumber	NUM	4
+account.2.payPlan.4.actual	BOOL	1
+account.2.payPlan.4.hasPaid	BOOL	0
+account.2.payPlan.4.paidAgentFee	NUM	0
+account.2.payPlan.4.paidInstallmentFee	NUM	0
+account.2.payPlan.4.paidInterest	NUM	0
+account.2.payPlan.4.paidLifeInsurance	NUM	0
+account.2.payPlan.4.paidPrepayPkgFee	NUM	0
+account.2.payPlan.4.paidPrincipal	NUM	0
+account.2.payPlan.4.paidServiceFee	NUM	0
+account.2.payPlan.4.paidStampDutyFee	NUM	0
+account.2.payPlan.4.paidTotal	NUM	0
+account.2.payPlan.4.payPlanDueDate	DATE	24.06.17 00:00
+account.2.payPlan.4.planStatus	STR	N
+account.2.payPlan.4.remainingAgentFee	NUM	0
+account.2.payPlan.4.remainingInstallmentFee	NUM	0
+account.2.payPlan.4.remainingInterest	NUM	20,71
+account.2.payPlan.4.remainingLifeInsurance	NUM	1,94
+account.2.payPlan.4.remainingPrepayPkgFee	NUM	15
+account.2.payPlan.4.remainingPrincipal	NUM	277,59
+account.2.payPlan.4.remainingServiceFee	NUM	7,36
+account.2.payPlan.4.remainingStampDutyFee	NUM	0
+account.2.payPlan.4.remainingTotal	NUM	322,6
+account.2.payPlan.4.termNumber	NUM	5
+account.2.payPlan.5.actual	BOOL	1
+account.2.payPlan.5.hasPaid	BOOL	0
+account.2.payPlan.5.paidAgentFee	NUM	0
+account.2.payPlan.5.paidInstallmentFee	NUM	0
+account.2.payPlan.5.paidInterest	NUM	0
+account.2.payPlan.5.paidLifeInsurance	NUM	0
+account.2.payPlan.5.paidPrepayPkgFee	NUM	0
+account.2.payPlan.5.paidPrincipal	NUM	0
+account.2.payPlan.5.paidServiceFee	NUM	0
+account.2.payPlan.5.paidStampDutyFee	NUM	0
+account.2.payPlan.5.paidTotal	NUM	0
+account.2.payPlan.5.payPlanDueDate	DATE	24.07.17 00:00
+account.2.payPlan.5.planStatus	STR	N
+account.2.payPlan.5.remainingAgentFee	NUM	0
+account.2.payPlan.5.remainingInstallmentFee	NUM	0
+account.2.payPlan.5.remainingInterest	NUM	16,69
+account.2.payPlan.5.remainingLifeInsurance	NUM	1,94
+account.2.payPlan.5.remainingPrepayPkgFee	NUM	15
+account.2.payPlan.5.remainingPrincipal	NUM	281,61
+account.2.payPlan.5.remainingServiceFee	NUM	7,36
+account.2.payPlan.5.remainingStampDutyFee	NUM	0
+account.2.payPlan.5.remainingTotal	NUM	322,6
+account.2.payPlan.5.termNumber	NUM	6
+account.2.payPlan.6.actual	BOOL	1
+account.2.payPlan.6.hasPaid	BOOL	0
+account.2.payPlan.6.paidAgentFee	NUM	0
+account.2.payPlan.6.paidInstallmentFee	NUM	0
+account.2.payPlan.6.paidInterest	NUM	0
+account.2.payPlan.6.paidLifeInsurance	NUM	0
+account.2.payPlan.6.paidPrepayPkgFee	NUM	0
+account.2.payPlan.6.paidPrincipal	NUM	0
+account.2.payPlan.6.paidServiceFee	NUM	0
+account.2.payPlan.6.paidStampDutyFee	NUM	0
+account.2.payPlan.6.paidTotal	NUM	0
+account.2.payPlan.6.payPlanDueDate	DATE	24.08.17 00:00
+account.2.payPlan.6.planStatus	STR	N
+account.2.payPlan.6.remainingAgentFee	NUM	0
+account.2.payPlan.6.remainingInstallmentFee	NUM	0
+account.2.payPlan.6.remainingInterest	NUM	12,61
+account.2.payPlan.6.remainingLifeInsurance	NUM	1,94
+account.2.payPlan.6.remainingPrepayPkgFee	NUM	15
+account.2.payPlan.6.remainingPrincipal	NUM	285,69
+account.2.payPlan.6.remainingServiceFee	NUM	7,36
+account.2.payPlan.6.remainingStampDutyFee	NUM	0
+account.2.payPlan.6.remainingTotal	NUM	322,6
+account.2.payPlan.6.termNumber	NUM	7
+account.2.payPlan.7.actual	BOOL	1
+account.2.payPlan.7.hasPaid	BOOL	0
+account.2.payPlan.7.paidAgentFee	NUM	0
+account.2.payPlan.7.paidInstallmentFee	NUM	0
+account.2.payPlan.7.paidInterest	NUM	0
+account.2.payPlan.7.paidLifeInsurance	NUM	0
+account.2.payPlan.7.paidPrepayPkgFee	NUM	0
+account.2.payPlan.7.paidPrincipal	NUM	0
+account.2.payPlan.7.paidServiceFee	NUM	0
+account.2.payPlan.7.paidStampDutyFee	NUM	0
+account.2.payPlan.7.paidTotal	NUM	0
+account.2.payPlan.7.payPlanDueDate	DATE	24.09.17 00:00
+account.2.payPlan.7.planStatus	STR	N
+account.2.payPlan.7.remainingAgentFee	NUM	0
+account.2.payPlan.7.remainingInstallmentFee	NUM	0
+account.2.payPlan.7.remainingInterest	NUM	8,46
+account.2.payPlan.7.remainingLifeInsurance	NUM	1,94
+account.2.payPlan.7.remainingPrepayPkgFee	NUM	15
+account.2.payPlan.7.remainingPrincipal	NUM	289,84
+account.2.payPlan.7.remainingServiceFee	NUM	7,36
+account.2.payPlan.7.remainingStampDutyFee	NUM	0
+account.2.payPlan.7.remainingTotal	NUM	322,6
+account.2.payPlan.7.termNumber	NUM	8
+account.2.payPlan.8.actual	BOOL	1
+account.2.payPlan.8.hasPaid	BOOL	0
+account.2.payPlan.8.paidAgentFee	NUM	0
+account.2.payPlan.8.paidInstallmentFee	NUM	0
+account.2.payPlan.8.paidInterest	NUM	0
+account.2.payPlan.8.paidLifeInsurance	NUM	0
+account.2.payPlan.8.paidPrepayPkgFee	NUM	0
+account.2.payPlan.8.paidPrincipal	NUM	0
+account.2.payPlan.8.paidServiceFee	NUM	0
+account.2.payPlan.8.paidStampDutyFee	NUM	0
+account.2.payPlan.8.paidTotal	NUM	0
+account.2.payPlan.8.payPlanDueDate	DATE	24.10.17 00:00
+account.2.payPlan.8.planStatus	STR	N
+account.2.payPlan.8.remainingAgentFee	NUM	0
+account.2.payPlan.8.remainingInstallmentFee	NUM	0
+account.2.payPlan.8.remainingInterest	NUM	4,26
+account.2.payPlan.8.remainingLifeInsurance	NUM	1,98
+account.2.payPlan.8.remainingPrepayPkgFee	NUM	15
+account.2.payPlan.8.remainingPrincipal	NUM	294,04
+account.2.payPlan.8.remainingServiceFee	NUM	7,37
+account.2.payPlan.8.remainingStampDutyFee	NUM	0,13
+account.2.payPlan.8.remainingTotal	NUM	322,65
+account.2.payPlan.8.termNumber	NUM	9
+account.2.pmtDueDate	DATE	24.02.17 00:00
+account.2.prepaymentFeeAmt	NUM	135
+account.2.prepayPkgFeeAmt	NUM	15
+account.2.prepayPkgInd	BOOL	1
+account.2.product.advanceRepaymentApply.applyBefore	NUM	5
+account.2.product.advanceRepaymentApply.canToApply	BOOL	1
+account.2.product.advanceRepaymentApply.deductBefore	NUM	3
+account.2.product.AdvanceRepaymentServiceFee.0.BaseType	STR	RemainingPrincipal
+account.2.product.AdvanceRepaymentServiceFee.0.HowToCalculate	STR	FixedAmount
+account.2.product.AdvanceRepaymentServiceFee.0.MaxLoanPeriod	NUM	99
+account.2.product.AdvanceRepaymentServiceFee.0.parameter	NUM	200
+account.2.product.BusinessParameters.GracePeriod	NUM	0
+account.2.product.ChargeAdvanceRepayment.Interest	STR	SettlementDate
+account.2.product.ChargeAdvanceRepayment.Principal	STR	Remaining
+account.2.product.ChargeAdvanceRepayment.ServiceFee	STR	CurrentTerm
+account.2.product.ChargeAdvanceRepayment.Value_addedServiceFee	STR	CurrentTerm
+account.2.product.compulsorySettlement.CPD	NUM	91
+account.2.product.ElectronicTemplate.0.ElectronicTemplateFlag	STR	M
+account.2.product.ElectronicTemplate.0.ElectronicTemplateType	STR	W
+account.2.product.Exemption.exemptionAmount	NUM	0
+account.2.product.Exemption.exemptionDays	NUM	100
+account.2.product.Fine.0.BaseType	STR	RemainingPrincipal
+account.2.product.Fine.0.HowToCalculate	STR	FixedAmount
+account.2.product.Fine.0.Max	NUM	90
+account.2.product.Fine.0.Min	NUM	90
+account.2.product.Fine.0.parameter	NUM	100
+account.2.product.Fine.1.BaseType	STR	RemainingPrincipal
+account.2.product.Fine.1.HowToCalculate	STR	FixedAmount
+account.2.product.Fine.1.Max	NUM	20
+account.2.product.Fine.1.Min	NUM	20
+account.2.product.Fine.1.parameter	NUM	75
+account.2.product.Fine.2.BaseType	STR	RemainingPrincipal
+account.2.product.Fine.2.HowToCalculate	STR	FixedAmount
+account.2.product.Fine.2.Max	NUM	60
+account.2.product.Fine.2.Min	NUM	60
+account.2.product.Fine.2.parameter	NUM	100
+account.2.product.Fine.3.BaseType	STR	RemainingPrincipal
+account.2.product.Fine.3.HowToCalculate	STR	FixedAmount
+account.2.product.Fine.3.Max	NUM	60
+account.2.product.Fine.3.Min	NUM	60
+account.2.product.Fine.3.parameter	NUM	200
+account.2.product.Fine.4.BaseType	STR	RemainingPrincipal
+account.2.product.Fine.4.HowToCalculate	STR	FixedAmount
+account.2.product.Fine.4.Max	NUM	10
+account.2.product.Fine.4.Min	NUM	10
+account.2.product.Fine.4.parameter	NUM	50
+account.2.product.Fine.5.BaseType	STR	RemainingPrincipal
+account.2.product.Fine.5.HowToCalculate	STR	FixedAmount
+account.2.product.Fine.5.Max	NUM	30
+account.2.product.Fine.5.Min	NUM	30
+account.2.product.Fine.5.parameter	NUM	100
+account.2.product.FineCalculationType	STR	CPD
+account.2.product.FlexibleRepaymentServicePacket.CalculationParameter	NUM	15
+account.2.product.FlexibleRepaymentServicePacket.ChargeMethod	STR	Terms
+account.2.product.FlexibleRepaymentServicePacket.HowToCalculate	STR	FixedAmount
+account.2.product.Hesitation.value	NUM	15
+account.2.product.id	STR	531bGLQq4lpFAotb1
+account.2.product.InterestRate	NUM	0,174
+account.2.product.LifeInsuranceFee.CalculationParameter	NUM	0,007
+account.2.product.LifeInsuranceFee.ChargeMethod	STR	Terms
+account.2.product.LifeInsuranceFee.HowToCalculate	STR	BaseRatio
+account.2.product.limit	NUM	20000
+account.2.product.LoanAmount.MaxAmount	NUM	2500
+account.2.product.LoanAmount.MinAmount	NUM	1000
+account.2.product.LoanMold	STR	S
+account.2.product.LoanStatus	STR	A
+account.2.product.LoanType	STR	MCEI
+account.2.product.RepayManner	STR	CPM
+account.2.product.RepaymentTerms.Parameter	NUM	9
+account.2.product.RepaymentTerms.Unit	STR	Month
+account.2.product.returnOverpayment.min	NUM	100
+account.2.product.returnOverpayment.returnBefore	NUM	3
+account.2.product.RuleInstalmentDate	STR	Shift
+account.2.product.ServiceFee.CalculationParameter	NUM	0,0265
+account.2.product.ServiceFee.ChargeMethod	STR	Terms
+account.2.product.ServiceFee.HowToCalculate	STR	BaseRatio
+account.2.product.StampDutyFee.CalculationParameter	NUM	0,00005
+account.2.product.StampDutyFee.ChargeMethod	STR	FirstTerm
+account.2.product.StampDutyFee.HowToCalculate	STR	BaseRatio
+account.2.product.TerminateAgeCd	NUM	4
+account.2.product.ToleranceValue.CPDOverdueToleranceValue	NUM	50
+account.2.product.ToleranceValue.DPDOverdueToleranceValue	NUM	50
+account.2.product.type	STR	Instalment
+account.2.productCd	STR	1101
+account.2.purpose	STR	PL01
+account.2.remainingTerms	NUM	6
+account.2.requestTime	STR	20161223110420
+account.2.returnOverpayment	BOOL	0
+account.2.serviceId	STR	TNRAAcctSetupWithDraw
+account.2.serviceSn	STR	7,78270691968097E+031
+account.2.stampAmt	NUM	0,26
+account.2.stampdutyRate	NUM	0,00005
+account.2.subTerminalType	STR	Android
+account.2.sumOverpaid	NUM	0
+account.2.termToPay	NUM	3
+account.2.totalPaidAgentFee	NUM	0
+account.2.totalPaidInstallmentFee	NUM	0
+account.2.totalPaidInterest	NUM	97,29
+account.2.totalPaidLifeInsuranceFee	NUM	5,82
+account.2.totalPaidPrepayPkgFee	NUM	45
+account.2.totalPaidPrincipalAmt	NUM	797,61
+account.2.totalPaidServiceFee	NUM	22,08
+account.2.totalPaidStampDutyFee	NUM	0
+account.2.totalPaidTerms	NUM	3
+account.2.totalRemAgentFee	NUM	0
+account.2.totalRemainingAmt	NUM	1935,65
+account.2.totalRemInstallmentFee	NUM	0
+account.2.totalRemInterest	NUM	87,41
+account.2.totalRemLifeInsuranceFee	NUM	11,68
+account.2.totalRemPrepayPkgFee	NUM	90
+account.2.totalRemPrincipalAmt	NUM	1702,39
+account.2.totalRemServiceFee	NUM	44,17
+account.2.totalRemStampDutyFee	NUM	0,26
+account.2.transaction.0.acctNbr	STR	10000007
+account.2.transaction.0.acctType	STR	E
+account.2.transaction.0.acqId	STR	10000000
+account.2.transaction.0.businessDate	DATE	24.01.17 00:00
+account.2.transaction.0.cardNo	STR	6,21226120866646E+018
+account.2.transaction.0.cardType	STR	0
+account.2.transaction.0.certId	STR	1,41028199312022E+017
+account.2.transaction.0.certType	STR	6
+account.2.transaction.0.city	STR	市辖区
+account.2.transaction.0.commandType	STR	SPA
+account.2.transaction.0.comparedInd	BOOL	0
+account.2.transaction.0.contrNbr	STR	1,101161223E+017
+account.2.transaction.0.createTime	DATE	24.01.17 00:00
+account.2.transaction.0.currency	STR	156
+account.2.transaction.0.failureAmt	NUM	0
+account.2.transaction.0.flag	STR	0
+account.2.transaction.0.id	STR	WbNj1IVB2XRhtsjoW
+account.2.transaction.0.loanUsage	STR	L
+account.2.transaction.0.matchInd	STR	Y
+account.2.transaction.0.onlineFlag	BOOL	1
+account.2.transaction.0.openBankId	STR	102
+account.2.transaction.0.openBankName	STR	工商银行
+account.2.transaction.0.optDatetime	DATE	24.01.17 00:00
+account.2.transaction.0.orderStatus	STR	S
+account.2.transaction.0.orderTime	DATE	24.01.17 00:00
+account.2.transaction.0.org	STR	1
+account.2.transaction.0.payBizCode	STR	1
+account.2.transaction.0.payChannelId	STR	1
+account.2.transaction.0.priv1	STR	T110E5
+account.2.transaction.0.purpose	STR	放款申请
+account.2.transaction.0.refNbr	STR	1,61223110455449E+021
+account.2.transaction.0.requestTime	STR	20161223110420
+account.2.transaction.0.responseCode	STR	0
+account.2.transaction.0.responseMessage	STR	操作成功
+account.2.transaction.0.sendTime	DATE	24.01.17 00:00
+account.2.transaction.0.serviceId	STR	TNRAAcctSetupWithDraw
+account.2.transaction.0.serviceSn	STR	7,78270691968097E+031
+account.2.transaction.0.setupDate	DATE	24.01.17 00:00
+account.2.transaction.0.state	STR	重庆市
+account.2.transaction.0.subBank	STR	1
+account.2.transaction.0.successAmt	NUM	2500
+account.2.transaction.0.txnAmt	NUM	2500
+account.2.transaction.0.txnType	STR	AgentDebit
+account.2.transaction.0.usrName	STR	梅花
+account.2.transaction.1.acctNbr	STR	10000007
+account.2.transaction.1.acctType	STR	E
+account.2.transaction.1.acqId	STR	10000000
+account.2.transaction.1.businessDate	DATE	25.04.17 00:00
+account.2.transaction.1.cardNo	STR	6,21226120866646E+018
+account.2.transaction.1.cardType	STR	0
+account.2.transaction.1.certId	STR	1,41028199312022E+017
+account.2.transaction.1.certType	STR	6
+account.2.transaction.1.city	STR	市辖区
+account.2.transaction.1.code	STR	0
+account.2.transaction.1.commandType	STR	SDB
+account.2.transaction.1.comparedInd	BOOL	0
+account.2.transaction.1.contrNbr	STR	1,101161223E+017
+account.2.transaction.1.createTime	DATE	25.04.17 00:00
+account.2.transaction.1.currency	STR	156
+account.2.transaction.1.failureAmt	NUM	0
+account.2.transaction.1.flag	STR	0
+account.2.transaction.1.id	STR	LNDsnTZQbT4Hd6dGy
+account.2.transaction.1.loanUsage	STR	O
+account.2.transaction.1.matchInd	STR	Y
+account.2.transaction.1.openBankId	STR	102
+account.2.transaction.1.openBankName	STR	工商银行
+account.2.transaction.1.optDatetime	DATE	25.04.17 00:00
+account.2.transaction.1.orderStatus	STR	S
+account.2.transaction.1.orderTime	DATE	25.04.17 00:00
+account.2.transaction.1.org	STR	1
+account.2.transaction.1.payBizCode	STR	0
+account.2.transaction.1.payChannelId	STR	1
+account.2.transaction.1.priv1	STR	T110E5
+account.2.transaction.1.purpose	STR	逾期扣款
+account.2.transaction.1.respDatetime	DATE	23.12.16 00:00
+account.2.transaction.1.sendTime	DATE	25.04.17 00:00
+account.2.transaction.1.setupDate	DATE	25.04.17 00:00
+account.2.transaction.1.state	STR	重庆市
+account.2.transaction.1.subBank	STR	1
+account.2.transaction.1.successAmt	NUM	645,2
+account.2.transaction.1.term	NUM	4
+account.2.transaction.1.txnAmt	NUM	645,2
+account.2.transaction.1.txnType	STR	AgentCredit
+account.2.transaction.1.usrName	STR	梅花
+account.2.transaction.2.acctNbr	STR	10000007
+account.2.transaction.2.acctType	STR	E
+account.2.transaction.2.acqId	STR	10000000
+account.2.transaction.2.businessDate	DATE	25.04.17 00:00
+account.2.transaction.2.cardNo	STR	6,21226120866646E+018
+account.2.transaction.2.cardType	STR	0
+account.2.transaction.2.certId	STR	1,41028199312022E+017
+account.2.transaction.2.certType	STR	6
+account.2.transaction.2.city	STR	市辖区
+account.2.transaction.2.code	STR	0
+account.2.transaction.2.commandType	STR	SDB
+account.2.transaction.2.comparedInd	BOOL	0
+account.2.transaction.2.contrNbr	STR	1,101161223E+017
+account.2.transaction.2.createTime	DATE	25.04.17 00:00
+account.2.transaction.2.currency	STR	156
+account.2.transaction.2.failureAmt	NUM	0
+account.2.transaction.2.flag	STR	0
+account.2.transaction.2.id	STR	wI3COOqs46Kda1Nu9
+account.2.transaction.2.loanUsage	STR	N
+account.2.transaction.2.matchInd	STR	Y
+account.2.transaction.2.openBankId	STR	102
+account.2.transaction.2.openBankName	STR	工商银行
+account.2.transaction.2.optDatetime	DATE	25.04.17 00:00
+account.2.transaction.2.orderStatus	STR	S
+account.2.transaction.2.orderTime	DATE	25.04.17 00:00
+account.2.transaction.2.org	STR	1
+account.2.transaction.2.payBizCode	STR	0
+account.2.transaction.2.payChannelId	STR	1
+account.2.transaction.2.priv1	STR	T110E5
+account.2.transaction.2.purpose	STR	正常扣款
+account.2.transaction.2.respDatetime	DATE	23.12.16 00:00
+account.2.transaction.2.sendTime	DATE	25.04.17 00:00
+account.2.transaction.2.setupDate	DATE	25.04.17 00:00
+account.2.transaction.2.state	STR	重庆市
+account.2.transaction.2.subBank	STR	1
+account.2.transaction.2.successAmt	NUM	322,6
+account.2.transaction.2.term	NUM	4
+account.2.transaction.2.txnAmt	NUM	322,6
+account.2.transaction.2.txnType	STR	AgentCredit
+account.2.transaction.2.usrName	STR	梅花
+areacode	STR	500101
+birthday	DATE	02.12.93 00:00
+city	STR	500100
+commAddr	STR	C
+country	STR	156
+customername	STR	梅花
+duedate	DATE	31.12.99 00:00
+eduExperience	STR	D
+familyaddr	STR	测试版的。
+familystatus	STR	A
+gender	STR	M
+idNo	STR	1,41028199312022E+017
+idType	STR	I
+link1	STR	一轮通过
+linkmobile1	STR	13588958489
+linkrelation1	STR	B
+maritalStatus	STR	S
+mobileNo	STR	13600000010
+province	STR	500000
+uuid	STR	de64dd617940485c871b3f5994083b9b
+workAddr	STR	工作了麽
+workbegindate	STR	20
+workCorp	STR	测试版的

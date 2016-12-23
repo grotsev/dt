@@ -178,4 +178,11 @@ object TestData {
     )
   )
 
+  val in: AstObj = obj(
+    "accountIndexes" -> objs(
+      "value" -> AstNum()
+    ),
+    "accountIndex" -> AstNum()
+  )
+
 }

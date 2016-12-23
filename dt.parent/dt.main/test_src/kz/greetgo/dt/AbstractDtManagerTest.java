@@ -1,5 +1,6 @@
 package kz.greetgo.dt;
 
+import kz.greetgo.dt.dt_manager_compare_performance_test.TestData;
 import kz.greetgo.dt.dt_manager_compare_performance_test.TestData$;
 import kz.greetgo.dt.gen.*;
 import org.fest.assertions.api.Assertions;
@@ -15,6 +16,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
@@ -2115,7 +2117,7 @@ public abstract class AbstractDtManagerTest {
 
     DtManagerWrapper m = createDtManager(nativeFunctions);
     m.setStructure(new AstObj(
-        new HashMap<String, AstType>(){{
+        new HashMap<String, AstType>() {{
           put("payPlanDueDate", new AstDat());
         }}
     ));
@@ -2355,7 +2357,7 @@ public abstract class AbstractDtManagerTest {
 
     DtManagerWrapper m = createDtManager(nativeFunctions);
     m.setStructure(new AstObj(
-        new HashMap<String, AstType>(){{
+        new HashMap<String, AstType>() {{
           put("num", new AstNum());
         }}
     ));
@@ -2377,7 +2379,7 @@ public abstract class AbstractDtManagerTest {
 
     DtManagerWrapper m = createDtManager(nativeFunctions);
     m.setStructure(new AstObj(
-        new HashMap<String, AstType>(){{
+        new HashMap<String, AstType>() {{
           put("num", new AstNum());
         }}
     ));
@@ -2404,7 +2406,7 @@ public abstract class AbstractDtManagerTest {
 
     DtManagerWrapper m = createDtManager(nativeFunctions);
     m.setStructure(new AstObj(
-        new HashMap<String, AstType>(){{
+        new HashMap<String, AstType>() {{
           put("num", new AstNum());
         }}
     ));
@@ -2425,25 +2427,1283 @@ public abstract class AbstractDtManagerTest {
     assertThat(outScope.get("num")).isEqualTo(new Num(BigDecimal.valueOf(4)));
   }
 
+  private static DtType dtValue(String type, String value) {
+    if (value == null) return null;
+    switch (type) {
+      case "NUM":
+        return new Num(BigDecimal.javaBigDecimal2bigDecimal(new java.math.BigDecimal(value.replace(',', '.'))));
+      case "BOOL":
+        return new Bool("1".equals(value));
+      case "STR":
+        return new Str(value);
+      case "DATE":
+        DateTimeFormatter f = DateTimeFormatter.ofPattern("dd.MM.yy HH:mm");
+        return new Dat(LocalDate.parse(value, f));
+      default: throw new IllegalArgumentException();
+    }
+  }
+
+  private static AstType astType(String type) {
+    switch (type) {
+      case "NUM":
+        return new AstNum();
+      case "BOOL":
+        return new AstBool();
+      case "STR":
+        return new AstStr();
+      case "DATE":
+        return new AstDat();
+      default: throw new IllegalArgumentException();
+    }
+  }
+
+  private static void structure(AstObj root, List<String> path, AstType type) {
+    HashMap<String, AstType> map = root.obj();
+    String head = path.get(0);
+
+    if (path.size() > 1) { // recirsive
+      if (path.get(1).matches("\\d+")) { // arr
+        AstArr arr = (AstArr)map.get(head);
+        if (arr == null) {
+          arr = new AstArr(new AstObj(new HashMap<>()));
+          map.put(head, arr);
+        }
+        structure((AstObj)arr.elem(), path.subList(2, path.size()), type);
+      } else { // obj
+        AstObj obj = (AstObj)map.get(head);
+        if (obj == null) {
+          obj = new AstObj(new HashMap<>());
+          map.put(head, obj);
+        }
+        structure(obj, path.subList(1, path.size()), type);
+      }
+    } else { // end
+      map.put(head, type);
+    }
+  }
+
   @Test
   public void foreach_break_complex() throws Exception {
     SortedMap<String, DtType> scope = new TreeMap<>();
-    scope.put("in.accountIndexes.0.value", new Num(BigDecimal.valueOf(0)));
-    //scope.put("in.accountIndex", new Num(BigDecimal.valueOf(0)));
-    scope.put("client.account.0.closedDate", new Dat(LocalDate.now()));
+    AstObj root = new AstObj(new HashMap<>());
+    String data = resource("foreach_break_complex.txt");
+    for (String line : Arrays.asList(data.split("\n"))) {
+      String[] fields = line.split("\t");
+      String name = fields[0];
+      String type = fields[1];
+      String value = fields.length < 3 ? null : fields[2];
+      DtType dtValue = dtValue(type, value);
+      structure(root, Arrays.asList(name.split("\\.")), astType(type));
+    }
 
     DtManagerWrapper m = createDtManager(nativeFunctions);
-    m.setStructure(TestData$.MODULE$.complexBreak());
+    m.setStructure(new AstObj(
+        new HashMap<String, AstType>() {{
+          put("client", root);
+          put("in", TestData$.MODULE$.in());
+        }}
+    ));
+
+    m.registerUserProcedure("calculateCurrentDebt",
+        "group(\n" +
+            "    assign(debtAmt, 0),\n" +
+            "    assign(currentTermDebt, 0),\n" +
+            "\n" +
+            "    foreach (j, 0, len(client.account[in.accountIndex].payPlan)-1,\n" +
+            "        group(\n" +
+            "            condition(\n" +
+            "                case(client.account[in.accountIndex].payPlan[j].hasPaid = true() |\n" +
+            "                      client.account[in.accountIndex].payPlan[j].payPlanDueDate > businessDay() |\n" +
+            "                      client.account[in.accountIndex].payPlan[j].actual = false() |\n" +
+            "                      client.account[in.accountIndex].payPlan[j].planStatus=\"C\",\n" +
+            "                      group(\n" +
+            "                        continue()\n" +
+            "                      )\n" +
+            "                )\n" +
+            "            ), //We need only previous and non paid\n" +
+            "\n" +
+            "            assign(termDebt,0),\n" +
+            "\n" +
+            "            message( client.account[in.accountIndex].payPlan[j].payPlanDueDate ~ \" : \" ~ businessDay()),\n" +
+            "\n" +
+            "            group( //Principal\n" +
+            "                assign(a, client.account[in.accountIndex].payPlan[j].remainingPrincipal),\n" +
+            "                assign(termDebt, termDebt+a)\n" +
+            "            ),\n" +
+            "\n" +
+            "\n" +
+            "            group( //Interest\n" +
+            "                assign(a, client.account[in.accountIndex].payPlan[j].remainingInterest),\n" +
+            "                assign(termDebt, termDebt+a)\n" +
+            "            ),\n" +
+            "\n" +
+            "\n" +
+            "            group( //Life Insurance Amt\n" +
+            "                assign(a, client.account[in.accountIndex].payPlan[j].remainingLifeInsurance),\n" +
+            "                assign(termDebt, termDebt+a)\n" +
+            "            ),\n" +
+            "\n" +
+            "            group( //Service Fee Amt\n" +
+            "                assign(a, client.account[in.accountIndex].payPlan[j].remainingServiceFee),\n" +
+            "                assign(termDebt, termDebt+a)\n" +
+            "            ),\n" +
+            "\n" +
+            "            group( //Agent Fee Amt\n" +
+            "                assign(a, client.account[in.accountIndex].payPlan[j].remainingAgentFee),\n" +
+            "                assign(termDebt, termDebt+a)\n" +
+            "            ),\n" +
+            "\n" +
+            "            group( //Replace Svc Fee\n" +
+            "                assign(a, client.account[in.accountIndex].payPlan[j].remainingReplaceSvcFee),\n" +
+            "                assign(termDebt, termDebt+a)\n" +
+            "            ),\n" +
+            "\n" +
+            "            group( //Prepay Pkg Fee\n" +
+            "                assign(a, client.account[in.accountIndex].payPlan[j].remainingPrepayPkgFee),\n" +
+            "                assign(termDebt, termDebt+a)\n" +
+            "            ),\n" +
+            "\n" +
+            "            condition(\n" +
+            "                case(\n" +
+            "                    client.account[in.accountIndex].payPlan[j].termNumber = client.account[in.accountIndex].termToPay,\n" +
+            "\n" +
+            "                    assign(currentTermDebt, termDebt)\n" +
+            "                )\n" +
+            "            ),\n" +
+            "\n" +
+            "            assign(debtAmt, debtAmt +termDebt)\n" +
+            "\n" +
+            "        )\n" +
+            "    ),\n" +
+            "\n" +
+            "     //Calculate overdueFines\n" +
+            "\n" +
+            "     assign(fineAmt, 0),\n" +
+            "     assign(afterTransactionFine, 0),\n" +
+            "\n" +
+            "     foreach(j, 0, len(client.account[in.accountIndex].overdueFine)-1,\n" +
+            "         condition(\n" +
+            "             case(client.account[in.accountIndex].overdueFine[j].status = \"U\" &\n" +
+            "                  client.account[in.accountIndex].payPlan[termNumber:client.account[in.accountIndex].overdueFine[j].term].planStatus = \"C\",\n" +
+            "                group(\n" +
+            "                  continue()\n" +
+            "                )\n" +
+            "             ),\n" +
+            "             case(\n" +
+            "                 client.account[in.accountIndex].overdueFine[j].status = \"U\",\n" +
+            "                     group(\n" +
+            "                         assign(a, client.account[in.accountIndex].overdueFine[j].remainingAmount),\n" +
+            "                         assign(fineAmt, fineAmt+a),\n" +
+            "\n" +
+            "                         condition(\n" +
+            "                            case(\n" +
+            "                                isDefined(dateFrom)&client.account[in.accountIndex].overdueFine[j].date>=dateFrom,\n" +
+            "                                assign(afterTransactionFine, afterTransactionFine+a)\n" +
+            "                            )\n" +
+            "                         )\n" +
+            "                     )\n" +
+            "             )\n" +
+            "         )\n" +
+            "     ),\n" +
+            "\n" +
+            "      group(\n" +
+            "          assign(a, fineAmt),\n" +
+            "          assign(debtAmt, debtAmt+a)\n" +
+            "      )\n" +
+            ")\n");
+
+    m.registerUserProcedure("closeAccount",
+        "group(\n" +
+            "    assign(client.account[in.accountIndex].closedDate, businessDay()),\n" +
+            "    assign(client.account[in.accountIndex].nextStmtDate, empty()),\n" +
+            "    assign(client.account[in.accountIndex].batchDate, empty()),\n" +
+            "    assign(client.account[in.accountIndex].remainingTerms,0),\n" +
+            "\n" +
+            "    condition(\n" +
+            "        case(client.account[in.accountIndex].sumOverpaid>0,\n" +
+            "            assign(client.account[in.accountIndex].returnOverpayment,  true()),\n" +
+            "            assign(client.account[in.accountIndex].batchDate, businessDay())\n" +
+            "        )\n" +
+            "    )\n" +
+            ")\n");
+
+    m.registerUserProcedure("moveNextStmtDate",
+        "group(\n" +
+            "    condition(\n" +
+            "        case(client.account[in.accountIndex].remainingTerms=0, //finished\n" +
+            "          group (\n" +
+            "            procedure(closeAccount),\n" +
+            "            assign (client.account[in.accountIndex].contractStatus, \"F\")\n" +
+            "          )\n" +
+            "        ),\n" +
+            "        case(client.account[in.accountIndex].remainingTerms>0\n" +
+            "            & client.account[in.accountIndex].hasAdvancedClearing!=true()\n" +
+            "            & client.account[in.accountIndex].returnOverpayment!=true(),\n" +
+            "            group(\n" +
+            "                assign(client.account[in.accountIndex].nextStmtDate, client.account[in.accountIndex].payPlan[client.account[in.accountIndex].termToPay].payPlanDueDate) ,\n" +
+            "                assign(client.account[in.accountIndex].pmtDueDate, client.account[in.accountIndex].nextStmtDate) , //For MS Loan\n" +
+            "                assign(client.account[in.accountIndex].batchDate, client.account[in.accountIndex].nextStmtDate),\n" +
+            "\n" +
+            "                assign(client.account[in.accountIndex].graceDate, client.account[in.accountIndex].pmtDueDate + day() * client.account[in.accountIndex].product.BusinessParameters.GracePeriod)\n" +
+            "            )\n" +
+            "        )\n" +
+            "    )\n" +
+            ")\n");
+
+    m.registerUserProcedure("addFine",
+        "group(\n" +
+            "    condition(\n" +
+            "        case( //grace period is finished\n" +
+            "            businessDay() >= client.account[in.accountIndex].graceDate & client.account[in.accountIndex].hasCompulsoryCleaning = false(),\n" +
+            "            group(\n" +
+            "                assign(cpd, client.account[in.accountIndex].cpdDays),\n" +
+            "                assign(dpd, client.account[in.accountIndex].dpdDays),\n" +
+            "\n" +
+            "                condition(\n" +
+            "                    case(client.account[in.accountIndex].product.FineCalculationType = \"CPD\",\n" +
+            "                        assign(overdueDays, cpd)\n" +
+            "                    ),\n" +
+            "                     case(client.account[in.accountIndex].product.FineCalculationType = \"DPD\",\n" +
+            "                        assign(overdueDays, dpd)\n" +
+            "                    )\n" +
+            "                ),\n" +
+            "\n" +
+            "                group(//Fines\n" +
+            "                    assign(length, len(client.account[in.accountIndex].product.Fine)),\n" +
+            "\n" +
+            "                    foreach (i, 0, length - 1, //TODO Run throw all fines (if one day batch is down fine will not be added)\n" +
+            "                        group(\n" +
+            "                            condition(\n" +
+            "                                case(\n" +
+            "                                    (dpd>0\n" +
+            "                                    &\n" +
+            "                                    overdueDays >= client.account[in.accountIndex].product.Fine[i].Min\n" +
+            "                                    &\n" +
+            "                                    overdueDays <= client.account[in.accountIndex].product.Fine[i].Max)\n" +
+            "                                    &\n" +
+            "                                    (client.account[in.accountIndex].lastMaxFine != client.account[in.accountIndex].product.Fine[i].Max\n" +
+            "                                    |\n" +
+            "                                    isEmpty(client.account[in.accountIndex].lastMaxFine)),\n" +
+            "\n" +
+            "                                        group(\n" +
+            "                                            assign(client.account[in.accountIndex].lastMaxFine, client.account[in.accountIndex].product.Fine[i].Max),\n" +
+            "\n" +
+            "                                            assign(fineAmount, client.account[in.accountIndex].product.Fine[i].parameter),\n" +
+            "\n" +
+            "                                            assign(message, \"Overdue for overdueDays = \" ~ overdueDays),\n" +
+            "                                            assign(overdueFineType,\"fine\"),\n" +
+            "                                            procedure(generateFine)\n" +
+            "                                        )\n" +
+            "                                )\n" +
+            "                            )\n" +
+            "                        )\n" +
+            "                    )\n" +
+            "                ),\n" +
+            "\n" +
+            "                group(//Agent fines\n" +
+            "                    assign(length, len(client.account[in.accountIndex].product.agentFine)),\n" +
+            "\n" +
+            "                    foreach (i, 0, length - 1, //TODO Run throw all fines (if one day batch is down fine will not be added)\n" +
+            "                        group(\n" +
+            "                            condition(\n" +
+            "                                case(\n" +
+            "                                    (dpd>0\n" +
+            "                                    &\n" +
+            "                                    overdueDays >= client.account[in.accountIndex].product.agentFine[i].Min\n" +
+            "                                    &\n" +
+            "                                    overdueDays <= client.account[in.accountIndex].product.agentFine[i].Max)\n" +
+            "                                    &\n" +
+            "                                    (client.account[in.accountIndex].lastMaxAgentFine != client.account[in.accountIndex].product.agentFine[i].Max\n" +
+            "                                    |\n" +
+            "                                    isEmpty(client.account[in.accountIndex].lastMaxAgentFine)),\n" +
+            "\n" +
+            "                                        group(\n" +
+            "                                            assign(client.account[in.accountIndex].lastMaxAgentFine, client.account[in.accountIndex].product.agentFine[i].Max),\n" +
+            "\n" +
+            "                                            assign(fineAmount, client.account[in.accountIndex].product.agentFine[i].parameter),\n" +
+            "\n" +
+            "                                            assign(message, \"Overdue for overdueDays = \" ~ overdueDays),\n" +
+            "\n" +
+            "                                            assign(overdueFineType,\"agentFine\"),\n" +
+            "                                            procedure(generateFine)\n" +
+            "                                        )\n" +
+            "                                )\n" +
+            "                            )\n" +
+            "                        )\n" +
+            "                    )\n" +
+            "                ),\n" +
+            "\n" +
+            "                group( //Penalties\n" +
+            "                    assign(length, len(client.account[in.accountIndex].product.Penalty)),\n" +
+            "                    assign(overdueLength,len(client.account[in.accountIndex].overdueFine)-1),\n" +
+            "               assign(roundTwoTotal, 0 ),\n" +
+            "               assign(roundSixTotal, 0 ),\n" +
+            "\n" +
+            "                    foreach (i, 0, length - 1, //TODO Run throw all fines (if one day batch is down fine will not be added)\n" +
+            "                        group(\n" +
+            "                            condition(\n" +
+            "                                case(client.account[in.accountIndex].product.Penalty[i].CalculationRule = \"BalanceOfPrincipal\",\n" +
+            "                                    assign(amt, client.account[in.accountIndex].loanAmt - client.account[in.accountIndex].totalPaidPrincipalAmt)\n" +
+            "                                ),\n" +
+            "                                case(client.account[in.accountIndex].product.Penalty[i].CalculationRule = \"LoanPrincipal\",\n" +
+            "                                    assign(amt, client.account[in.accountIndex].loanAmt)\n" +
+            "                                ),\n" +
+            "                                case(client.account[in.accountIndex].product.Penalty[i].CalculationRule = \"OverdueLoanPrincipal\",\n" +
+            "                                    //Total overdue principal\n" +
+            "                                    assign(amt, 0),\n" +
+            "                                    foreach (j, client.account[in.accountIndex].paidTerms, client.account[in.accountIndex].termToPay-1,\n" +
+            "                                        assign(amt, amt+client.account[in.accountIndex].payPlan[j].remainingPrincipal)\n" +
+            "                                    )\n" +
+            "                                ),\n" +
+            "                                case(client.account[in.accountIndex].product.Penalty[i].CalculationRule = \"TotalOverdueAmount\",\n" +
+            "                                    //Total overdue amount\n" +
+            "                                    assign(amt, 0),\n" +
+            "                                    foreach (j, client.account[in.accountIndex].paidTerms, client.account[in.accountIndex].termToPay-1,\n" +
+            "                                        assign(amt, amt+client.account[in.accountIndex].payPlan[j].remainingTotal)\n" +
+            "                                    ),\n" +
+            "\n" +
+            "                                    foreach(j, 0, overdueLength,\n" +
+            "                                        condition(\n" +
+            "                                            case(\n" +
+            "                                                client.account[in.accountIndex].overdueFine[j].status = \"U\",\n" +
+            "                                                    group( //Prepay Pkg Fee\n" +
+            "                                                        assign(a, client.account[in.accountIndex].overdueFine[j].remainingAmount),\n" +
+            "                                                        assign(amt, amt+a)\n" +
+            "                                                    )\n" +
+            "                                            )\n" +
+            "                                        )\n" +
+            "                                    )\n" +
+            "                                )\n" +
+            "                            ),\n" +
+            "\n" +
+            "                            condition(\n" +
+            "                                case(isDefined(client.account[in.accountIndex].product.Penalty[i].divider)=false(), assign(client.account[in.accountIndex].product.Penalty[i].divider,1))\n" +
+            "                            ),\n" +
+            "\n" +
+            "                            condition(\n" +
+            "                                case(client.account[in.accountIndex].product.Penalty[i].HowToCalculate = \"FixedAmount\",\n" +
+            "                                    assign(fineAmount, client.account[in.accountIndex].product.Penalty[i].CalculationParameter)),\n" +
+            "                                case(client.account[in.accountIndex].product.Penalty[i].HowToCalculate = \"BaseRatio\",\n" +
+            "                                   group (\n" +
+            "                                       assign( fineAmount, round((client.account[in.accountIndex].product.Penalty[i].CalculationParameter / client.account[in.accountIndex].product.Penalty[i].divider) * amt, 2))\n" +
+            "                                    )\n" +
+            "                               )\n" +
+            "                            ),\n" +
+            "\n" +
+            "                            condition(\n" +
+            "                                case(client.account[in.accountIndex].product.Penalty[i].Accumulative = true() & fineAmount>0,\n" +
+            "                                  group (\n" +
+            "                                    assign(overdueFineType, client.account[in.accountIndex].product.Penalty[i].type),\n" +
+            "                                    assign(roundSixTotal, roundSixTotal+round((client.account[in.accountIndex].product.Penalty[i].CalculationParameter / client.account[in.accountIndex].product.Penalty[i].divider) * amt, 6)),\n" +
+            "                                    assign(roundTwoTotal, roundTwoTotal+round((client.account[in.accountIndex].product.Penalty[i].CalculationParameter / client.account[in.accountIndex].product.Penalty[i].divider) * amt, 2)),\n" +
+            "                                    procedure(generateFine),\n" +
+            "                                    condition(\n" +
+            "                                        case(dictValueText(\"PenaltyType\",\"agentCode\", client.account[in.accountIndex].product.Penalty[i].type)=\"notAgent\",\n" +
+            "                                          assign(myOverdueId, overdueFineId)\n" +
+            "                                        )\n" +
+            "                                    )\n" +
+            "                                  )\n" +
+            "                                ),\n" +
+            "                                case(1=1,\n" +
+            "                                    group (\n" +
+            "                                        condition(\n" +
+            "                                            case((!isDefined(client.account[in.accountIndex].product.Penalty[i].penaltyUsedTerm) | client.account[in.accountIndex].product.Penalty[i].penaltyUsedTerm!=client.account[in.accountIndex].termToPay) & fineAmount>0,\n" +
+            "                                                group(\n" +
+            "                                                    assign(client.account[in.accountIndex].product.Penalty[i].penaltyUsedTerm, client.account[in.accountIndex].termToPay),\n" +
+            "                                                    assign(overdueFineType, client.account[in.accountIndex].product.Penalty[i].type),\n" +
+            "                                                assign(roundSixTotal, roundSixTotal+round((client.account[in.accountIndex].product.Penalty[i].CalculationParameter / client.account[in.accountIndex].product.Penalty[i].divider) * amt, 6)),\n" +
+            "                                                assign(roundTwoTotal, roundTwoTotal+round((client.account[in.accountIndex].product.Penalty[i].CalculationParameter / client.account[in.accountIndex].product.Penalty[i].divider) * amt, 2)),\n" +
+            "                                                    procedure(generateFine),\n" +
+            "                                                    condition(\n" +
+            "                                                        case(dictValueText(\"PenaltyType\",\"agentCode\", client.account[in.accountIndex].product.Penalty[i].type)=\"notAgent\",\n" +
+            "                                                          assign(myOverdueId, overdueFineId)\n" +
+            "                                                        )\n" +
+            "                                                    )\n" +
+            "                                                )\n" +
+            "                                            )\n" +
+            "                                        )\n" +
+            "                                    )\n" +
+            "                                )\n" +
+            "                            )\n" +
+            "                        )\n" +
+            "                    ),\n" +
+            "                    condition(\n" +
+            "                       case(roundSixTotal>roundTwoTotal & isDefined(myOverdueId),\n" +
+            "                           assign(client.account[in.accountIndex].overdueFine[id:myOverdueId].remainingAmount,client.account[in.accountIndex].overdueFine[id:myOverdueId].remainingAmount+round(roundSixTotal-roundTwoTotal+0.004,2))\n" +
+            "                        )\n" +
+            "                    )\n" +
+            "                )\n" +
+            "            )\n" +
+            "        )\n" +
+            "    )\n" +
+            ")\n");
+
+    m.registerUserProcedure("generateFine",
+        "group(\n" +
+            "   //create new overdueFine\n" +
+            "\n" +
+            "   assign(overdueFineId, generateId()),\n" +
+            "    assign(client.account[in.accountIndex].overdueFine[id:overdueFineId].date, businessDay()),\n" +
+            "    assign(client.account[in.accountIndex].overdueFine[id:overdueFineId].remainingAmount, fineAmount),\n" +
+            "\n" +
+            "    assign(client.account[in.accountIndex].overdueFine[id:overdueFineId].paidAmount, 0),\n" +
+            "    assign(client.account[in.accountIndex].overdueFine[id:overdueFineId].status, \"U\"), //status = unPaid\n" +
+            "    assign(client.account[in.accountIndex].overdueFine[id:overdueFineId].term, client.account[in.accountIndex].termToPay),\n" +
+            "\n" +
+            "    assign(client.account[in.accountIndex].totalRemainingAmt,\n" +
+            "       client.account[in.accountIndex].totalRemainingAmt +\n" +
+            "       client.account[in.accountIndex].overdueFine[id:overdueFineId].remainingAmount),\n" +
+            "\n" +
+            "    assign(client.account[in.accountIndex].overdueFine[id:overdueFineId].message, message),\n" +
+            "    assign(client.account[in.accountIndex].overdueFine[id:overdueFineId].actual, true()),\n" +
+            "    assign(client.account[in.accountIndex].overdueFine[id:overdueFineId].overdueFineType, overdueFineType)\n" +
+            ")\n");
+
+    m.registerUserProcedure("createCompensationForCurrentTerm",
+        "group(\n" +
+            "    condition(\n" +
+            "        case(client.account[in.accountIndex].lastCompensationTerm!=client.account[in.accountIndex].currentTerm,\n" +
+            "           group (\n" +
+            "               assign(loanUsage, \"U\"),\n" +
+            "               assign(orderStatus, \"N\"),\n" +
+            "\n" +
+            "\n" +
+            "               assign(termTotalAmount, client.account[in.accountIndex].payPlan[termNumber:client.account[in.accountIndex].currentTerm].remainingTotal),\n" +
+            "\n" +
+            "               group(\n" +
+            "                   assign(length, len(client.account[in.accountIndex].overdueFine)),\n" +
+            "                   assign(totalPenaltySum, 0),\n" +
+            "\n" +
+            "                   foreach (i, 0, length - 1,\n" +
+            "                       group(\n" +
+            "                           condition(\n" +
+            "                               case(\"fine\" = client.account[in.accountIndex].overdueFine[i].overdueFineType & waitingTransactionIsClaim=false(),\n" +
+            "                                   group(\n" +
+            "                                       assign(totalPenaltySum, totalPenaltySum+client.account[in.accountIndex].overdueFine[i].remainingAmount)\n" +
+            "                                   )\n" +
+            "                               ),\n" +
+            "                               case(dictValueText(\"PenaltyType\",\"agentCode\", client.account[in.accountIndex].overdueFine[i].overdueFineType)=\"notAgent\" & waitingTransactionIsClaim=false(),\n" +
+            "                                   group(\n" +
+            "                                       assign(totalPenaltySum, totalPenaltySum+client.account[in.accountIndex].overdueFine[i].remainingAmount)\n" +
+            "                                   )\n" +
+            "                               )\n" +
+            "                           )\n" +
+            "                       )\n" +
+            "                   )\n" +
+            "               ),\n" +
+            "\n" +
+            "                assign (agentServiceFee, client.account[in.accountIndex].payPlan[termNumber:client.account[in.accountIndex].currentTerm].remainingAgentFee),\n" +
+            "               //Agent service fee should not be included\n" +
+            "               assign(generateTransaction_transactionAmount, termTotalAmount+totalPenaltySum-agentServiceFee), // calculate here\n" +
+            "               //After payment is received, then add agent service fee before common payment\n" +
+            "\n" +
+            "\n" +
+            "               assign(client.account[in.accountIndex].payPlan[termNumber:client.account[in.accountIndex].termToPay].planStatus, \"C\"),\n" +
+            "               assign(term, client.account[in.accountIndex].termToPay),\n" +
+            "               assign(settleFeeType, \"CompensateAmt\"),\n" +
+            "               assign(txnDirection, \"-\"),\n" +
+            "\n" +
+            "               assign(client.account[in.accountIndex].lastCompensationTerm, client.account[in.accountIndex].currentTerm),\n" +
+            "\n" +
+            "                group(\n" +
+            "                    assign(settleId,generateId()),\n" +
+            "                    assign(client.account[in.accountIndex].settlePlatform[id:settleId].settleFeeType,\"CompensateAmt\"),\n" +
+            "                    assign(client.account[in.accountIndex].settlePlatform[id:settleId].settleAmt, generateTransaction_transactionAmount),\n" +
+            "                    assign(client.account[in.accountIndex].settlePlatform[id:settleId].postDate, businessDay()),\n" +
+            "                    assign(client.account[in.accountIndex].settlePlatform[id:settleId].settleTerm, client.account[in.accountIndex].termToPay),\n" +
+            "                    assign(client.account[in.accountIndex].settlePlatform[id:settleId].settleSend, true()),\n" +
+            "                    assign(client.account[in.accountIndex].settlePlatform[id:settleId].settleTxnDirection, \"-\")\n" +
+            "                ),\n" +
+            "                \n" +
+            "               procedure(generateTransaction)\n" +
+            "            )\n" +
+            "        )\n" +
+            "    )\n" +
+            ")\n");
+
+    m.registerUserProcedure("clearOverdueDate",
+        "group(\n" +
+            "    condition(\n" +
+            "        case(debtAmt<=client.account[in.accountIndex].product.ToleranceValue.CPDOverdueToleranceValue,\n" +
+            "            assign(client.account[in.accountIndex].cpdBeginDate, empty())\n" +
+            "        )\n" +
+            "    ),\n" +
+            "\n" +
+            "    condition(\n" +
+            "        case(debtAmt<=client.account[in.accountIndex].product.ToleranceValue.DPDOverdueToleranceValue,\n" +
+            "            assign(client.account[in.accountIndex].overdueDate, empty())\n" +
+            "        )\n" +
+            "    ),\n" +
+            "\n" +
+            "    assign(client.account[in.accountIndex].cpdDays, 0),\n" +
+            "    assign(client.account[in.accountIndex].dpdDays, 0),\n" +
+            "\n" +
+            "    assign(client.account[in.accountIndex].lastMaxFine, empty()),\n" +
+            "    assign(client.account[in.accountIndex].lastMaxAgentFine, empty())\n" +
+            "\n" +
+            ")\n");
+
+    m.registerUserProcedure("checkWaitingTransactions",
+        "group(\n" +
+            "    foreach(transIndex, 0, len(client.account[in.accountIndex].transaction) - 1,\n" +
+            "        condition(\n" +
+            "            case (client.account[in.accountIndex].transaction[transIndex].orderStatus = \"W\"\n" +
+            "            &\n" +
+            "            client.account[in.accountIndex].transaction[transIndex].loanUsage != \"U\"\n" +
+            "            &\n" +
+            "            daysBetween(businessDay(), client.account[in.accountIndex].transaction[transIndex].createTime)>=5,\n" +
+            "                group(\n" +
+            "                    assign(client.account[in.accountIndex].transaction[transIndex].orderStatus, \"E\"),\n" +
+            "                    assign(client.account[in.accountIndex].transaction[transIndex].responseMessage, \"Out of 5 days\"),\n" +
+            "                    assign(client.account[in.accountIndex].transaction[transIndex].failureAmt, client.account[in.accountIndex].transaction[transIndex].txnAmt),\n" +
+            "\n" +
+            "                    condition(\n" +
+            "                        case(\n" +
+            "                        client.account[in.accountIndex].hasAdvancedClearing = true(),\n" +
+            "                            group(\n" +
+            "                                assign(client.account[in.accountIndex].hasAdvancedClearing, false()),\n" +
+            "                                assign(client.account[in.accountIndex].batchDate, client.account[in.accountIndex].nextStmtDate)\n" +
+            "                            )\n" +
+            "                        )\n" +
+            "                    )\n" +
+            "                )\n" +
+            "            )\n" +
+            "        )\n" +
+            "    )\n" +
+            ")\n");
+
+    m.registerUserProcedure("createCompulsoryClearingPlan",
+        "group(\n" +
+            "    assign(termToPay, client.account[in.accountIndex].currentTerm),\n" +
+            "\n" +
+            "    condition(\n" +
+            "        case(client.account[in.accountIndex].hasManualCompulsoryClearing=true(),\n" +
+            "            group(\n" +
+            "                assign(termToPay, client.account[in.accountIndex].manualComClearingTerm),\n" +
+            "                assign(client.account[in.accountIndex].manualCompulsoryClearingPlanChanged, true()),\n" +
+            "                condition(\n" +
+            "                    case(client.account[in.accountIndex].nextStmtDate>client.account[in.accountIndex].manualComClearingAppliedDate,\n" +
+            "                      assign(client.account[in.accountIndex].nextStmtDate, client.account[in.accountIndex].manualComClearingAppliedDate)\n" +
+            "                    )\n" +
+            "                )\n" +
+            "            )\n" +
+            "        )\n" +
+            "    ),\n" +
+            "\n" +
+            "    assign(sameAsDueDay,false()),\n" +
+            "    condition(\n" +
+            "      case(client.account[in.accountIndex].termToPay>0,\n" +
+            "        condition(\n" +
+            "          case(client.account[in.accountIndex].payPlan[termNumber:client.account[in.accountIndex].termToPay].payPlanDueDate=businessDay(),\n" +
+            "            group(\n" +
+            "              assign(sameAsDueDay,true())\n" +
+            "            )\n" +
+            "          )\n" +
+            "        )\n" +
+            "      )\n" +
+            "    ),\n" +
+            "\n" +
+            "    condition(\n" +
+            "      case(client.account[in.accountIndex].hasManualCompulsoryClearing=true(),\n" +
+            "        condition(\n" +
+            "          case(client.account[in.accountIndex].manualComClearingTerm>1,\n" +
+            "            condition(\n" +
+            "              case(client.account[in.accountIndex].payPlan[termNumber:client.account[in.accountIndex].manualComClearingTerm-1].payPlanDueDate=client.account[in.accountIndex].manualComClearingAppliedDate,\n" +
+            "                group(\n" +
+            "                  assign(sameAsDueDay,true())\n" +
+            "                )\n" +
+            "              )\n" +
+            "            )\n" +
+            "          ),\n" +
+            "          case(daysBetween(client.account[in.accountIndex].payPlan[0].payPlanDueDate-month(), client.account[in.accountIndex].manualComClearingAppliedDate)<=client.account[in.accountIndex].product.Hesitation.value,\n" +
+            "            assign(sameAsDueDay,true())\n" +
+            "          )\n" +
+            "        )\n" +
+            "      )\n" +
+            "    ),\n" +
+            "\n" +
+            "    assign(client.account[in.accountIndex].totalRemainingAmt, client.account[in.accountIndex].totalRemainingAmt - client.account[in.accountIndex].payPlan[termNumber:termToPay].remainingTotal),\n" +
+            "    assign(client.account[in.accountIndex].totalRemInterest, client.account[in.accountIndex].totalRemInterest - client.account[in.accountIndex].payPlan[termNumber:termToPay].remainingInterest),\n" +
+            "\n" +
+            "    condition(\n" +
+            "        case(\n" +
+            "            client.account[in.accountIndex].payPlan[termNumber:termToPay].payPlanDueDate>businessDay(), //Change date and interest of payPlan\n" +
+            "            group(\n" +
+            "                condition(\n" +
+            "                    case(termToPay-1>0,\n" +
+            "                        group(\n" +
+            "                            assign(x, daysBetween(client.account[in.accountIndex].payPlan[termNumber:termToPay-1].payPlanDueDate, businessDay())),\n" +
+            "                            condition(\n" +
+            "                                case(client.account[in.accountIndex].hasManualCompulsoryClearing=true(),\n" +
+            "                                    group(\n" +
+            "                                      assign(x, daysBetween(client.account[in.accountIndex].payPlan[termNumber:termToPay-1].payPlanDueDate, client.account[in.accountIndex].manualComClearingAppliedDate))\n" +
+            "                                    )\n" +
+            "                                )\n" +
+            "                            ),\n" +
+            "                            assign(y, daysBetween(client.account[in.accountIndex].payPlan[termNumber:termToPay-1].payPlanDueDate, client.account[in.accountIndex].payPlan[termNumber:termToPay].payPlanDueDate))\n" +
+            "                        )\n" +
+            "                    ),\n" +
+            "                    case(1=1,\n" +
+            "                        group(\n" +
+            "                            assign(x, daysBetween(client.account[in.accountIndex].payPlan[0].payPlanDueDate - month() - day(), businessDay())),\n" +
+            "                            condition(\n" +
+            "                                case(client.account[in.accountIndex].hasManualCompulsoryClearing=true(),\n" +
+            "                                    group(\n" +
+            "                                      assign(x, daysBetween(client.account[in.accountIndex].payPlan[0].payPlanDueDate - month() - day(), client.account[in.accountIndex].manualComClearingAppliedDate))\n" +
+            "                                    )\n" +
+            "                                )\n" +
+            "                            ),\n" +
+            "                            assign(y, daysBetween(client.account[in.accountIndex].payPlan[0].payPlanDueDate-month(), client.account[in.accountIndex].payPlan[0].payPlanDueDate))\n" +
+            "                        )\n" +
+            "                    )\n" +
+            "                ),\n" +
+            "\n" +
+            "                condition(\n" +
+            "                    case(isEmpty(x)&isEmpty(y),\n" +
+            "                        group(\n" +
+            "                            assign(x, 1),\n" +
+            "                            assign(y, 1)\n" +
+            "                        )\n" +
+            "                    )\n" +
+            "                ),\n" +
+            "\n" +
+            "                assign(remainingInterest, client.account[in.accountIndex].payPlan[termNumber:termToPay].remainingInterest),\n" +
+            "\n" +
+            "                assign(client.account[in.accountIndex].payPlan[termNumber:termToPay].remainingTotal, client.account[in.accountIndex].payPlan[termNumber:termToPay].remainingTotal-remainingInterest),\n" +
+            "\n" +
+            "                assign(client.account[in.accountIndex].payPlan[termNumber:termToPay].remainingInterest, round(remainingInterest*x/y,2)),\n" +
+            "\n" +
+            "                assign(client.account[in.accountIndex].payPlan[termNumber:termToPay].remainingTotal, client.account[in.accountIndex].payPlan[termNumber:termToPay].remainingTotal+client.account[in.accountIndex].payPlan[termNumber:termToPay].remainingInterest),\n" +
+            "\n" +
+            "                assign(client.account[in.accountIndex].payPlan[termNumber:termToPay].payPlanDueDate, businessDay())\n" +
+            "            )\n" +
+            "        )\n" +
+            "    ),\n" +
+            "\n" +
+            "    //New interest Amount\n" +
+            "    assign(client.account[in.accountIndex].totalRemInterest, client.account[in.accountIndex].totalRemInterest + client.account[in.accountIndex].payPlan[termNumber:termToPay].remainingInterest),\n" +
+            "\n" +
+            "    foreach(i, termToPay+1, len(client.account[in.accountIndex].payPlan), //Sum remaining principal\n" +
+            "        group(\n" +
+            "            assign(a, client.account[in.accountIndex].payPlan[termNumber:i].remainingPrincipal),\n" +
+            "\n" +
+            "            assign(client.account[in.accountIndex].payPlan[termNumber:termToPay].remainingPrincipal, client.account[in.accountIndex].payPlan[termNumber:termToPay].remainingPrincipal+a),\n" +
+            "            assign(client.account[in.accountIndex].payPlan[termNumber:termToPay].remainingTotal, client.account[in.accountIndex].payPlan[termNumber:termToPay].remainingTotal+a),\n" +
+            "\n" +
+            "\n" +
+            "            //Remaining total recalculate\n" +
+            "            assign(client.account[in.accountIndex].totalRemainingAmt, client.account[in.accountIndex].totalRemainingAmt - client.account[in.accountIndex].payPlan[termNumber:i].remainingTotal),\n" +
+            "            assign(client.account[in.accountIndex].totalRemInstallmentFee, client.account[in.accountIndex].totalRemInstallmentFee - client.account[in.accountIndex].payPlan[termNumber:i].remainingInstallmentFee),\n" +
+            "            assign(client.account[in.accountIndex].totalRemLifeInsuranceFee, client.account[in.accountIndex].totalRemLifeInsuranceFee - client.account[in.accountIndex].payPlan[termNumber:i].remainingLifeInsurance),\n" +
+            "            assign(client.account[in.accountIndex].totalRemReplaceServiceFee, client.account[in.accountIndex].totalRemReplaceServiceFee - client.account[in.accountIndex].payPlan[termNumber:i].remainingReplaceSvcFee),\n" +
+            "            assign(client.account[in.accountIndex].totalRemPrepayPkgFee, client.account[in.accountIndex].totalRemPrepayPkgFee - client.account[in.accountIndex].payPlan[termNumber:i].remainingPrepayPkgFee),\n" +
+            "            assign(client.account[in.accountIndex].totalRemServiceFee, client.account[in.accountIndex].totalRemServiceFee - client.account[in.accountIndex].payPlan[termNumber:i].remainingServiceFee),\n" +
+            "            assign(client.account[in.accountIndex].totalRemInterest, client.account[in.accountIndex].totalRemInterest - client.account[in.accountIndex].payPlan[termNumber:i].remainingInterest),\n" +
+            "            assign(client.account[in.accountIndex].totalRemAgentFee, client.account[in.accountIndex].totalRemAgentFee - client.account[in.accountIndex].payPlan[termNumber:i].remainingAgentFee),\n" +
+            "\n" +
+            "            assign(client.account[in.accountIndex].payPlan[termNumber:i].actual, false())\n" +
+            "        )\n" +
+            "    ),\n" +
+            "\n" +
+            "    condition(\n" +
+            "      case(sameAsDueDay,\n" +
+            "        group(\n" +
+            "            //Remaining total recalculate\n" +
+            "            assign(client.account[in.accountIndex].payPlan[termNumber:termToPay].remainingTotal, client.account[in.accountIndex].payPlan[termNumber:termToPay].remainingTotal-client.account[in.accountIndex].payPlan[termNumber:termToPay].remainingInstallmentFee),\n" +
+            "            assign(client.account[in.accountIndex].payPlan[termNumber:termToPay].remainingTotal, client.account[in.accountIndex].payPlan[termNumber:termToPay].remainingTotal-client.account[in.accountIndex].payPlan[termNumber:termToPay].remainingLifeInsurance),\n" +
+            "            assign(client.account[in.accountIndex].payPlan[termNumber:termToPay].remainingTotal, client.account[in.accountIndex].payPlan[termNumber:termToPay].remainingTotal-client.account[in.accountIndex].payPlan[termNumber:termToPay].remainingReplaceSvcFee),\n" +
+            "            assign(client.account[in.accountIndex].payPlan[termNumber:termToPay].remainingTotal, client.account[in.accountIndex].payPlan[termNumber:termToPay].remainingTotal-client.account[in.accountIndex].payPlan[termNumber:termToPay].remainingPrepayPkgFee),\n" +
+            "            assign(client.account[in.accountIndex].payPlan[termNumber:termToPay].remainingTotal, client.account[in.accountIndex].payPlan[termNumber:termToPay].remainingTotal-client.account[in.accountIndex].payPlan[termNumber:termToPay].remainingServiceFee),\n" +
+            "            assign(client.account[in.accountIndex].payPlan[termNumber:termToPay].remainingTotal, client.account[in.accountIndex].payPlan[termNumber:termToPay].remainingTotal-client.account[in.accountIndex].payPlan[termNumber:termToPay].remainingInterest),\n" +
+            "            assign(client.account[in.accountIndex].payPlan[termNumber:termToPay].remainingTotal, client.account[in.accountIndex].payPlan[termNumber:termToPay].remainingTotal-client.account[in.accountIndex].payPlan[termNumber:termToPay].remainingAgentFee),\n" +
+            "\n" +
+            "            assign(client.account[in.accountIndex].totalRemInstallmentFee, client.account[in.accountIndex].totalRemInstallmentFee - client.account[in.accountIndex].payPlan[termNumber:termToPay].remainingInstallmentFee),\n" +
+            "            assign(client.account[in.accountIndex].totalRemLifeInsuranceFee, client.account[in.accountIndex].totalRemLifeInsuranceFee - client.account[in.accountIndex].payPlan[termNumber:termToPay].remainingLifeInsurance),\n" +
+            "            assign(client.account[in.accountIndex].totalRemReplaceServiceFee, client.account[in.accountIndex].totalRemReplaceServiceFee - client.account[in.accountIndex].payPlan[termNumber:termToPay].remainingReplaceSvcFee),\n" +
+            "            assign(client.account[in.accountIndex].totalRemPrepayPkgFee, client.account[in.accountIndex].totalRemPrepayPkgFee - client.account[in.accountIndex].payPlan[termNumber:termToPay].remainingPrepayPkgFee),\n" +
+            "            assign(client.account[in.accountIndex].totalRemServiceFee, client.account[in.accountIndex].totalRemServiceFee - client.account[in.accountIndex].payPlan[termNumber:termToPay].remainingServiceFee),\n" +
+            "            assign(client.account[in.accountIndex].totalRemInterest, client.account[in.accountIndex].totalRemInterest - client.account[in.accountIndex].payPlan[termNumber:termToPay].remainingInterest),\n" +
+            "            assign(client.account[in.accountIndex].totalRemAgentFee, client.account[in.accountIndex].totalRemAgentFee - client.account[in.accountIndex].payPlan[termNumber:termToPay].remainingAgentFee),\n" +
+            "\n" +
+            "            assign(client.account[in.accountIndex].payPlan[termNumber:termToPay].remainingInstallmentFee, 0),\n" +
+            "            assign(client.account[in.accountIndex].payPlan[termNumber:termToPay].remainingLifeInsurance, 0),\n" +
+            "            assign(client.account[in.accountIndex].payPlan[termNumber:termToPay].remainingReplaceSvcFee, 0),\n" +
+            "            assign(client.account[in.accountIndex].payPlan[termNumber:termToPay].remainingPrepayPkgFee, 0),\n" +
+            "            assign(client.account[in.accountIndex].payPlan[termNumber:termToPay].remainingServiceFee, 0),\n" +
+            "            assign(client.account[in.accountIndex].payPlan[termNumber:termToPay].remainingInterest, 0),\n" +
+            "            assign(client.account[in.accountIndex].payPlan[termNumber:termToPay].remainingAgentFee, 0)\n" +
+            "        )\n" +
+            "      )\n" +
+            "    ),\n" +
+            "\n" +
+            "    assign(client.account[in.accountIndex].totalRemainingAmt, client.account[in.accountIndex].totalRemainingAmt + client.account[in.accountIndex].payPlan[termNumber:termToPay].remainingTotal),\n" +
+            "\n" +
+            "    condition(\n" +
+            "        case(client.account[in.accountIndex].batchDate>businessDay(),\n" +
+            "            assign(client.account[in.accountIndex].batchDate,businessDay())\n" +
+            "        )\n" +
+            "    ),\n" +
+            "\n" +
+            "    assign(client.account[in.accountIndex].hasCompulsoryCleaning, true()),\n" +
+            "    assign(client.account[in.accountIndex].manualCompulsoryClearingPlanChanged, true()),\n" +
+            "\n" +
+            "    assign(client.account[in.accountIndex].remainingTerms, 1),\n" +
+            "    assign(client.account[in.accountIndex].termToPay, termToPay),\n" +
+            "\n" +
+            "    condition(\n" +
+            "        case(client.account[in.accountIndex].product.IsPartnerProduct = true(),\n" +
+            "            group(\n" +
+            "                assign(totalDebtWithoutAgent,0),\n" +
+            "                group(\n" +
+            "                    foreach(p,1,client.account[in.accountIndex].termToPay,\n" +
+            "                        group(\n" +
+            "                            condition(\n" +
+            "                                case(client.account[in.accountIndex].payPlan[termNumber:p].hasPaid=false() & client.account[in.accountIndex].payPlan[termNumber:p].planStatus!=\"C\",\n" +
+            "                                    group (\n" +
+            "                                        assign(client.account[in.accountIndex].payPlan[termNumber:p].planStatus,\"X\"),\n" +
+            "\n" +
+            "                                        assign(client.account[in.accountIndex].payPlan[termNumber:p].remainingTotal, round(client.account[in.accountIndex].payPlan[termNumber:p].remainingTotal\n" +
+            "                                            - client.account[in.accountIndex].payPlan[termNumber:p].remainingAgentFee, 2)),\n" +
+            "\n" +
+            "                                        assign(client.account[in.accountIndex].payPlan[termNumber:p].paidAgentFee,0.00),\n" +
+            "\n" +
+            "                                        group (\n" +
+            "                                            assign(client.account[in.accountIndex].totalRemAgentFee, round(client.account[in.accountIndex].totalRemAgentFee - client.account[in.accountIndex].payPlan[termNumber:p].remainingAgentFee, 2)),\n" +
+            "\n" +
+            "                                            assign(client.account[in.accountIndex].totalRemainingAmt, round(client.account[in.accountIndex].totalRemainingAmt - client.account[in.accountIndex].payPlan[termNumber:p].remainingAgentFee, 2))\n" +
+            "                                        ),\n" +
+            "\n" +
+            "                                        assign(client.account[in.accountIndex].payPlan[termNumber:p].remainingAgentFee, 0.00),\n" +
+            "                                        assign(totalDebtWithoutAgent,totalDebtWithoutAgent + client.account[in.accountIndex].payPlan[termNumber:p].remainingTotal)\n" +
+            "                                   )\n" +
+            "                                )\n" +
+            "                            )\n" +
+            "                        )\n" +
+            "                    )\n" +
+            "                ),\n" +
+            "\n" +
+            "\n" +
+            "               group(\n" +
+            "                   foreach (i, 0, len(client.account[in.accountIndex].overdueFine) - 1,\n" +
+            "                       group(\n" +
+            "                           condition(\n" +
+            "                               case(\"fine\" = client.account[in.accountIndex].overdueFine[i].overdueFineType & client.account[in.accountIndex].payPlan[termNumber:client.account[in.accountIndex].overdueFine[i].term].planStatus!=\"C\",\n" +
+            "                                   group(\n" +
+            "                                       assign(totalDebtWithoutAgent, totalDebtWithoutAgent+client.account[in.accountIndex].overdueFine[i].remainingAmount)\n" +
+            "                                   )\n" +
+            "                               ),\n" +
+            "                               case(dictValueText(\"PenaltyType\",\"agentCode\", client.account[in.accountIndex].overdueFine[i].overdueFineType)=\"notAgent\" &  client.account[in.accountIndex].payPlan[termNumber:client.account[in.accountIndex].overdueFine[i].term].planStatus!=\"C\",\n" +
+            "                                   group(\n" +
+            "                                       assign(totalDebtWithoutAgent, totalDebtWithoutAgent+client.account[in.accountIndex].overdueFine[i].remainingAmount)\n" +
+            "                                   )\n" +
+            "                               )\n" +
+            "                           )\n" +
+            "                       )\n" +
+            "                   )\n" +
+            "               ),\n" +
+            "\n" +
+            "                assign(loanUsage, \"C\"),\n" +
+            "                assign(orderStatus, \"N\"),\n" +
+            "\n" +
+            "                assign(settleFeeType, \"ClaimAmt\"),\n" +
+            "                assign(term, client.account[in.accountIndex].termToPay),\n" +
+            "                assign(txnDirection, \"-\"),\n" +
+            "\n" +
+            "                assign(generateTransaction_transactionAmount, totalDebtWithoutAgent), // calculate here\n" +
+            "\n" +
+            "                group(\n" +
+            "                    assign(settleId,generateId()),\n" +
+            "                    assign(client.account[in.accountIndex].settlePlatform[id:settleId].settleFeeType,\"ClaimAmt\"),\n" +
+            "                    assign(client.account[in.accountIndex].settlePlatform[id:settleId].settleAmt, generateTransaction_transactionAmount),\n" +
+            "                    assign(client.account[in.accountIndex].settlePlatform[id:settleId].postDate, businessDay()),\n" +
+            "                    assign(client.account[in.accountIndex].settlePlatform[id:settleId].settleTerm, client.account[in.accountIndex].termToPay),\n" +
+            "                    assign(client.account[in.accountIndex].settlePlatform[id:settleId].settleSend, true()),\n" +
+            "                    assign(client.account[in.accountIndex].settlePlatform[id:settleId].settleTxnDirection, \"-\")\n" +
+            "                ),\n" +
+            "\n" +
+            "                procedure(generateTransaction),\n" +
+            "\n" +
+            "                procedure(closeAccount)\n" +
+            "            )\n" +
+            "        )\n" +
+            "    )\n" +
+            ")\n");
+
+    m.registerUserProcedure("moveCurrentTerm",
+        "group(\n" +
+            "    foreach(k,0,len(client.account[in.accountIndex].payPlan)-1,\n" +
+            "        condition(\n" +
+            "            case(businessDay() >= client.account[in.accountIndex].payPlan[k].payPlanDueDate\n" +
+            "                &\n" +
+            "                client.account[in.accountIndex].hasCompulsoryCleaning = false()\n" +
+            "                &\n" +
+            "                client.account[in.accountIndex].hasAdvancedClearing = false()\n" +
+            "                &\n" +
+            "                client.account[in.accountIndex].manualCompulsoryClearingPlanChanged != true(), //If claim exists do not change currentTerm.\n" +
+            "                    group(\n" +
+            "                        assign(client.account[in.accountIndex].currentTerm, client.account[in.accountIndex].payPlan[k].termNumber+1),\n" +
+            "                        assign(client.account[in.accountIndex].termToPay, k+1),\n" +
+            "\n" +
+            "                        condition(\n" +
+            "                            case(client.account[in.accountIndex].currentTerm>client.account[in.accountIndex].loanTerm,\n" +
+            "                                assign(client.account[in.accountIndex].currentTerm, client.account[in.accountIndex].loanTerm)\n" +
+            "                            )\n" +
+            "                        )\n" +
+            "                    )\n" +
+            "            )\n" +
+            "        )\n" +
+            "    )\n" +
+            ")\n");
+
+    m.registerUserProcedure("debtCheck",
+        "group(\n" +
+            "    procedure(calculateCurrentDebt),\n" +
+            "\n" +
+            "    assign(paidTerms,client.account[in.accountIndex].paidTerms),\n" +
+            "\n" +
+            "    condition(\n" +
+            "        case(debtAmt > 0 , //If there is overdue\n" +
+            "            group(\n" +
+            "                condition(\n" +
+            "                    case (isEmpty(client.account[in.accountIndex].cpdBeginDate),\n" +
+            "                        assign(client.account[in.accountIndex].cpdBeginDate, client.account[in.accountIndex].nextStmtDate)\n" +
+            "                    ),\n" +
+            "                    case(client.account[in.accountIndex].payPlan[client.account[in.accountIndex].termToPay-1].payPlanDueDate=businessDay()\n" +
+            "                        & currentTermDebt=debtAmt,\n" +
+            "                        group(\n" +
+            "                            assign(client.account[in.accountIndex].nextStmtDate, client.account[in.accountIndex].payPlan[client.account[in.accountIndex].termToPay-1].payPlanDueDate) ,\n" +
+            "                            assign(client.account[in.accountIndex].pmtDueDate, client.account[in.accountIndex].nextStmtDate) , //For MS Loan\n" +
+            "                            assign(client.account[in.accountIndex].batchDate, client.account[in.accountIndex].nextStmtDate),\n" +
+            "                            assign(client.account[in.accountIndex].graceDate, client.account[in.accountIndex].pmtDueDate + day() * client.account[in.accountIndex].product.BusinessParameters.GracePeriod),\n" +
+            "\n" +
+            "                            assign(client.account[in.accountIndex].cpdBeginDate, client.account[in.accountIndex].nextStmtDate)\n" +
+            "                        )\n" +
+            "                    )\n" +
+            "                ),\n" +
+            "\n" +
+            "                assign(client.account[in.accountIndex].cpdDays, daysBetween(client.account[in.accountIndex].cpdBeginDate, businessDay())),\n" +
+            "\n" +
+            "                condition(\n" +
+            "                            case(debtAmt<=client.account[in.accountIndex].product.ToleranceValue.CPDOverdueToleranceValue\n" +
+            "                            &\n" +
+            "                            client.account[in.accountIndex].termToPay!=client.account[in.accountIndex].loanTerm,\n" +
+            "                                group(\n" +
+            "                                    assign(client.account[in.accountIndex].cpdBeginDate, empty()),\n" +
+            "                                    assign(client.account[in.accountIndex].cpdDays, 0),\n" +
+            "                                    assign(client.account[in.accountIndex].lastMaxFine, empty()),\n" +
+            "                                    assign(client.account[in.accountIndex].lastMaxAgentFine, empty())\n" +
+            "                                )\n" +
+            "                            )\n" +
+            "                ),\n" +
+            "                group(\n" +
+            "                    condition(\n" +
+            "                        case (isEmpty(client.account[in.accountIndex].overdueDate), //To switch dpd according to payments\n" +
+            "                            group(\n" +
+            "                                 assign(client.account[in.accountIndex].overdueDate, client.account[in.accountIndex].nextStmtDate)\n" +
+            "                            )\n" +
+            "                        ),\n" +
+            "                        case(client.account[in.accountIndex].payPlan[client.account[in.accountIndex].termToPay-1].payPlanDueDate=businessDay()\n" +
+            "                            & currentTermDebt=debtAmt,\n" +
+            "                            group(\n" +
+            "                                assign(client.account[in.accountIndex].overdueDate, client.account[in.accountIndex].nextStmtDate)\n" +
+            "                            )\n" +
+            "                        )\n" +
+            "                    ),\n" +
+            "\n" +
+            "                    condition(\n" +
+            "                        case(isDefined(client.account[in.accountIndex].overdueDate),\n" +
+            "                            assign(client.account[in.accountIndex].dpdDays, daysBetween(client.account[in.accountIndex].overdueDate, businessDay()))\n" +
+            "                        )\n" +
+            "                    ),\n" +
+            "\n" +
+            "                    condition(//Does it works for last term???\n" +
+            "                        case(debtAmt<=client.account[in.accountIndex].product.ToleranceValue.DPDOverdueToleranceValue\n" +
+            "                            &\n" +
+            "                            client.account[in.accountIndex].termToPay!=client.account[in.accountIndex].loanTerm,\n" +
+            "                            group(\n" +
+            "                                assign(client.account[in.accountIndex].overdueDate, empty()),\n" +
+            "                                assign(client.account[in.accountIndex].dpdDays, 0),\n" +
+            "\n" +
+            "                                procedure(moveNextStmtDate)\n" +
+            "                            )\n" +
+            "                        ),\n" +
+            "                        case(waitingTransactionIsClaim=false() & client.account[in.accountIndex].hasManualCompulsoryClearing!=true(),\n" +
+            "                            group(\n" +
+            "                                procedure(addFine)\n" +
+            "                            )\n" +
+            "                        )\n" +
+            "                    )\n" +
+            "                )\n" +
+            "            )\n" +
+            "        ),\n" +
+            "        case(1 = 1 ,\n" +
+            "            //If there is no overdue\n" +
+            "            group(\n" +
+            "                procedure(clearOverdueDate),\n" +
+            "                condition(\n" +
+            "                    case((client.account[in.accountIndex].hasAdvancedClearing & isDefined(client.account[in.accountIndex].advanceClearingTerm))\n" +
+            "                    | client.account[in.accountIndex].hasCompulsoryCleaning = true()\n" +
+            "                    | (client.account[in.accountIndex].hasManualCompulsoryClearing = true() & client.account[in.accountIndex].manualCompulsoryClearingPlanChanged=true()),\n" +
+            "                        group(\n" +
+            "                            procedure(closeAccount)\n" +
+            "                        )\n" +
+            "                    ),\n" +
+            "\n" +
+            "                    case(1=1,\n" +
+            "                        procedure(moveNextStmtDate)\n" +
+            "                    )\n" +
+            "                )\n" +
+            "            )\n" +
+            "        )\n" +
+            "    )\n" +
+            ")\n");
+
+    m.registerUserProcedure("generateTransaction",
+        "group(\n" +
+            "\n" +
+            "    assign(transId, generateId()),\n" +
+            "\n" +
+            "    //Account info\n" +
+            "    assign(client.account[in.accountIndex].transaction[id:transId].org, \"000000000001\"),\n" +
+            "    assign(client.account[in.accountIndex].transaction[id:transId].acctNbr, client.account[in.accountIndex].acctNbr),\n" +
+            "    assign(client.account[in.accountIndex].transaction[id:transId].acctType, client.account[in.accountIndex].acctType), //\"E|人民币独立小额贷款账户\"\n" +
+            "    assign(client.account[in.accountIndex].transaction[id:transId].currency, \"156\"), //Currency code for MS Loan\n" +
+            "\n" +
+            "    assign(client.account[in.accountIndex].transaction[id:transId].openBankId, client.account[in.accountIndex].ddBankBranch),\n" +
+            "    assign(client.account[in.accountIndex].transaction[id:transId].openBankName, client.account[in.accountIndex].ddBankName),\n" +
+            "    assign(client.account[in.accountIndex].transaction[id:transId].subBank, client.account[in.accountIndex].owningBranch),\n" +
+            "    assign(client.account[in.accountIndex].transaction[id:transId].cardNo, client.account[in.accountIndex].ddBankAcctNbr),\n" +
+            "    assign(client.account[in.accountIndex].transaction[id:transId].usrName, client.account[in.accountIndex].ddBankAcctName),\n" +
+            "    assign(client.account[in.accountIndex].transaction[id:transId].state, client.account[in.accountIndex].ddBankProvince),\n" +
+            "    assign(client.account[in.accountIndex].transaction[id:transId].city, client.account[in.accountIndex].ddBankCity),\n" +
+            "    assign(client.account[in.accountIndex].transaction[id:transId].mobileNumber, client.account[in.accountIndex].mobileNo),\n" +
+            "\n" +
+            "    //Client Info\n" +
+            "    assign(client.account[in.accountIndex].transaction[id:transId].certId, client.idNo),\n" +
+            "\n" +
+            "    group(\n" +
+            "                condition(\n" +
+            "                    case(client.idType=\"P\",\n" +
+            "                        assign(client.account[in.accountIndex].transaction[id:transId].certType, client.idType)\n" +
+            "                    ),\n" +
+            "\n" +
+            "                    case(client.tmp.idType=\"R\",\n" +
+            "                        assign(client.account[in.accountIndex].transaction[id:transId].certType, \"04\")\n" +
+            "                    ),\n" +
+            "\n" +
+            "                    case(client.tmp.idType=\"H\",\n" +
+            "                        assign(client.account[in.accountIndex].transaction[id:transId].certType, \"05\")\n" +
+            "                    ),\n" +
+            "\n" +
+            "                    case(1=1,\n" +
+            "                        assign(client.account[in.accountIndex].transaction[id:transId].certType, \"06\")\n" +
+            "                    )\n" +
+            "                ),\n" +
+            "\n" +
+            "                assign(client.account[in.accountIndex].transaction[id:transId].certId, client.idNo)\n" +
+            "    ),\n" +
+            "\n" +
+            "    //Transaction info\n" +
+            "    //Incoming variables\n" +
+            "    assign(client.account[in.accountIndex].transaction[id:transId].txnAmt, generateTransaction_transactionAmount),\n" +
+            "    assign(client.account[in.accountIndex].transaction[id:transId].orderStatus, orderStatus),\n" +
+            "    assign(client.account[in.accountIndex].transaction[id:transId].loanUsage, loanUsage),\n" +
+            "\n" +
+            "    condition(\n" +
+            "        case(isDefined(duebillNo), //When create transaction manualy!\n" +
+            "            assign(client.account[in.accountIndex].transaction[id:transId].dueBillNo, duebillNo)\n" +
+            "        )\n" +
+            "    ),\n" +
+            "\n" +
+            "    condition(\n" +
+            "        case(isDefined(client.tmp.refNbr),\n" +
+            "            assign(client.account[in.accountIndex].transaction[id:transId].refNbr, client.tmp.refNbr)\n" +
+            "        )\n" +
+            "    ),\n" +
+            "\n" +
+            "    condition(\n" +
+            "        case(isDefined(client.tmp.inputSource),\n" +
+            "            assign(client.account[in.accountIndex].transaction[id:transId].inputSource, client.tmp.inputSource)\n" +
+            "        )\n" +
+            "    ),\n" +
+            "\n" +
+            "    condition(\n" +
+            "        case(isDefined(client.tmp.serviceSn),\n" +
+            "            assign(client.account[in.accountIndex].transaction[id:transId].serviceSn, client.tmp.serviceSn)\n" +
+            "        )\n" +
+            "    ),\n" +
+            "\n" +
+            "    condition(\n" +
+            "        case(isDefined(client.tmp.serviceId),\n" +
+            "            assign(client.account[in.accountIndex].transaction[id:transId].serviceId, client.tmp.serviceId)\n" +
+            "        )\n" +
+            "    ),\n" +
+            "\n" +
+            "    condition(\n" +
+            "        case(isDefined(client.tmp.requestTime),\n" +
+            "            assign(client.account[in.accountIndex].transaction[id:transId].requestTime, client.tmp.requestTime)\n" +
+            "        )\n" +
+            "    ),\n" +
+            "\n" +
+            "    assign(client.account[in.accountIndex].transaction[id:transId].acqId, client.account[in.accountIndex].acqId),\n" +
+            "    assign(client.account[in.accountIndex].transaction[id:transId].flag, \"00\"),\n" +
+            "\n" +
+            "    condition(\n" +
+            "        case(loanUsage=\"L\", //Loan release\n" +
+            "            group(\n" +
+            "                assign(client.account[in.accountIndex].transaction[id:transId].txnType, \"AgentDebit\"),\n" +
+            "                assign(client.account[in.accountIndex].transaction[id:transId].commandType, \"SPA\"),\n" +
+            "                assign(client.account[in.accountIndex].transaction[id:transId].purpose, \"放款申请\"),\n" +
+            "                assign(client.account[in.accountIndex].transaction[id:transId].payBizCode, \"1\"), //Credit -0, Debit - 1\n" +
+            "                assign(client.account[in.accountIndex].transaction[id:transId].matchInd, \"Y\") //Need to check in batch?\n" +
+            "            )\n" +
+            "        ),\n" +
+            "        case(loanUsage=\"N\", //Normal deduction\n" +
+            "            group(\n" +
+            "                assign(client.account[in.accountIndex].transaction[id:transId].txnType, \"AgentCredit\"),\n" +
+            "                assign(client.account[in.accountIndex].transaction[id:transId].commandType, \"SDB\"),\n" +
+            "                assign(client.account[in.accountIndex].transaction[id:transId].purpose, \"正常扣款\"),\n" +
+            "                assign(client.account[in.accountIndex].transaction[id:transId].payBizCode, \"0\"), //Credit -0, Debit - 1\n" +
+            "                assign(client.account[in.accountIndex].transaction[id:transId].matchInd, \"Y\") //Need to check in batch?\n" +
+            "            )\n" +
+            "        ),\n" +
+            "        case(loanUsage=\"O\", //Overdue deduction\n" +
+            "            group(\n" +
+            "                assign(client.account[in.accountIndex].transaction[id:transId].txnType, \"AgentCredit\"),\n" +
+            "                assign(client.account[in.accountIndex].transaction[id:transId].commandType, \"SDB\"),\n" +
+            "                assign(client.account[in.accountIndex].transaction[id:transId].purpose, \"逾期扣款\"),\n" +
+            "                assign(client.account[in.accountIndex].transaction[id:transId].payBizCode, \"0\"), //Credit -0, Debit - 1\n" +
+            "                assign(client.account[in.accountIndex].transaction[id:transId].matchInd, \"Y\") //Need to check in batch?\n" +
+            "            )\n" +
+            "        ),\n" +
+            "        case(loanUsage=\"D\", //Overpayment return\n" +
+            "            group(\n" +
+            "                assign(client.account[in.accountIndex].transaction[id:transId].txnType, \"AgentDebit\"),\n" +
+            "                assign(client.account[in.accountIndex].transaction[id:transId].purpose, \"溢缴款转出\"),\n" +
+            "                assign(client.account[in.accountIndex].transaction[id:transId].payBizCode, \"1\"), //Credit -0, Debit - 1\n" +
+            "                assign(client.account[in.accountIndex].transaction[id:transId].matchInd, \"Y\") //Need to check in batch?\n" +
+            "            )\n" +
+            "        ),\n" +
+            "        case(loanUsage=\"M\", //Advanced repayment\n" +
+            "            group(\n" +
+            "                assign(client.account[in.accountIndex].transaction[id:transId].purpose, \"提前结清\"),\n" +
+            "                assign(client.account[in.accountIndex].transaction[id:transId].payBizCode, \"0\"), //Credit -0, Debit - 1\n" +
+            "                assign(client.account[in.accountIndex].transaction[id:transId].txnType, \"AgentCredit\"),\n" +
+            "                assign(client.account[in.accountIndex].transaction[id:transId].matchInd, \"Y\") //Need to check in batch?\n" +
+            "            )\n" +
+            "        ),\n" +
+            "        case(loanUsage=\"C\" | loanUsage=\"U\", //Claim and compensation\n" +
+            "            group(\n" +
+            "                assign(partnerCode, client.account[in.accountIndex].product.Partner.Partners),\n" +
+            "                assign(client.account[in.accountIndex].transaction[id:transId].txnType, \"AgentCredit\"),\n" +
+            "\n" +
+            "                assign(client.account[in.accountIndex].transaction[id:transId].flag, \"01\"),\n" +
+            "                assign(client.account[in.accountIndex].transaction[id:transId].usrName, client.customername),\n" +
+            "                assign(client.account[in.accountIndex].transaction[id:transId].cardNo, client.account[in.accountIndex].ddBankAcctNbr),\n" +
+            "                assign(client.account[in.accountIndex].transaction[id:transId].certType, \"06\"),\n" +
+            "                assign(client.account[in.accountIndex].transaction[id:transId].certId, client.idNo),\n" +
+            "                assign(client.account[in.accountIndex].transaction[id:transId].openBankId, client.account[in.accountIndex].ddBankBranch),\n" +
+            "                assign(client.account[in.accountIndex].transaction[id:transId].openBankName, client.account[in.accountIndex].ddBankName),\n" +
+            "                assign(client.account[in.accountIndex].transaction[id:transId].subBank, client.account[in.accountIndex].owningBranch),\n" +
+            "                assign(client.account[in.accountIndex].transaction[id:transId].state, client.account[in.accountIndex].ddBankProvince),\n" +
+            "                assign(client.account[in.accountIndex].transaction[id:transId].city, client.account[in.accountIndex].ddBankCity),\n" +
+            "\n" +
+            "                assign(client.account[in.accountIndex].transaction[id:transId].cooperationId, client.account[in.accountIndex].acqId),\n" +
+            "                assign(client.account[in.accountIndex].transaction[id:transId].applicationNo, client.account[in.accountIndex].applicationNo),\n" +
+            "                assign(client.account[in.accountIndex].transaction[id:transId].productCd, client.account[in.accountIndex].productCd),\n" +
+            "                assign(client.account[in.accountIndex].transaction[id:transId].settleFeeType, settleFeeType),\n" +
+            "                assign(client.account[in.accountIndex].transaction[id:transId].term, term),\n" +
+            "                assign(client.account[in.accountIndex].transaction[id:transId].txnDirection, txnDirection)\n" +
+            "            )\n" +
+            "        )\n" +
+            "    ),\n" +
+            "\n" +
+            "    assign(client.account[in.accountIndex].transaction[id:transId].comparedInd, false()), assign(client.account[in.accountIndex].transaction[id:transId].term, client.account[in.accountIndex].currentTerm),\n" +
+            "\n" +
+            "    assign(client.account[in.accountIndex].transaction[id:transId].channelId, client.account[in.accountIndex].custSource),\n" +
+            "\n" +
+            "    assign(client.account[in.accountIndex].transaction[id:transId].contrNbr, client.account[in.accountIndex].contrNbr),\n" +
+            "\n" +
+            "    assign(client.account[in.accountIndex].transaction[id:transId].successAmt, 0),\n" +
+            "    condition(\n" +
+            "        case(orderStatus=\"S\",\n" +
+            "            assign(client.account[in.accountIndex].transaction[id:transId].successAmt, generateTransaction_transactionAmount)\n" +
+            "        )\n" +
+            "    ),\n" +
+            "    assign(client.account[in.accountIndex].transaction[id:transId].failureAmt, 0),\n" +
+            "\n" +
+            "    assign(client.account[in.accountIndex].transaction[id:transId].priv1, \"T110E5\"), //PrivateField\n" +
+            "\n" +
+            "    assign(client.account[in.accountIndex].transaction[id:transId].businessDate, businessDay()),\n" +
+            "    assign(client.account[in.accountIndex].transaction[id:transId].sendTime, businessDay()),\n" +
+            "    assign(client.account[in.accountIndex].transaction[id:transId].createTime, businessDay()),\n" +
+            "    assign(client.account[in.accountIndex].transaction[id:transId].setupDate, businessDay()),\n" +
+            "    assign(client.account[in.accountIndex].transaction[id:transId].orderTime, businessDay()),\n" +
+            "    assign(client.account[in.accountIndex].transaction[id:transId].optDatetime, businessDay()),\n" +
+            "    assign(client.account[in.accountIndex].transaction[id:transId].cardType, \"0\"),\n" +
+            "    assign(client.account[in.accountIndex].transaction[id:transId].payChannelId, \"1\")\n" +
+            ")\n");
 
     m.registerTree("main", "group(\n" +
+        "    assign(generateTransaction_transactionAmount,0),\n" +
+        "    assign(debtAmt,0),\n" +
+        "    assign(currentTermDebt,0),\n" +
+        "    assign(termDebt,0),\n" +
+        "    assign(fineAmt,0),\n" +
+        "    assign(afterTransactionFine,0),\n" +
+        "    assign(termToPay,0),\n" +
+        "    assign(sameAsDueDay,true()),\n" +
+        "    assign(totalDebtWithoutAgent,0),\n" +
+        "    assign(loanUsage,\"\"),\n" +
+        "    assign(orderStatus,\"\"),\n" +
+        "    assign(settleFeeType,\"\"),\n" +
+        "    assign(term,0),\n" +
+        "    assign(txnDirection,\"\"),\n" +
+        "    assign(settleId,\"\"),\n" +
+        "    assign(transId,\"\"),\n" +
+        "    assign(fineAmount,0),\n" +
+        "    assign(overdueFineType,\"\"),\n" +
+        "    assign(cpd,0),\n" +
+        "    assign(dpd,0),\n" +
+        "    assign(overdueDays,0),\n" +
+        "    assign(amt,0),\n" +
+        "    assign(overdueFineId,\"\"),\n" +
+        "    assign(termTotalAmount,0),\n" +
+        "    assign(totalPenaltySum,0),\n" +
+        "    assign(agentServiceFee,0),\n" +
+        "    assign(duebillNo,\"\"),\n" +
+        "    assign(dateFrom,businessDay()),\n" +
+        "    assign(removeDate,businessDay()),\n" +
+        "    assign(sum,0),\n" +
+        "    assign(checkCode,\"\"),\n" +
+        "    assign(message,\"\"),\n" +
+        "\n" +
+        "    assign(generateTransaction_transactionAmount,empty()),\n" +
+        "    assign(debtAmt,empty()),\n" +
+        "    assign(currentTermDebt,empty()),\n" +
+        "    assign(termDebt,empty()),\n" +
+        "    assign(fineAmt,empty()),\n" +
+        "    assign(afterTransactionFine,empty()),\n" +
+        "    assign(termToPay,empty()),\n" +
+        "    assign(sameAsDueDay,empty()),\n" +
+        "    assign(totalDebtWithoutAgent,empty()),\n" +
+        "    assign(loanUsage,empty()),\n" +
+        "    assign(orderStatus,empty()),\n" +
+        "    assign(settleFeeType,empty()),\n" +
+        "    assign(term,empty()),\n" +
+        "    assign(txnDirection,empty()),\n" +
+        "    assign(settleId,empty()),\n" +
+        "    assign(transId,empty()),\n" +
+        "    assign(fineAmount,empty()),\n" +
+        "    assign(overdueFineType,empty()),\n" +
+        "    assign(cpd,empty()),\n" +
+        "    assign(dpd,empty()),\n" +
+        "    assign(overdueDays,empty()),\n" +
+        "    assign(amt,empty()),\n" +
+        "    assign(overdueFineId,empty()),\n" +
+        "    assign(termTotalAmount,empty()),\n" +
+        "    assign(totalPenaltySum,empty()),\n" +
+        "    assign(agentServiceFee,empty()),\n" +
+        "    assign(duebillNo, empty()),\n" +
+        "    assign(dateFrom,empty()),\n" +
+        "    assign(removeDate,empty()),\n" +
+        "    assign(sum,empty()),\n" +
+        "    assign(checkCode,empty()),\n" +
+        "    assign(message,empty()),\n" +
+        "\n" +
         "    foreach(i, 0, len(in.accountIndexes) - 1,\n" +
         "        group (\n" +
         "            assign(in.accountIndex, in.accountIndexes[i].value),\n" +
+        "\n" +
         "            condition(\n" +
         "              case(isDefined(client.account[in.accountIndex].closedDate) & isEmpty(client.account[in.accountIndex].batchDate),\n" +
         "                  break()\n" +
+        "\n" +
         "              )\n" +
-        "            )\n" +
+        "            ),\n" +
+        "            \n" +
+        "            assign(waitingTransactionExists, false()),\n" +
+        "            assign(waitingTransactionIsClaim, false()),\n" +
+        "\n" +
+        "            foreach(transIndex, 0, len(client.account[in.accountIndex].transaction) - 1,\n" +
+        "                condition(\n" +
+        "                    case (client.account[in.accountIndex].transaction[transIndex].orderStatus = \"W\",\n" +
+        "                      assign(waitingTransactionExists, true()),\n" +
+        "\n" +
+        "                      condition(case(\n" +
+        "                        client.account[in.accountIndex].transaction[transIndex].loanUsage = \"C\" | client.account[in.accountIndex].transaction[transIndex].loanUsage = \"U\",\n" +
+        "                        assign(waitingTransactionIsClaim, true())\n" +
+        "                      ))\n" +
+        "                    )\n" +
+        "                )\n" +
+        "            ),\n" +
+        "\n" +
+        "            procedure(debtCheck),\n" +
+        "\n" +
+        "            assign(compulsoryCondition,\n" +
+        "                client.account[in.accountIndex].dpdDays>=client.account[in.accountIndex].product.compulsorySettlement.CPD |\n" +
+        "                (client.account[in.accountIndex].product.IsPartnerProduct = true()\n" +
+        "                    & client.account[in.accountIndex].dpdDays>=client.account[in.accountIndex].product.Partner.ClaimDays) |\n" +
+        "                (client.account[in.accountIndex].manualCompulsoryClearingPlanChanged != true() & client.account[in.accountIndex].hasManualCompulsoryClearing = true())\n" +
+        "            ),\n" +
+        "\n" +
+        "            condition(//Set claim if CPD >=91\n" +
+        "                case(\n" +
+        "                    compulsoryCondition\n" +
+        "                    &\n" +
+        "                    client.account[in.accountIndex].hasCompulsoryCleaning = false()\n" +
+        "                    &\n" +
+        "                    (client.account[in.accountIndex].termToPay < client.account[in.accountIndex].loanTerm | client.account[in.accountIndex].product.IsPartnerProduct = true())\n" +
+        "                    &\n" +
+        "                    (waitingTransactionExists=false() | client.account[in.accountIndex].product.IsPartnerProduct = true() |\n" +
+        "                      (client.account[in.accountIndex].manualCompulsoryClearingPlanChanged != true() & client.account[in.accountIndex].hasManualCompulsoryClearing = true())\n" +
+        "                    ),\n" +
+        "\n" +
+        "                    group(\n" +
+        "                        procedure(createCompulsoryClearingPlan)\n" +
+        "                    )\n" +
+        "                ),\n" +
+        "                case(\n" +
+        "                    compulsoryCondition\n" +
+        "                    &\n" +
+        "                    client.account[in.accountIndex].hasCompulsoryCleaning = false()\n" +
+        "                    &\n" +
+        "                    (client.account[in.accountIndex].termToPay = client.account[in.accountIndex].loanTerm)\n" +
+        "                    &\n" +
+        "                    (waitingTransactionExists=false() | client.account[in.accountIndex].product.IsPartnerProduct = true() |\n" +
+        "                      (client.account[in.accountIndex].manualCompulsoryClearingPlanChanged != true() & client.account[in.accountIndex].hasManualCompulsoryClearing = true())\n" +
+        "                    ),\n" +
+        "                    group(\n" +
+        "                        assign(client.account[in.accountIndex].hasCompulsoryCleaning, true())\n" +
+        "                    )\n" +
+        "                )\n" +
+        "            ),\n" +
+        "\n" +
+        "            condition( //Create compensation for this term\n" +
+        "                case(\n" +
+        "                    client.account[in.accountIndex].product.IsPartnerProduct = true()\n" +
+        "                    &\n" +
+        "                    debtAmt>0\n" +
+        "                    &\n" +
+        "                    (daysBetween(client.account[in.accountIndex].payPlan[termNumber:client.account[in.accountIndex].termToPay].payPlanDueDate, businessDay())\n" +
+        "                      >= client.account[in.accountIndex].product.Partner.CompensationDays |\n" +
+        "                      waitingTransactionIsClaim = true()\n" +
+        "                    )\n" +
+        "                    &\n" +
+        "                    client.account[in.accountIndex].product.Partner.CreateCompensation = true()\n" +
+        "                    &\n" +
+        "                    client.account[in.accountIndex].hasCompulsoryCleaning = false(),\n" +
+        "\n" +
+        "                    group(\n" +
+        "                        procedure(createCompensationForCurrentTerm)\n" +
+        "                    )\n" +
+        "                )\n" +
+        "\n" +
+        "            ),\n" +
+        "\n" +
+        "            procedure(moveCurrentTerm),\n" +
+        "\n" +
+        "            procedure(checkWaitingTransactions)\n" +
         "        )\n" +
         "    )\n" +
         ")");
@@ -2462,7 +3722,7 @@ public abstract class AbstractDtManagerTest {
 
     DtManagerWrapper m = createDtManager(nativeFunctions);
     m.setStructure(new AstObj(
-        new HashMap<String, AstType>(){{
+        new HashMap<String, AstType>() {{
           put("overdueDay", new AstDat());
         }}
     ));
